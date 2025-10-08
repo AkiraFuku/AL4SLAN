@@ -52,7 +52,13 @@ void Player::Update() {
 		case Player::Behavior::kAttack:
 			BehaviorAttackInitialize();
 			break;
+		case Player::Behavior::kDash:
+			 BehaviorDashInitialize();
+			break;
+
 		}
+
+
 		// 挙動リクエストを初期化
 		behaviorRequest_ = Behavior::kUnknown;
 	}
@@ -107,9 +113,15 @@ void Player::BehaviorRootUpdate() {
 	// 攻撃に切り替え
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_X)) {
 
+		//behaviorRequest_ = Behavior::kDash;
+		behaviorRequest_ = Behavior::kAttack;
+	}
+	if (Input::GetInstance()->TriggerKey(DIK_X) ) {
+
 		behaviorRequest_ = Behavior::kDash;
 		//behaviorRequest_ = Behavior::kAttack;
 	}
+
 }
 
 void Player::BehaviorAttackUpdate() {
@@ -181,17 +193,19 @@ void Player::BehaviorAttackUpdate() {
 	worldTransformAttack_.rotation_ = worldTransform_.rotation_;
 }
 void Player::BehaviorDashUpdate() {
-	const Vector3 dashVelocity = {0.6f, 0.0f, 0.0f};
-	velocity_ = {0.0f, 0.0f, 0.0f}; // ダッシュ時は移動しない
+const Vector3 dashVelocity = {0.4f, 0.0f, 0.0f};
+	velocity_ = {0.0f, 0.0f, 0.0f}; // 攻撃時は移動しない
 	Vector3 velocity = {};
 	dashParameter_++;
 	switch (dashPhase_) {
+	case Player::DashPhase::kCharge:
+	default: {
 
-	case Player::DashPhase::kCharge: {
-
+		// 攻撃チャージ中
 		float t = static_cast<float>(dashParameter_) / kDashChageTime; // 1秒間のチャージ
-		worldTransform_.scale_.z = EaseOut(1.0f, 0.3f, t);             // z軸方向に拡大
-		worldTransformAttack_.scale_.y = EaseOut(1.0f, 1.6f, t);       // y軸方向に拡大
+		worldTransform_.scale_.z = EaseOut(1.0f, 0.3f, t);           // z軸方向に拡大
+		worldTransform_.scale_.y = EaseOut(1.0f, 1.6f, t);           // y軸方向に拡大
+
 		if (dashParameter_ >= kDashChageTime) {
 			dashPhase_ = DashPhase::kDash;
 			dashParameter_ = 0;
@@ -199,7 +213,9 @@ void Player::BehaviorDashUpdate() {
 		break;
 	}
 	case Player::DashPhase::kDash: {
+
 		if (lrDirection_ == LRDirection::kRight) {
+
 			velocity = dashVelocity;
 		} else if (lrDirection_ == LRDirection::kLeft) {
 			velocity = dashVelocity * -1.0f;
@@ -211,14 +227,19 @@ void Player::BehaviorDashUpdate() {
 			dashPhase_ = DashPhase::kAfter;
 			dashParameter_ = 0;
 		}
+
+		// 攻撃SE再生
+		
 		break;
 	}
+
 	case Player::DashPhase::kAfter: {
+
 		float t = static_cast<float>(dashParameter_) / kDashAfterTime; // 1秒間の攻撃後
 		worldTransform_.scale_.z = EaseOut(1.3f, 1.0f, t);
 		worldTransform_.scale_.y = EaseOut(0.7f, 1.0f, t);
 		if (dashParameter_ >= kDashAfterTime) {
-			// ダッシュ完了。元のRoot状態に戻す
+			// 攻撃完了。元のRoot状態に戻す
 			behaviorRequest_ = Behavior::kRoot;
 			dashPhase_ = DashPhase::kUnknown; // 初期化
 			dashParameter_ = 0;
@@ -226,24 +247,23 @@ void Player::BehaviorDashUpdate() {
 		break;
 	}
 	}
-
 	// 衝突情報を初期化
 	CollisionMapInfo collisionMapInfo = {};
 	collisionMapInfo.move = velocity;
 	collisionMapInfo.isFloor = false;
 	collisionMapInfo.isWall = false;
+
 	// マップ衝突チェック
 	MapCollisionCheck(collisionMapInfo);
 	worldTransform_.translation_ += collisionMapInfo.move;
-	worldTransformAttack_.translation_ = worldTransform_.translation_;
-	worldTransformAttack_.rotation_ = worldTransform_.rotation_;
-
-
 }
 
 void Player::BehaviorRootInitialize() {}
 
 void Player::BehaviorAttackInitialize() { attackParameter_ = 0; }
+
+void Player::BehaviorDashInitialize() {dashParameter_ = 0;}
+
 
 bool Player::isAttack() const {
 

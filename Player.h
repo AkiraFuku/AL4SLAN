@@ -104,6 +104,7 @@ enum Corner {
 	//
 	void BehaviorRootInitialize();
 	void BehaviorAttackInitialize();
+	void BehaviorDashInitialize();
 
 	// 行動状態の設定
 	bool isAttack()const;
