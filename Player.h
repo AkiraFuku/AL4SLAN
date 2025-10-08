@@ -174,5 +174,9 @@ private:
 
 	uint32_t DeathSEHandle_;
 
+	// ジャンプ回数
+	uint32_t jumpCount_ = 0;
+	// ジャンプ回数制限
+	static inline const uint32_t kLimitJumpCount = 2;
 	
 };

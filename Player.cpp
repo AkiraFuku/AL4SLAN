@@ -464,6 +464,9 @@ void Player::inputMove() {
 	float lx = (float)state_.Gamepad.sThumbLX;
 
 	if (onGround_) {
+		jumpCount_=0;
+
+
 		bool keyRight = Input::GetInstance()->PushKey(DIK_RIGHT);
 		bool keyLeft = Input::GetInstance()->PushKey(DIK_LEFT);
 		bool stick = fabs(lx) > deadZone;
@@ -522,17 +525,18 @@ void Player::inputMove() {
 		if (std::abs(velocity_.x) <= 0.0001f) {
 			velocity_.x = 0.0f;
 		}
-		if (Input::GetInstance()->PushKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
-
-			velocity_ = Add(velocity_, Vector3(0, kJumpAcceleration / 60.0f, 0));
-
-			Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
-		}
+		
 	} else {
 		// 落下速度
 		velocity_ = Add(velocity_, Vector3(0, -kGravityAcceleration / 60.0f, 0));
 		// 落下速度制限
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+	}
+	if ((Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_A))&&jumpCount_<kLimitJumpCount) {
+			jumpCount_++;
+			velocity_ = Add(velocity_, Vector3(0, kJumpAcceleration / 60.0f, 0));
+
+			Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
 	}
 }
 
@@ -603,6 +607,8 @@ void Player::UpdatOnGround(const CollisionMapInfo& info) {
 			velocity_.x *= (1.0f - kAttenuationLanding);
 			// y方向の速度をリセット
 			velocity_.y = 0.0f;
+
+			
 		}
 	}
 }
