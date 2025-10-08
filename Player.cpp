@@ -345,6 +345,8 @@ void Player::CheckMapCollisionDown(CollisionMapInfo& info) {
 	}
 
 	MapChipType mapChipType;
+	MapChipType mapChipTypeNext;
+
 	// 下方向の当たり判定
 	bool hit = false;
 	// 左下の当たり判定
@@ -358,7 +360,8 @@ void Player::CheckMapCollisionDown(CollisionMapInfo& info) {
 	// 右下の当たり判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(PositionNew[kRightBottom]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == MapChipType::kBlock) {
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex-1);
+	if (mapChipType == MapChipType::kBlock&& mapChipTypeNext!=MapChipType::kBlock) {
 		hit = true;
 	}
 	// 当たっていたら
@@ -384,6 +387,7 @@ void Player::CheckMapCollisionRight(CollisionMapInfo& info) {
 		positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
 	}
 	MapChipType mapChipType;
+	MapChipType mapChipTypeNext;
 	// 右側の当たり判定
 	bool hit = false;
 	// 右上の判定
@@ -396,7 +400,8 @@ void Player::CheckMapCollisionRight(CollisionMapInfo& info) {
 	// 右下の判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == MapChipType::kBlock) {
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex-1);
+	if (mapChipType == MapChipType::kBlock&&mapChipTypeNext!=MapChipType::kBlock) {
 		hit = true;
 	}
 	// ブロックにヒット
@@ -462,14 +467,19 @@ void Player::CheckMapCollisionLeft(CollisionMapInfo& info) {
 void Player::inputMove() {
 	const float deadZone = 8000; // デッドゾーン（無反応領域）
 	float lx = (float)state_.Gamepad.sThumbLX;
-
-	if (onGround_) {
-		jumpCount_=0;
-
-
-		bool keyRight = Input::GetInstance()->PushKey(DIK_RIGHT);
+bool keyRight = Input::GetInstance()->PushKey(DIK_RIGHT);
 		bool keyLeft = Input::GetInstance()->PushKey(DIK_LEFT);
 		bool stick = fabs(lx) > deadZone;
+	if (onGround_) {
+		jumpCount_=0;
+	} else {
+		// 落下速度
+		velocity_ = Add(velocity_, Vector3(0, -kGravityAcceleration / 60.0f, 0));
+		// 落下速度制限
+		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+	}
+
+		
 
 		// キー入力
 		if (keyRight || keyLeft || stick) {
@@ -522,16 +532,12 @@ void Player::inputMove() {
 
 			velocity_.x *= (1.0f - kAttenution);
 		}
+		// 
 		if (std::abs(velocity_.x) <= 0.0001f) {
 			velocity_.x = 0.0f;
 		}
 		
-	} else {
-		// 落下速度
-		velocity_ = Add(velocity_, Vector3(0, -kGravityAcceleration / 60.0f, 0));
-		// 落下速度制限
-		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
-	}
+	
 	if ((Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_A))&&jumpCount_<kLimitJumpCount) {
 			jumpCount_++;
 			velocity_ = Add(velocity_, Vector3(0, kJumpAcceleration / 60.0f, 0));
