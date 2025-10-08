@@ -262,7 +262,11 @@ void Player::BehaviorRootInitialize() {}
 
 void Player::BehaviorAttackInitialize() { attackParameter_ = 0; }
 
-void Player::BehaviorDashInitialize() {dashParameter_ = 0;}
+void Player::BehaviorDashInitialize() { dashParameter_ = 0; }
+
+void Player::WallKick() {
+
+}
 
 
 bool Player::isAttack() const {
@@ -621,9 +625,15 @@ void Player::UpdatOnGround(const CollisionMapInfo& info) {
 
 void Player::HitWall(const CollisionMapInfo& info) {
 
-	if (info.isWall) {
-		velocity_.x *= (1.0f - kAttenuationWall);
+	if (tachWall_) {
+	}else{
+		if (info.isWall) {
+			velocity_.x *= (1.0f - kAttenuationWall);
+			tachWall_ = true;
+		}
 	}
+
+	
 }
 
 Vector3 Player::GetWorldPosition() {

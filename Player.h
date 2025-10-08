@@ -106,6 +106,9 @@ enum Corner {
 	void BehaviorAttackInitialize();
 	void BehaviorDashInitialize();
 
+	//壁蹴り
+	void WallKick();
+
 	// 行動状態の設定
 	bool isAttack()const;
 
@@ -125,7 +128,11 @@ private:
 	float turnTimer_ = 0.0f;
 	// 旋回時間<秒>
 	static inline const float kTimeTurn =0.3f;
+	// 接地フラグ
 	bool onGround_=true;
+	// 壁接触フラグ
+	bool tachWall_ = false;
+
 	//重力加速度
 	static inline const float kGravityAcceleration=0.98f;
 	//落下速度制限
