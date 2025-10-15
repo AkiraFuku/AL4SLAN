@@ -188,4 +188,7 @@ private:
 
 	static inline const float kAttenuationGround = 0.2f; ///< 地面にいるときの減速	
 	
+	//壁に触れている時の落下速度
+
+	static inline const float kWallSlideSpeed = 0.03f;
 };

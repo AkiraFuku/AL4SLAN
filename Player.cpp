@@ -473,12 +473,13 @@ void Player::inputMove() {
 		jumpCount_ = 0;
 	} else {
 		// 落下速度
-		// 壁に触れていないとき
-		if (!tachWall_){
+	
 		velocity_ = Add(velocity_, Vector3(0, -kGravityAcceleration / 60.0f, 0));
-		} else {
-			velocity_ = Add(velocity_, Vector3(0, (-kGravityAcceleration / 60.0f) / 2.0f, 0));
+		if (tachWall_) {
+			// 壁に触れているときは落下速度を抑える
+			velocity_.y =  std::max(velocity_.y, -kWallSlideSpeed);
 		}
+
 		// 落下速度制限
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
@@ -545,9 +546,9 @@ void Player::inputMove() {
     if (tachWall_) {
         // 反対方向に弾くような壁ジャンプ
         if (lrDirection_ == LRDirection::kRight) {
-            velocity_ = { -kJumpAcceleration / 120.0f, kJumpAcceleration / 60.0f, 0 };
+            velocity_ = { -kJumpAcceleration / 90.0f, kJumpAcceleration / 60.0f, 0 };
         } else {
-            velocity_ = { +kJumpAcceleration / 120.0f, kJumpAcceleration / 60.0f, 0 };
+            velocity_ = { +kJumpAcceleration / 90.0f, kJumpAcceleration / 60.0f, 0 };
         }
 
         // 壁ジャンプ時はジャンプ回数をリセット（空中ジャンプにも戻せる）
