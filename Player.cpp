@@ -53,11 +53,9 @@ void Player::Update() {
 			BehaviorAttackInitialize();
 			break;
 		case Player::Behavior::kDash:
-			 BehaviorDashInitialize();
+			BehaviorDashInitialize();
 			break;
-
 		}
-
 
 		// 挙動リクエストを初期化
 		behaviorRequest_ = Behavior::kUnknown;
@@ -105,7 +103,7 @@ void Player::BehaviorRootUpdate() {
 		// 旋回角度
 
 		float destinationRotationYTable[] = {std::numbers::pi_v<float> / 2.0f, std::numbers::pi_v<float> * 3.0f / 2.0f};
-		
+
 		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
 
 		worldTransform_.rotation_.y = EaseInOut(destinationRotationY, turnFirstRotationY_, turnTimer_ / kTimeTurn);
@@ -113,15 +111,14 @@ void Player::BehaviorRootUpdate() {
 	// 攻撃に切り替え
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_X)) {
 
-		//behaviorRequest_ = Behavior::kDash;
+		// behaviorRequest_ = Behavior::kDash;
 		behaviorRequest_ = Behavior::kAttack;
 	}
-	if (Input::GetInstance()->TriggerKey(DIK_X) ) {
+	if (Input::GetInstance()->TriggerKey(DIK_X)) {
 
 		behaviorRequest_ = Behavior::kDash;
-		//behaviorRequest_ = Behavior::kAttack;
+		// behaviorRequest_ = Behavior::kAttack;
 	}
-
 }
 
 void Player::BehaviorAttackUpdate() {
@@ -193,7 +190,7 @@ void Player::BehaviorAttackUpdate() {
 	worldTransformAttack_.rotation_ = worldTransform_.rotation_;
 }
 void Player::BehaviorDashUpdate() {
-const Vector3 dashVelocity = {0.4f, 0.0f, 0.0f};
+	const Vector3 dashVelocity = {0.4f, 0.0f, 0.0f};
 	velocity_ = {0.0f, 0.0f, 0.0f}; // 攻撃時は移動しない
 	Vector3 velocity = {};
 	dashParameter_++;
@@ -203,8 +200,8 @@ const Vector3 dashVelocity = {0.4f, 0.0f, 0.0f};
 
 		// 攻撃チャージ中
 		float t = static_cast<float>(dashParameter_) / kDashChageTime; // 1秒間のチャージ
-		worldTransform_.scale_.z = EaseOut(1.0f, 0.3f, t);           // z軸方向に拡大
-		worldTransform_.scale_.y = EaseOut(1.0f, 1.6f, t);           // y軸方向に拡大
+		worldTransform_.scale_.z = EaseOut(1.0f, 0.3f, t);             // z軸方向に拡大
+		worldTransform_.scale_.y = EaseOut(1.0f, 1.6f, t);             // y軸方向に拡大
 
 		if (dashParameter_ >= kDashChageTime) {
 			dashPhase_ = DashPhase::kDash;
@@ -229,7 +226,7 @@ const Vector3 dashVelocity = {0.4f, 0.0f, 0.0f};
 		}
 
 		// 攻撃SE再生
-		
+
 		break;
 	}
 
@@ -264,10 +261,7 @@ void Player::BehaviorAttackInitialize() { attackParameter_ = 0; }
 
 void Player::BehaviorDashInitialize() { dashParameter_ = 0; }
 
-void Player::WallKick() {
-
-}
-
+void Player::WallKick() {}
 
 bool Player::isAttack() const {
 
@@ -364,8 +358,8 @@ void Player::CheckMapCollisionDown(CollisionMapInfo& info) {
 	// 右下の当たり判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(PositionNew[kRightBottom]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex-1);
-	if (mapChipType == MapChipType::kBlock&& mapChipTypeNext!=MapChipType::kBlock) {
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
+	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
 	}
 	// 当たっていたら
@@ -404,8 +398,8 @@ void Player::CheckMapCollisionRight(CollisionMapInfo& info) {
 	// 右下の判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex-1);
-	if (mapChipType == MapChipType::kBlock&&mapChipTypeNext!=MapChipType::kBlock) {
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
+	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
 	}
 	// ブロックにヒット
@@ -471,11 +465,11 @@ void Player::CheckMapCollisionLeft(CollisionMapInfo& info) {
 void Player::inputMove() {
 	const float deadZone = 8000; // デッドゾーン（無反応領域）
 	float lx = (float)state_.Gamepad.sThumbLX;
-bool keyRight = Input::GetInstance()->PushKey(DIK_RIGHT);
-		bool keyLeft = Input::GetInstance()->PushKey(DIK_LEFT);
-		bool stick = fabs(lx) > deadZone;
+	bool keyRight = Input::GetInstance()->PushKey(DIK_RIGHT);
+	bool keyLeft = Input::GetInstance()->PushKey(DIK_LEFT);
+	bool stick = fabs(lx) > deadZone;
 	if (onGround_) {
-		jumpCount_=0;
+		jumpCount_ = 0;
 	} else {
 		// 落下速度
 		velocity_ = Add(velocity_, Vector3(0, -kGravityAcceleration / 60.0f, 0));
@@ -483,70 +477,76 @@ bool keyRight = Input::GetInstance()->PushKey(DIK_RIGHT);
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
 
-		
-
-		// キー入力
-		if (keyRight || keyLeft || stick) {
-			Vector3 acceleration = {};
-			if (keyRight) {
-				// 右キーが押されている
-				if (velocity_.x < 0.0f) {
-					velocity_.x *= (1.0f - kAttenution);
-					// 旋回時の角度
-					turnFirstRotationY_ = worldTransform_.rotation_.y;
-					// 旋回タイマー初期化
-					turnTimer_ = kTimeTurn;
-				}
-				acceleration.x += kAcceleration;
-				if (lrDirection_ != LRDirection::kRight) {
-					lrDirection_ = LRDirection::kRight;
-				}
-			} else if (keyLeft) {
-				// 左キーが押されている
-				if (velocity_.x > 0.0f) {
-					velocity_.x *= (1.0f - kAttenution);
-				}
-				acceleration.x -= kAcceleration;
-				if (lrDirection_ != LRDirection::kLeft) {
-					lrDirection_ = LRDirection::kLeft;
-					// 旋回時の角度
-					turnFirstRotationY_ = worldTransform_.rotation_.y;
-					// 旋回タイマー初期化
-					turnTimer_ = kTimeTurn;
-				}
-			} else if (stick) {
-				acceleration.x += (lx / 32767.0f) * kAcceleration;
-
-				if (lx > 0 && lrDirection_ != LRDirection::kRight) {
-					lrDirection_ = LRDirection::kRight;
-					turnFirstRotationY_ = worldTransform_.rotation_.y;
-					turnTimer_ = kTimeTurn;
-				} else if (lx < 0 && lrDirection_ != LRDirection::kLeft) {
-					lrDirection_ = LRDirection::kLeft;
-					turnFirstRotationY_ = worldTransform_.rotation_.y;
-					turnTimer_ = kTimeTurn;
-				}
+	// キー入力
+	if (keyRight || keyLeft || stick) {
+		Vector3 acceleration = {};
+		if (keyRight) {
+			// 右キーが押されている
+			if (velocity_.x < 0.0f) {
+				velocity_.x *= (1.0f - kAttenution);
+				// 旋回時の角度
+				turnFirstRotationY_ = worldTransform_.rotation_.y;
+				// 旋回タイマー初期化
+				turnTimer_ = kTimeTurn;
 			}
+			acceleration.x += kAcceleration;
+			if (lrDirection_ != LRDirection::kRight) {
+				lrDirection_ = LRDirection::kRight;
+			}
+		} else if (keyLeft) {
+			// 左キーが押されている
+			if (velocity_.x > 0.0f) {
+				velocity_.x *= (1.0f - kAttenution);
+			}
+			acceleration.x -= kAcceleration;
+			if (lrDirection_ != LRDirection::kLeft) {
+				lrDirection_ = LRDirection::kLeft;
+				// 旋回時の角度
+				turnFirstRotationY_ = worldTransform_.rotation_.y;
+				// 旋回タイマー初期化
+				turnTimer_ = kTimeTurn;
+			}
+		} else if (stick) {
+			acceleration.x += (lx / 32767.0f) * kAcceleration;
 
-			velocity_ = Add(velocity_, acceleration);
-			// 最大速度
-			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
-		} else {
-			// 減速
+			if (lx > 0 && lrDirection_ != LRDirection::kRight) {
+				lrDirection_ = LRDirection::kRight;
+				turnFirstRotationY_ = worldTransform_.rotation_.y;
+				turnTimer_ = kTimeTurn;
+			} else if (lx < 0 && lrDirection_ != LRDirection::kLeft) {
+				lrDirection_ = LRDirection::kLeft;
+				turnFirstRotationY_ = worldTransform_.rotation_.y;
+				turnTimer_ = kTimeTurn;
+			}
+		}
 
-			velocity_.x *= (1.0f - kAttenution);
-		}
-		// 
-		if (std::abs(velocity_.x) <= 0.0001f) {
-			velocity_.x = 0.0f;
-		}
-		
-	
-	if ((Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_A))&&jumpCount_<kLimitJumpCount) {
+		velocity_ = Add(velocity_, acceleration);
+		// 最大速度
+		velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
+	} else {
+		// 減速
+
+		velocity_.x *= (1.0f - kAttenution);
+	}
+	//
+	if (std::abs(velocity_.x) <= 0.0001f) {
+		velocity_.x = 0.0f;
+	}
+
+	if ((Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) ) {
+		if (!tachWall_&& jumpCount_ < kLimitJumpCount) {
 			jumpCount_++;
 			velocity_ = Add(velocity_, Vector3(0, kJumpAcceleration / 60.0f, 0));
+		} else {
 
-			Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
+
+		}
+
+
+
+	
+
+		Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
 	}
 }
 
@@ -580,7 +580,7 @@ void Player::UpdatOnGround(const CollisionMapInfo& info) {
 		} else {
 			// 落下判定
 			std::array<Vector3, kNumCorner> positionsNew;
-
+			// 移動後の各頂点座標を計算
 			for (uint32_t i = 0; i < positionsNew.size(); ++i) {
 				positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
 			}
@@ -609,16 +609,17 @@ void Player::UpdatOnGround(const CollisionMapInfo& info) {
 
 	} else {
 
-		// // 着地している場合
-		if (info.isFloor) {
-			//
-			onGround_ = true;
-			// ｘ方向の速度を減衰
-			velocity_.x *= (1.0f - kAttenuationLanding);
-			// y方向の速度をリセット
-			velocity_.y = 0.0f;
-
-			
+		// 壁に接触している場合
+		if (info.isWall) {
+			if (!tachWall_) {
+				// 壁に新しく当たった瞬間（1回だけ実行）
+				velocity_.x *= (1.0f - kAttenuationWall);
+				// 壁フラグをON
+				tachWall_ = true;
+			}
+		} else {
+			// 壁から離れた
+			tachWall_ = false;
 		}
 	}
 }
@@ -626,14 +627,16 @@ void Player::UpdatOnGround(const CollisionMapInfo& info) {
 void Player::HitWall(const CollisionMapInfo& info) {
 
 	if (tachWall_) {
-	}else{
+		if (!info.isWall) {
+			// 壁から離れた
+			tachWall_ = false;
+		}
+	} else {
 		if (info.isWall) {
 			velocity_.x *= (1.0f - kAttenuationWall);
 			tachWall_ = true;
 		}
 	}
-
-	
 }
 
 Vector3 Player::GetWorldPosition() {
