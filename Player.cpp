@@ -124,8 +124,10 @@ void Player::BehaviorRootUpdate() {
 
 void Player::BehaviorAttackUpdate() {
 	const Vector3 attackVelocity = {0.4f, 0.0f, 0.0f};
-	velocity_ = {0.0f, 0.0f, 0.0f}; // 攻撃時は移動しない
-	Vector3 velocity = {};
+	//velocity_ = {0.0f, 0.0f, 0.0f}; // 攻撃時は移動しない
+	//Vector3 velocity = {};
+	inputMove();
+
 	attackParameter_++;
 	switch (attackPhase_) {
 	case Player::AttackPhase::kCharge:
@@ -177,15 +179,13 @@ void Player::BehaviorAttackUpdate() {
 		break;
 	}
 	}
-	// 衝突情報を初期化
-	CollisionMapInfo collisionMapInfo = {};
-	collisionMapInfo.move = velocity;
-	collisionMapInfo.isFloor = false;
-	collisionMapInfo.isWall = false;
-
-	// マップ衝突チェック
-	MapCollisionCheck(collisionMapInfo);
-	worldTransform_.translation_ += collisionMapInfo.move;
+	 CollisionMapInfo collisionMapInfo = {};
+    collisionMapInfo.move = velocity_;
+    MapCollisionCheck(collisionMapInfo);
+    ResultCollisionMapInfo(collisionMapInfo);
+    hitCeiling(collisionMapInfo);
+    HitWall(collisionMapInfo);
+    UpdatOnGround(collisionMapInfo);
 
 
 	
