@@ -114,18 +114,35 @@ void Player::BehaviorRootUpdate() {
 
 		// behaviorRequest_ = Behavior::kDash;
 		behaviorRequest_ = Behavior::kAttack;
+		// 攻撃やジャンプなどのアクション入力が入った場合は旋回を即完了させる
+		turnTimer_ = 0.0f;
+
+		// lrDirection_の方向に即座に回転を合わせる
+		if (lrDirection_ == LRDirection::kRight) {
+			worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
+		} else {
+			worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
+		}
 	}
 	if (Input::GetInstance()->TriggerKey(DIK_X)) {
 
 		behaviorRequest_ = Behavior::kDash;
-		// behaviorRequest_ = Behavior::kAttack;
+		// 攻撃やジャンプなどのアクション入力が入った場合は旋回を即完了させる
+		turnTimer_ = 0.0f;
+
+		// lrDirection_の方向に即座に回転を合わせる
+		if (lrDirection_ == LRDirection::kRight) {
+			worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
+		} else {
+			worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
+		}
 	}
 }
 
 void Player::BehaviorAttackUpdate() {
 	const Vector3 attackVelocity = {0.4f, 0.0f, 0.0f};
-	//velocity_ = {0.0f, 0.0f, 0.0f}; // 攻撃時は移動しない
-	//Vector3 velocity = {};
+	// velocity_ = {0.0f, 0.0f, 0.0f}; // 攻撃時は移動しない
+	// Vector3 velocity = {};
 	inputMove();
 
 	attackParameter_++;
@@ -134,9 +151,9 @@ void Player::BehaviorAttackUpdate() {
 	default: {
 
 		// 攻撃チャージ中
-		//float t = static_cast<float>(attackParameter_) / kChageTime; // 1秒間のチャージ
-		//worldTransform_.scale_.z = EaseOut(1.0f, 0.3f, t);           // z軸方向に拡大
-		//worldTransform_.scale_.y = EaseOut(1.0f, 1.6f, t);           // y軸方向に拡大
+		// float t = static_cast<float>(attackParameter_) / kChageTime; // 1秒間のチャージ
+		// worldTransform_.scale_.z = EaseOut(1.0f, 0.3f, t);           // z軸方向に拡大
+		// worldTransform_.scale_.y = EaseOut(1.0f, 1.6f, t);           // y軸方向に拡大
 
 		if (attackParameter_ >= kChageTime) {
 			attackPhase_ = AttackPhase::kAttack;
@@ -146,15 +163,15 @@ void Player::BehaviorAttackUpdate() {
 	}
 	case Player::AttackPhase::kAttack: {
 
-	/*	if (lrDirection_ == LRDirection::kRight) {
+		/*	if (lrDirection_ == LRDirection::kRight) {
 
-			velocity = attackVelocity;
-		} else if (lrDirection_ == LRDirection::kLeft) {
-			velocity = attackVelocity * -1.0f;
-		}*/
-		//float t = static_cast<float>(attackParameter_) / kAttackTime; // 1秒間の攻撃
-		//worldTransform_.scale_.z = EaseOut(0.3f, 1.3f, t);
-		//worldTransform_.scale_.y = EaseIn(1.6f, 0.7f, t);
+		        velocity = attackVelocity;
+		    } else if (lrDirection_ == LRDirection::kLeft) {
+		        velocity = attackVelocity * -1.0f;
+		    }*/
+		// float t = static_cast<float>(attackParameter_) / kAttackTime; // 1秒間の攻撃
+		// worldTransform_.scale_.z = EaseOut(0.3f, 1.3f, t);
+		// worldTransform_.scale_.y = EaseIn(1.6f, 0.7f, t);
 		if (attackParameter_ >= kAttackTime) {
 			attackPhase_ = AttackPhase::kAfter;
 			attackParameter_ = 0;
@@ -167,9 +184,9 @@ void Player::BehaviorAttackUpdate() {
 
 	case Player::AttackPhase::kAfter: {
 
-		//float t = static_cast<float>(attackParameter_) / kAfterTime; // 1秒間の攻撃後
-		//worldTransform_.scale_.z = EaseOut(1.3f, 1.0f, t);
-		//worldTransform_.scale_.y = EaseOut(0.7f, 1.0f, t);
+		// float t = static_cast<float>(attackParameter_) / kAfterTime; // 1秒間の攻撃後
+		// worldTransform_.scale_.z = EaseOut(1.3f, 1.0f, t);
+		// worldTransform_.scale_.y = EaseOut(0.7f, 1.0f, t);
 		if (attackParameter_ >= kAfterTime) {
 			// 攻撃完了。元のRoot状態に戻す
 			behaviorRequest_ = Behavior::kRoot;
@@ -179,20 +196,18 @@ void Player::BehaviorAttackUpdate() {
 		break;
 	}
 	}
-	 CollisionMapInfo collisionMapInfo = {};
-    collisionMapInfo.move = velocity_;
-    MapCollisionCheck(collisionMapInfo);
-    ResultCollisionMapInfo(collisionMapInfo);
-    hitCeiling(collisionMapInfo);
-    HitWall(collisionMapInfo);
-    UpdatOnGround(collisionMapInfo);
+	CollisionMapInfo collisionMapInfo = {};
+	collisionMapInfo.move = velocity_;
+	MapCollisionCheck(collisionMapInfo);
+	ResultCollisionMapInfo(collisionMapInfo);
+	hitCeiling(collisionMapInfo);
+	HitWall(collisionMapInfo);
+	UpdatOnGround(collisionMapInfo);
 
-
-	
 	// 攻撃用ワールドトランスフォームをプレイヤーのしんこう方向前方に設定
 	// 攻撃用ワールドトランスフォームをプレイヤーの進行方向前方に設定
 	const float attackOffset = (kWidth + kAttackWidth) / 2.0f;
-	
+
 	if (lrDirection_ == LRDirection::kRight) {
 		worldTransformAttack_.translation_ = worldTransform_.translation_ + Vector3{attackOffset, 0.0f, 0.0f};
 	} else if (lrDirection_ == LRDirection::kLeft) {
@@ -200,12 +215,11 @@ void Player::BehaviorAttackUpdate() {
 	}
 	worldTransformAttack_.rotation_ = worldTransform_.rotation_;
 	worldTransformAttack_.scale_ = {1.0f, 1.0f, 1.0f};
-
 }
 void Player::BehaviorDashUpdate() {
 	const Vector3 dashVelocity = {0.4f, 0.0f, 0.0f};
-	velocity_ = {0.0f, 0.0f, 0.0f}; // 攻撃時は移動しない
-	Vector3 velocity = {};
+	// velocity_ = {0.0f, 0.0f, 0.0f}; // 攻撃時は移動しない
+	//Vector3 velocity = {};
 	dashParameter_++;
 	switch (dashPhase_) {
 	case Player::DashPhase::kCharge:
@@ -226,9 +240,10 @@ void Player::BehaviorDashUpdate() {
 
 		if (lrDirection_ == LRDirection::kRight) {
 
-			velocity = dashVelocity;
+		
+			velocity_ = dashVelocity; // ダッシュ中は速度を一定に保つ
 		} else if (lrDirection_ == LRDirection::kLeft) {
-			velocity = dashVelocity * -1.0f;
+			velocity_ = dashVelocity * -1.0f;
 		}
 		float t = static_cast<float>(dashParameter_) / kDashAttackTime; // 1秒間の攻撃
 		worldTransform_.scale_.z = EaseOut(0.3f, 1.3f, t);
@@ -237,7 +252,23 @@ void Player::BehaviorDashUpdate() {
 			dashPhase_ = DashPhase::kAfter;
 			dashParameter_ = 0;
 		}
+		if (Input::GetInstance()->PushKey(DIK_LEFT) || Input::GetInstance()->PushKey(DIK_RIGHT)) {
 
+			inputMove();
+			// ダッシュ中に移動入力が入ったらダッシュをキャンセルして通常移動に戻る
+			worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
+
+			// 攻撃完了。元のRoot状態に戻す
+			behaviorRequest_ = Behavior::kRoot;
+			dashPhase_ = DashPhase::kUnknown; // 初期化
+			dashParameter_ = 0;
+			// ダッシュの慣性を引き継ぐ
+			if (lrDirection_ == LRDirection::kRight) {
+				velocity_.x = +kLimitRunSpeed * 0.8f; // 通常移動の上限速度の80%でスタート
+			} else {
+				velocity_.x = -kLimitRunSpeed * 0.8f;
+			}
+		}
 		// 攻撃SE再生
 
 		break;
@@ -245,6 +276,7 @@ void Player::BehaviorDashUpdate() {
 
 	case Player::DashPhase::kAfter: {
 
+		velocity_.x *= 0.95f;
 		float t = static_cast<float>(dashParameter_) / kDashAfterTime; // 1秒間の攻撃後
 		worldTransform_.scale_.z = EaseOut(1.3f, 1.0f, t);
 		worldTransform_.scale_.y = EaseOut(0.7f, 1.0f, t);
@@ -253,13 +285,20 @@ void Player::BehaviorDashUpdate() {
 			behaviorRequest_ = Behavior::kRoot;
 			dashPhase_ = DashPhase::kUnknown; // 初期化
 			dashParameter_ = 0;
+			// ダッシュの慣性を引き継ぐ
+			if (lrDirection_ == LRDirection::kRight) {
+				velocity_.x = +kLimitRunSpeed * 0.8f; // 通常移動の上限速度の80%でスタート
+			} else {
+				velocity_.x = -kLimitRunSpeed * 0.8f;
+			}
 		}
 		break;
 	}
 	}
 	// 衝突情報を初期化
 	CollisionMapInfo collisionMapInfo = {};
-	collisionMapInfo.move = velocity;
+	collisionMapInfo.move =  velocity_;
+	
 	collisionMapInfo.isFloor = false;
 	collisionMapInfo.isWall = false;
 
@@ -485,11 +524,11 @@ void Player::inputMove() {
 		jumpCount_ = 0;
 	} else {
 		// 落下速度
-	
+
 		velocity_ = Add(velocity_, Vector3(0, -kGravityAcceleration / 60.0f, 0));
 		if (tachWall_) {
 			// 壁に触れているときは落下速度を抑える
-			velocity_.y =  std::max(velocity_.y, -kWallSlideSpeed);
+			velocity_.y = std::max(velocity_.y, -kWallSlideSpeed);
 		}
 
 		// 落下速度制限
@@ -499,6 +538,7 @@ void Player::inputMove() {
 	// キー入力
 	if (keyRight || keyLeft || stick) {
 		Vector3 acceleration = {};
+
 		if (keyRight) {
 			// 右キーが押されている
 			if (velocity_.x < 0.0f) {
@@ -509,7 +549,8 @@ void Player::inputMove() {
 				turnTimer_ = kTimeTurn;
 			}
 			acceleration.x += kAcceleration;
-			if (lrDirection_ != LRDirection::kRight) {
+			if (!isAttack() && lrDirection_ != LRDirection::kRight) {
+				// 攻撃している時は向きを変えない
 				lrDirection_ = LRDirection::kRight;
 			}
 		} else if (keyLeft) {
@@ -518,7 +559,7 @@ void Player::inputMove() {
 				velocity_.x *= (1.0f - kAttenution);
 			}
 			acceleration.x -= kAcceleration;
-			if (lrDirection_ != LRDirection::kLeft) {
+			if (!isAttack() && lrDirection_ != LRDirection::kLeft) {
 				lrDirection_ = LRDirection::kLeft;
 				// 旋回時の角度
 				turnFirstRotationY_ = worldTransform_.rotation_.y;
@@ -529,11 +570,16 @@ void Player::inputMove() {
 			acceleration.x += (lx / 32767.0f) * kAcceleration;
 
 			if (lx > 0 && lrDirection_ != LRDirection::kRight) {
-				lrDirection_ = LRDirection::kRight;
+				if (!isAttack()) {
+					lrDirection_ = LRDirection::kRight;
+				}
+
 				turnFirstRotationY_ = worldTransform_.rotation_.y;
 				turnTimer_ = kTimeTurn;
 			} else if (lx < 0 && lrDirection_ != LRDirection::kLeft) {
-				lrDirection_ = LRDirection::kLeft;
+				if (!isAttack()) {
+					lrDirection_ = LRDirection::kLeft;
+				}
 				turnFirstRotationY_ = worldTransform_.rotation_.y;
 				turnTimer_ = kTimeTurn;
 			}
@@ -552,25 +598,25 @@ void Player::inputMove() {
 		velocity_.x = 0.0f;
 	}
 
-	if ((Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) ) {
-		
+	if ((Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_A))) {
+
 		// 壁に触れているとき → 制限なしで壁ジャンプ可能
-    if (tachWall_) {
-        // 反対方向に弾くような壁ジャンプ
-        if (lrDirection_ == LRDirection::kRight) {
-            velocity_ = { -kJumpAcceleration / 90.0f, kJumpAcceleration / 60.0f, 0 };
-        } else {
-            velocity_ = { +kJumpAcceleration / 90.0f, kJumpAcceleration / 60.0f, 0 };
-        }
+		if (tachWall_) {
+			// 反対方向に弾くような壁ジャンプ
+			if (lrDirection_ == LRDirection::kRight) {
+				velocity_ = {-kJumpAcceleration / 90.0f, kJumpAcceleration / 60.0f, 0};
+			} else {
+				velocity_ = {+kJumpAcceleration / 90.0f, kJumpAcceleration / 60.0f, 0};
+			}
 
-        // 壁ジャンプ時はジャンプ回数をリセット（空中ジャンプにも戻せる）
-        jumpCount_ = 0;
+			// 壁ジャンプ時はジャンプ回数をリセット（空中ジャンプにも戻せる）
+			jumpCount_ = 0;
 
-    } else if (jumpCount_ < kLimitJumpCount) {
-        // 通常ジャンプ（回数制限あり）
-        jumpCount_++;
-        velocity_ = Add(velocity_, Vector3(0, kJumpAcceleration / 60.0f, 0));
-    }
+		} else if (jumpCount_ < kLimitJumpCount) {
+			// 通常ジャンプ（回数制限あり）
+			jumpCount_++;
+			velocity_ = Add(velocity_, Vector3(0, kJumpAcceleration / 60.0f, 0));
+		}
 		Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
 	}
 }
@@ -634,17 +680,13 @@ void Player::UpdatOnGround(const CollisionMapInfo& info) {
 
 	} else {
 		// 地面に接触している場合
-		if(info.isFloor) {
+		if (info.isFloor) {
 			onGround_ = true;
 			// 着地時の速度を0にする
 			velocity_.y = 0.0f;
 
 			velocity_.x *= (1.0f - kAttenuationGround);
-			
 		}
-
-
-	
 	}
 }
 
@@ -673,7 +715,7 @@ Vector3 Player::GetWorldPosition() {
 	return worldPos;
 }
 
-Vector3 Player::GetAttackPosition() { 
+Vector3 Player::GetAttackPosition() {
 	Vector3 worldPos;
 	worldPos.x = worldTransformAttack_.translation_.x;
 	worldPos.y = worldTransformAttack_.translation_.y;
@@ -681,14 +723,12 @@ Vector3 Player::GetAttackPosition() {
 	return worldPos;
 }
 
-AABB Player::GetAttackAABB() { 
+AABB Player::GetAttackAABB() {
 	Vector3 worldPos = GetAttackPosition();
 	AABB aabb;
 	aabb.min = {worldPos.x - kAttackWidth / 2.0f, worldPos.y - kAttackHeight / 2.0f, worldPos.z - kAttackWidth / 2.0f};
 	aabb.max = {worldPos.x + kAttackWidth / 2.0f, worldPos.y + kAttackHeight / 2.0f, worldPos.z + kAttackWidth / 2.0f};
 	return aabb;
-	
-
 }
 
 AABB Player::GetAABB() {
