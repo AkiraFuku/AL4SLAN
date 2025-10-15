@@ -132,9 +132,9 @@ void Player::BehaviorAttackUpdate() {
 	default: {
 
 		// 攻撃チャージ中
-		float t = static_cast<float>(attackParameter_) / kChageTime; // 1秒間のチャージ
-		worldTransform_.scale_.z = EaseOut(1.0f, 0.3f, t);           // z軸方向に拡大
-		worldTransform_.scale_.y = EaseOut(1.0f, 1.6f, t);           // y軸方向に拡大
+		//float t = static_cast<float>(attackParameter_) / kChageTime; // 1秒間のチャージ
+		//worldTransform_.scale_.z = EaseOut(1.0f, 0.3f, t);           // z軸方向に拡大
+		//worldTransform_.scale_.y = EaseOut(1.0f, 1.6f, t);           // y軸方向に拡大
 
 		if (attackParameter_ >= kChageTime) {
 			attackPhase_ = AttackPhase::kAttack;
@@ -144,15 +144,15 @@ void Player::BehaviorAttackUpdate() {
 	}
 	case Player::AttackPhase::kAttack: {
 
-		if (lrDirection_ == LRDirection::kRight) {
+	/*	if (lrDirection_ == LRDirection::kRight) {
 
 			velocity = attackVelocity;
 		} else if (lrDirection_ == LRDirection::kLeft) {
 			velocity = attackVelocity * -1.0f;
-		}
-		float t = static_cast<float>(attackParameter_) / kAttackTime; // 1秒間の攻撃
-		worldTransform_.scale_.z = EaseOut(0.3f, 1.3f, t);
-		worldTransform_.scale_.y = EaseIn(1.6f, 0.7f, t);
+		}*/
+		//float t = static_cast<float>(attackParameter_) / kAttackTime; // 1秒間の攻撃
+		//worldTransform_.scale_.z = EaseOut(0.3f, 1.3f, t);
+		//worldTransform_.scale_.y = EaseIn(1.6f, 0.7f, t);
 		if (attackParameter_ >= kAttackTime) {
 			attackPhase_ = AttackPhase::kAfter;
 			attackParameter_ = 0;
@@ -165,9 +165,9 @@ void Player::BehaviorAttackUpdate() {
 
 	case Player::AttackPhase::kAfter: {
 
-		float t = static_cast<float>(attackParameter_) / kAfterTime; // 1秒間の攻撃後
-		worldTransform_.scale_.z = EaseOut(1.3f, 1.0f, t);
-		worldTransform_.scale_.y = EaseOut(0.7f, 1.0f, t);
+		//float t = static_cast<float>(attackParameter_) / kAfterTime; // 1秒間の攻撃後
+		//worldTransform_.scale_.z = EaseOut(1.3f, 1.0f, t);
+		//worldTransform_.scale_.y = EaseOut(0.7f, 1.0f, t);
 		if (attackParameter_ >= kAfterTime) {
 			// 攻撃完了。元のRoot状態に戻す
 			behaviorRequest_ = Behavior::kRoot;
@@ -187,8 +187,20 @@ void Player::BehaviorAttackUpdate() {
 	MapCollisionCheck(collisionMapInfo);
 	worldTransform_.translation_ += collisionMapInfo.move;
 
-	worldTransformAttack_.translation_ = worldTransform_.translation_;
+
+	
+	// 攻撃用ワールドトランスフォームをプレイヤーのしんこう方向前方に設定
+	// 攻撃用ワールドトランスフォームをプレイヤーの進行方向前方に設定
+	const float attackOffset = (kWidth + kAttackWidth) / 2.0f;
+	
+	if (lrDirection_ == LRDirection::kRight) {
+		worldTransformAttack_.translation_ = worldTransform_.translation_ + Vector3{attackOffset, 0.0f, 0.0f};
+	} else if (lrDirection_ == LRDirection::kLeft) {
+		worldTransformAttack_.translation_ = worldTransform_.translation_ + Vector3{-attackOffset, 0.0f, 0.0f};
+	}
 	worldTransformAttack_.rotation_ = worldTransform_.rotation_;
+	worldTransformAttack_.scale_ = {1.0f, 1.0f, 1.0f};
+
 }
 void Player::BehaviorDashUpdate() {
 	const Vector3 dashVelocity = {0.4f, 0.0f, 0.0f};
@@ -659,6 +671,24 @@ Vector3 Player::GetWorldPosition() {
 	worldPos.z = worldTransform_.translation_.z;
 
 	return worldPos;
+}
+
+Vector3 Player::GetAttackPosition() { 
+	Vector3 worldPos;
+	worldPos.x = worldTransformAttack_.translation_.x;
+	worldPos.y = worldTransformAttack_.translation_.y;
+	worldPos.z = worldTransformAttack_.translation_.z;
+	return worldPos;
+}
+
+AABB Player::GetAttackAABB() { 
+	Vector3 worldPos = GetAttackPosition();
+	AABB aabb;
+	aabb.min = {worldPos.x - kAttackWidth / 2.0f, worldPos.y - kAttackHeight / 2.0f, worldPos.z - kAttackWidth / 2.0f};
+	aabb.max = {worldPos.x + kAttackWidth / 2.0f, worldPos.y + kAttackHeight / 2.0f, worldPos.z + kAttackWidth / 2.0f};
+	return aabb;
+	
+
 }
 
 AABB Player::GetAABB() {

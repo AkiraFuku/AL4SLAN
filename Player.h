@@ -88,6 +88,9 @@ enum Corner {
 	void HitWall(const CollisionMapInfo& info);
 
 	Vector3 GetWorldPosition();
+	Vector3 GetAttackPosition();
+
+	AABB GetAttackAABB();
 
 	AABB GetAABB();
 	void OnCollision(const Enemy*enemy);
@@ -146,6 +149,10 @@ private:
 	static inline const float kAttenuationLanding = 0.2f; ///< 着地時の減速
 	static inline const float kGroundSearchHeight = 0.06f;
 	static inline const float kAttenuationWall = 0.2f;
+	/// 攻撃関連
+	static inline const float kAttackWidth = 1.2f; ///< 攻撃の幅
+	static inline const float kAttackHeight = 1.2f; ///< 攻撃の高さ
+
 	//死亡フラグ
 	 bool isDead_ = false;
 
@@ -191,4 +198,7 @@ private:
 	//壁に触れている時の落下速度
 
 	static inline const float kWallSlideSpeed = 0.03f;
+	//攻撃当たり判定のヒットボックス
+
+
 };

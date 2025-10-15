@@ -130,4 +130,23 @@ if (behavior_==Behavior::kDead) {
 	}
 }
 
+void Enemy::HitAttack(const Player* player) {
+	if (behavior_==Behavior::kDead) {
+	return;
+	}
+	
+		// 敵の振るまいをやられに変更
+		behaviorRequest_ = Behavior::kDead;
+
+		Vector3 effectPos=Division(Add(worldTransform_.translation_,player->GetWorldTransform().translation_),2.0f);
+		gameScene_->CreateHitEffect(effectPos);
+		
+
+		isCollisionDisabled_ = true; // 衝突を無効化
+
+		
+	
+
+}
+
 

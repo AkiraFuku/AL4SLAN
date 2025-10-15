@@ -47,6 +47,8 @@ public:
 	Vector3 GetWorldPosition();
 	AABB GetAABB();
 	void OnCollision(const Player* player);
+	// 　被弾判定
+	void HitAttack(const Player* player);
 
 	bool IsDead() const { return isDead_; } ///< 死亡フラグの取得
 
@@ -94,6 +96,7 @@ private:
 	MapChipField* mapChipField_ = nullptr; ///< マップチップフィールドへのポインタ
 
 	LRDirection lrDirection_ = LRDirection::kLeft; ///< キャラクターの向き
+	                                               
 	
 };
  

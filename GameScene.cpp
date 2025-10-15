@@ -142,6 +142,7 @@ void GameScene::CheckAllCollisions() {
 #pragma region
 	// 座標１,２
 	AABB aabb1, aabb2;
+	AABB attackAABB = player_->GetAttackAABB();
 	// 自キャラ
 	aabb1 = player_->GetAABB();
 	// 敵キャラ
@@ -155,7 +156,15 @@ void GameScene::CheckAllCollisions() {
 			
 			player_->OnCollision(enemy);
 			enemy->OnCollision(player_);
+
 		}
+		// 攻撃判定
+		if (IsCollision(attackAABB, aabb2)) {
+			enemy->HitAttack(player_);
+		}
+
+		
+
 	}
 	//ゴール
 	if (goal_) {
@@ -185,7 +194,7 @@ void GameScene::Initialize() {
 
 	// 自キャラ生成
 	player_ = new Player();
-	AttackModel_ = Model::CreateFromOBJ("attack_effect", true);
+	AttackModel_ = Model::CreateFromOBJ("block", true);
 
 	// 自キャラの初期化
 	Vector3 playerPosition = PlayerStartPosition();
@@ -221,14 +230,7 @@ void GameScene::Initialize() {
 
 	GenerateEnemy();
 
-	//for (int32_t i = 0; i < 2; i++) {
-	//	Enemy* newEnemy = new Enemy();
-	//	Vector3 enemyPosition = mapchipField_->GetmapChipPositionIndex(14 + i * 2, 18);
-	//	newEnemy->Initialize(enemy_model_, &camera_, enemyPosition);
-
-	//	newEnemy->setGameScene(this);
-	//	enemies_.push_back(newEnemy);
-	//}
+	
 	// デスパーティクル
 	deathParticlesModel_ = Model::CreateFromOBJ("deathParticle");
 	// フェーズ
