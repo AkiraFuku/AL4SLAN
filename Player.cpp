@@ -92,6 +92,7 @@ void Player::BehaviorRootUpdate() {
 	ResultCollisionMapInfo(collisionMapInfo);
 	// 天井に当たった場合の処理
 	hitCeiling(collisionMapInfo);
+	// 壁に当たった場合の処理
 	HitWall(collisionMapInfo);
 	// 着地
 	UpdatOnGround(collisionMapInfo);
@@ -472,7 +473,12 @@ void Player::inputMove() {
 		jumpCount_ = 0;
 	} else {
 		// 落下速度
+		// 壁に触れていないとき
+		if (!tachWall_){
 		velocity_ = Add(velocity_, Vector3(0, -kGravityAcceleration / 60.0f, 0));
+		} else {
+			velocity_ = Add(velocity_, Vector3(0, (-kGravityAcceleration / 60.0f) / 2.0f, 0));
+		}
 		// 落下速度制限
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
@@ -534,18 +540,24 @@ void Player::inputMove() {
 	}
 
 	if ((Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) ) {
-		if (!tachWall_&& jumpCount_ < kLimitJumpCount) {
-			jumpCount_++;
-			velocity_ = Add(velocity_, Vector3(0, kJumpAcceleration / 60.0f, 0));
-		} else {
+		
+		// 壁に触れているとき → 制限なしで壁ジャンプ可能
+    if (tachWall_) {
+        // 反対方向に弾くような壁ジャンプ
+        if (lrDirection_ == LRDirection::kRight) {
+            velocity_ = { -kJumpAcceleration / 120.0f, kJumpAcceleration / 60.0f, 0 };
+        } else {
+            velocity_ = { +kJumpAcceleration / 120.0f, kJumpAcceleration / 60.0f, 0 };
+        }
 
+        // 壁ジャンプ時はジャンプ回数をリセット（空中ジャンプにも戻せる）
+        jumpCount_ = 0;
 
-		}
-
-
-
-	
-
+    } else if (jumpCount_ < kLimitJumpCount) {
+        // 通常ジャンプ（回数制限あり）
+        jumpCount_++;
+        velocity_ = Add(velocity_, Vector3(0, kJumpAcceleration / 60.0f, 0));
+    }
 		Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
 	}
 }
@@ -608,19 +620,18 @@ void Player::UpdatOnGround(const CollisionMapInfo& info) {
 		}
 
 	} else {
+		// 地面に接触している場合
+		if(info.isFloor) {
+			onGround_ = true;
+			// 着地時の速度を0にする
+			velocity_.y = 0.0f;
 
-		// 壁に接触している場合
-		if (info.isWall) {
-			if (!tachWall_) {
-				// 壁に新しく当たった瞬間（1回だけ実行）
-				velocity_.x *= (1.0f - kAttenuationWall);
-				// 壁フラグをON
-				tachWall_ = true;
-			}
-		} else {
-			// 壁から離れた
-			tachWall_ = false;
+			velocity_.x *= (1.0f - kAttenuationGround);
+			
 		}
+
+
+	
 	}
 }
 

@@ -138,7 +138,7 @@ private:
 	//落下速度制限
 	static inline const float  kLimitFallSpeed = 0.5f;
 	//跳躍加速度
-	static inline const float kJumpAcceleration=20.0f;
+	static inline const float kJumpAcceleration=10.0f;
 	MapChipField* mapChipField_ = nullptr; ///< マップチップフィールドへのポインタ
 	static inline const float kWidth = 0.8f; ///< キャラクターの幅
 	static inline const float kHeight = 0.8f; ///< キャラクターの高さ
@@ -185,5 +185,7 @@ private:
 	uint32_t jumpCount_ = 0;
 	// ジャンプ回数制限
 	static inline const uint32_t kLimitJumpCount = 2;
+
+	static inline const float kAttenuationGround = 0.2f; ///< 地面にいるときの減速	
 	
 };
