@@ -130,6 +130,7 @@ Vector3 GameScene::PlayerStartPosition() {
 			if (mapchipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kPlayer) {
 				
 				 Position = mapchipField_->GetmapChipPositionIndex(j, i);
+
 			
 			}
 		}
@@ -230,6 +231,11 @@ void GameScene::Initialize() {
 
 
 	GenerateEnemy();
+
+	for (Enemy* enemy : enemies_) {
+		enemy->setGameScene(this);
+		enemy->SetMapChipField(mapchipField_);
+	}
 
 	
 	// デスパーティクル

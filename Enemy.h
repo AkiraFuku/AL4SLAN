@@ -78,6 +78,8 @@ private:
 	static inline const float kWalkSpeed=0.02f ;
 	Vector3 velocity_={};
 	Vector3 accel_={};
+	static inline const float kAcceleration = 0.01f; ///< 移動速度
+
 	static inline const float kWalkMotionAngleStart=0.0f;
 	static inline const float kWalkMotionAngleEnd=30.0f;
 	static inline const float kWalkMotionTime=1.0f;
@@ -102,8 +104,10 @@ private:
 	LRDirection lrDirection_ = LRDirection::kLeft; ///< キャラクターの向き
 	        
 	bool onGround_ = true;
+	bool tachWall_ = false;
 	static inline const float kAttenuationLanding = 0.2f; ///< 着地時の減速
 	static inline const float kGroundSearchHeight = 0.06f;
+	static inline const float kAttenuationWall = 0.2f;
 
 };
  
