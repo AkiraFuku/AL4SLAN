@@ -92,6 +92,7 @@ void GameScene::GenerateEnemy() {
 				Vector3 enemyPosition = mapchipField_->GetmapChipPositionIndex(j, i);
 				newEnemy->Initialize(enemy_model_, &camera_, enemyPosition);
 				newEnemy->setGameScene(this);
+				newEnemy->SetMapChipField(mapchipField_);
 				enemies_.push_back(newEnemy);
 			}
 		}

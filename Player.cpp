@@ -4,6 +4,7 @@
 #include "assert.h"
 #include <algorithm>
 #include <numbers>
+#include "Enemy.h"
 
 void Player::Initialize(Model* model, Model* modelAttack, uint32_t textureHandle, Camera* camera, const Vector3& position) {
 	assert(model);
@@ -456,10 +457,7 @@ void Player::CheckMapCollisionRight(CollisionMapInfo& info) {
 	}
 	// ブロックにヒット
 	if (hit) {
-		// 現在座標が壁の外か判定
-		// MapChipField::IndexSet indexSetNow;
-		// indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + Vector3(+kWidth / 2.0f, 0, 0));
-		// if (indexSetNow.xIndex != indexSet.xIndex){
+		
 		// めり込み排除する方向へ移動
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(+kWidth / 2.0f, 0.0f, 0.0f));
 		// めり込み先のマップチップの矩形を取得
@@ -467,7 +465,7 @@ void Player::CheckMapCollisionRight(CollisionMapInfo& info) {
 		// 下方向の移動量を計算
 		info.move.x = std::max(0.0f, rect.left - worldTransform_.translation_.x - (kWidth / 2.0f + kBlank));
 		info.isWall = true;
-		//}
+		
 	}
 }
 
@@ -601,7 +599,7 @@ void Player::inputMove() {
 	if ((Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_A))) {
 
 		// 壁に触れているとき → 制限なしで壁ジャンプ可能
-		if (tachWall_) {
+		if (tachWall_&&!onGround_) {
 			// 反対方向に弾くような壁ジャンプ
 			if (lrDirection_ == LRDirection::kRight) {
 				velocity_ = {-kJumpAcceleration / 90.0f, kJumpAcceleration / 60.0f, 0};
@@ -704,6 +702,8 @@ void Player::HitWall(const CollisionMapInfo& info) {
 		}
 	}
 }
+
+
 
 Vector3 Player::GetWorldPosition() {
 	Vector3 worldPos;

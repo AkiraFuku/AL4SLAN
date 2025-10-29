@@ -58,6 +58,7 @@ public:
 
 	// マップチップフィールドの設定
 	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
+	void MapCollisionCheck(CollisionMapInfo& collisionMapInfo);
 	void CheckMapCollisionUp(CollisionMapInfo &info);
 	void CheckMapCollisionDown(CollisionMapInfo &info);
 	void CheckMapCollisionRight(CollisionMapInfo &info);
@@ -68,12 +69,15 @@ public:
 	void UpdatOnGround(const CollisionMapInfo& info);
 	void HitWall(const CollisionMapInfo& info);
 
+
+
 private:
 	WorldTransform worldTransform_; ///< ワールドトランスフォーム
 	Model* model_ = nullptr;    
 	Camera* camera_=nullptr;
 	static inline const float kWalkSpeed=0.02f ;
 	Vector3 velocity_={};
+	Vector3 accel_={};
 	static inline const float kWalkMotionAngleStart=0.0f;
 	static inline const float kWalkMotionAngleEnd=30.0f;
 	static inline const float kWalkMotionTime=1.0f;
@@ -96,7 +100,10 @@ private:
 	MapChipField* mapChipField_ = nullptr; ///< マップチップフィールドへのポインタ
 
 	LRDirection lrDirection_ = LRDirection::kLeft; ///< キャラクターの向き
-	                                               
-	
+	        
+	bool onGround_ = true;
+	static inline const float kAttenuationLanding = 0.2f; ///< 着地時の減速
+	static inline const float kGroundSearchHeight = 0.06f;
+
 };
  
