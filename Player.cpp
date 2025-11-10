@@ -329,9 +329,6 @@ void Player::Draw() {
 	if (behavior_ == Behavior::kAttack) {
 		switch (attackPhase_) {
 		case AttackPhase::kCharge:
-		default:
-			// 予備動作中は攻撃モデルを描画しない
-			break;
 		case AttackPhase::kAttack:
 		case AttackPhase::kAfter:
 

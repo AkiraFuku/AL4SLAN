@@ -194,7 +194,7 @@ void GameScene::Initialize() {
 
 	// 自キャラ生成
 	player_ = new Player();
-	AttackModel_ = Model::CreateFromOBJ("block", true);
+	AttackModel_ = Model::CreateFromOBJ("attack_effect", true);
 
 	// 自キャラの初期化
 	Vector3 playerPosition = PlayerStartPosition();
