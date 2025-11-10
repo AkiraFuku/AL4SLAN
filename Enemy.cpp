@@ -47,16 +47,19 @@ void Enemy::Update() {
 	case Enemy::Behavior::kWalk:
 	default: {
 
-		velocity_ = accel_;
-		CollisionMapInfo collisionMapInfo;
+		Move();
+		CollisionMapInfo collisionMapInfo{};
 		collisionMapInfo.move = velocity_;
 		MapCollisionCheck(collisionMapInfo);
-
-		//HitWall(collisionMapInfo);
-
-	/*	if (tachWall_) {
-			velocity_.x = 0.0f;
-		}*/
+		// 衝突判定結果をワールドトランスフォームに反映
+	ResultCollisionMapInfo(collisionMapInfo);
+	// 天井に当たった場合の処理
+	hitCeiling(collisionMapInfo);
+	// 壁に当たった場合の処理
+	HitWall(collisionMapInfo);
+	// 着地
+	UpdatOnGround(collisionMapInfo);
+		
 
 		worldTransform_.translation_ += collisionMapInfo.move;
 
@@ -139,6 +142,19 @@ void Enemy::HitAttack(const Player* player) {
 
 	isCollisionDisabled_ = true; // 衝突を無効化
 }
+void Enemy::Move() {
+	velocity_ = accel_;
+
+	if (!onGround_) {
+	// 落下速度
+
+		velocity_ = Add(velocity_, Vector3(0, -kGravityAcceleration / 60.0f, 0));
+
+		// 落下速度制限
+		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+	}
+
+}
 void Enemy::MapCollisionCheck(CollisionMapInfo& collisionMapInfo) {
 	CheckMapCollisionUp(collisionMapInfo);
 	CheckMapCollisionDown(collisionMapInfo);
@@ -155,6 +171,11 @@ Vector3 Enemy::CornerPosition(const Vector3& center, Corner corner) {
 	};
 	return center + OffsetTable[static_cast<uint32_t>(corner)];
 }
+
+void Enemy::ResultCollisionMapInfo(const CollisionMapInfo& info) {
+	worldTransform_.translation_ += info.move; 
+}
+
 void Enemy::CheckMapCollisionUp(CollisionMapInfo& info) {
 	if (info.move.y <= 0.0f) {
 		return;
@@ -195,8 +216,11 @@ void Enemy::CheckMapCollisionDown(CollisionMapInfo& info) {
 		return;
 	}
 
+	std::array<Vector3, kNumCorner> Position;
 	std::array<Vector3, kNumCorner> PositionNew;
+	
 	for (uint32_t i = 0; i < PositionNew.size(); ++i) {
+		Position[i] = CornerPosition(worldTransform_.translation_ , static_cast<Corner>(i));
 		PositionNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
 	}
 
@@ -208,9 +232,9 @@ void Enemy::CheckMapCollisionDown(CollisionMapInfo& info) {
 	// 左下の当たり判定
 	MapChipField::IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(PositionNew[kLeftBottom]);
-
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == MapChipType::kBlock) {
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
+	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
 	}
 	// 右下の当たり判定
@@ -224,11 +248,16 @@ void Enemy::CheckMapCollisionDown(CollisionMapInfo& info) {
 	if (hit) {
 		// めり込み排除する方向へ移動
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(0.0f, -kHeight / 2.0f, 0.0f));
+		//MapChipField::IndexSet indexSetnow;
+	//	indexSetnow = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_  + Vector3(0.0f, -kHeight / 2.0f, 0.0f));
+		//if (indexSetnow.yIndex!=indexSet.yIndex) {
+		
 		// めり込み先のマップチップの矩形を取得
 		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
 		// 下方向の移動量を計算
 		info.move.y = std::min(0.0f, rect.top - worldTransform_.translation_.y + (kHeight / 2.0f + kBlank));
 		info.isFloor = true;
+		//}
 	}
 }
 
@@ -237,6 +266,7 @@ void Enemy::CheckMapCollisionRight(CollisionMapInfo& info) {
 	if (info.move.x <= 0.0f) {
 		return;
 	}
+	
 	std::array<Vector3, kNumCorner> positionsNew;
 	for (uint32_t i = 0; i < positionsNew.size(); ++i) {
 		positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
@@ -249,7 +279,8 @@ void Enemy::CheckMapCollisionRight(CollisionMapInfo& info) {
 	MapChipField::IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == MapChipType::kBlock) {
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
+	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
 	}
 	// 右下の判定
@@ -264,11 +295,16 @@ void Enemy::CheckMapCollisionRight(CollisionMapInfo& info) {
 
 		// めり込み排除する方向へ移動
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(+kWidth / 2.0f, 0.0f, 0.0f));
+		//MapChipField::IndexSet indexSetnow;
+		//indexSetnow = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + Vector3(+kWidth / 2.0f, 0.0f, 0.0f));
+		//if (indexSetnow.xIndex != indexSet.xIndex) {
 		// めり込み先のマップチップの矩形を取得
 		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
 		// 下方向の移動量を計算
 		info.move.x = std::max(0.0f, rect.left - worldTransform_.translation_.x - (kWidth / 2.0f + kBlank));
 		info.isWall = true;
+		//}
+		
 	}
 }
 
@@ -287,9 +323,11 @@ void Enemy::CheckMapCollisionLeft(CollisionMapInfo& info) {
 	// 左上の判定
 	MapChipField::IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop]);
+	
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == MapChipType::kBlock) {
-		hit = true;
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
+	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
+			hit = true;
 	}
 	// 左下の判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom]);
@@ -302,11 +340,15 @@ void Enemy::CheckMapCollisionLeft(CollisionMapInfo& info) {
 	if (hit) {
 		// めり込み排除する方向へ移動
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(-kWidth / 2.0f, 0.0f, 0.0f));
+	/*	MapChipField::IndexSet indexSetnow;
+		indexSetnow = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + Vector3(-kWidth / 2.0f, 0.0f, 0.0f));
+		if (indexSetnow.xIndex != indexSet.xIndex) {*/
 		// めり込み先のマップチップの矩形を取得
 		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
 		// 下方向の移動量を計算
 		info.move.x = std::min(0.0f, rect.right - worldTransform_.translation_.x + (kWidth / 2.0f + kBlank));
 		info.isWall = true;
+		//}
 	}
 }
 

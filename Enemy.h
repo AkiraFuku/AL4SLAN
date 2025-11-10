@@ -55,9 +55,17 @@ public:
 	bool IsCollisionDisabled() const { return isCollisionDisabled_; } ///< 衝突無効フラグの取得
 
 	void setGameScene(GameScene*gameScene){ gameScene_=gameScene;}
-
-	// マップチップフィールドの設定
 	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
+
+	
+
+
+
+private:
+
+	void Move();	
+
+// マップチップフィールドの設定
 	void MapCollisionCheck(CollisionMapInfo& collisionMapInfo);
 	void CheckMapCollisionUp(CollisionMapInfo &info);
 	void CheckMapCollisionDown(CollisionMapInfo &info);
@@ -70,8 +78,6 @@ public:
 	void HitWall(const CollisionMapInfo& info);
 
 
-
-private:
 	WorldTransform worldTransform_; ///< ワールドトランスフォーム
 	Model* model_ = nullptr;    
 	Camera* camera_=nullptr;
@@ -109,5 +115,9 @@ private:
 	static inline const float kGroundSearchHeight = 0.06f;
 	static inline const float kAttenuationWall = 0.2f;
 
+	//重力加速度
+	static inline const float kGravityAcceleration=0.98f;
+	//落下速度制限
+	static inline const float  kLimitFallSpeed = 0.5f;
 };
  
