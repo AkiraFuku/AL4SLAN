@@ -534,9 +534,7 @@ void GameScene::Update() {
 
 		case GameScene::Phase::kPause:
 
-			/*if () {
-		    }
-			*/
+			
 
 		    break;
 	}
@@ -563,16 +561,8 @@ void GameScene::Draw() {
 		player_->Draw();
 	}
 	
-	// ブロックの描画
-	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-
-		for (WorldTransform* WorldTransformBlock : worldTransformBlockLine) {
-			if (!WorldTransformBlock) {
-				continue;
-			}
-			blockM_->Draw(*WorldTransformBlock, camera_);
-		}
-	}
+	DrawBlock();
+	
 	// スカイドームの描画
 	skydome_->Draw();
 	///
@@ -639,6 +629,61 @@ switch (phase_) {
 	} else {
 		camera_.TransferMatrix();
 	}
+}
+void GameScene::DrawBlock() {
+
+	// 1. カメラの位置を取得 (WorldTransformではない方のCameraクラスのtranslation_を使用)
+Vector3 cameraPos = camera_.translation_;
+
+// 2. カメラの視野範囲（ワールド座標）を決定
+// ここではブロック1つを1.0fとし、画面外に余裕を持たせるため、
+// 視野範囲をカメラの中心からX軸±20、Y軸±15と仮定します。
+// ※この値は画面サイズやカメラ設定に合わせて調整が必要です。
+const float kViewRangeX = 20.0f;
+const float kViewRangeY = 15.0f;
+
+// 3. 描画するブロックのワールド座標範囲を計算
+float minX_world = cameraPos.x - kViewRangeX;
+float maxX_world = cameraPos.x + kViewRangeX;
+float minY_world = cameraPos.y - kViewRangeY;
+float maxY_world = cameraPos.y + kViewRangeY;
+
+// 4. ワールド座標をマップインデックスに変換（ブロックサイズ1.0fと仮定）
+int minX_index = (int)std::floor(minX_world);
+int maxX_index = (int)std::ceil(maxX_world);
+int minY_index = (int)std::floor(minY_world);
+int maxY_index = (int)std::ceil(maxY_world);
+
+// 5. マップの境界内にインデックスをクランプ（範囲を制限）
+// worldTransformBlocks_のサイズを取得
+int max_row = (int)worldTransformBlocks_.size();
+// 1行目のサイズを列数と仮定（マップが空でなければ）
+int max_col = (max_row > 0) ? (int)worldTransformBlocks_[0].size() : 0;
+
+// Y軸（行）の開始と終了インデックス
+int startY = max(0, minY_index);
+int endY = min(max_row, maxY_index);
+
+// X軸（列）の開始と終了インデックス
+int startX = max(0, minX_index);
+int endX = min(max_col, maxX_index);
+
+
+// 6. 描画ループを修正し、計算した範囲内だけを処理
+// ブロック
+for (int y = startY; y < endY; ++y) {
+    for (int x = startX; x < endX; ++x) {
+        // worldTransformBlocks_は [y][x] の順にアクセス
+        WorldTransform* WorldTransformBlock = worldTransformBlocks_[y][x];
+
+        // nullptrチェックは残します
+        if (!WorldTransformBlock) {
+            continue;
+        }
+        blockM_->Draw(*WorldTransformBlock, camera_);
+    }
+}
+	
 }
 void GameScene::CreateHitEffect(const Vector3& position) {
 	HitEffect* newHiteFFect= HitEffect::Create(position);
