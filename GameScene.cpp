@@ -5,8 +5,6 @@ using namespace KamataEngine;
 // GameScene::GameScene() {}
 //
 
-
-
 GameScene::~GameScene() {
 	delete player_;
 	delete model_;
@@ -33,7 +31,6 @@ GameScene::~GameScene() {
 	for (Enemy* enemy : enemies_) {
 		delete enemy;
 	}
-	
 
 	delete deathParticles_;
 	delete deathParticlesModel_;
@@ -41,19 +38,15 @@ GameScene::~GameScene() {
 	delete fade_;
 
 	delete hitEffectModel_;
-	for (HitEffect* hitEffect:hitEffects_){
-	delete hitEffect;
+	for (HitEffect* hitEffect : hitEffects_) {
+		delete hitEffect;
 	}
 	if (goal_) {
 		delete goal_;
 	}
-	
+
 	delete goalModel_;
 	delete gaid_;
-
-	
-	
-	
 }
 // ゲームシーンのブロック生成
 void GameScene::GenerateBlock() {
@@ -84,7 +77,6 @@ void GameScene::GenerateEnemy() {
 	uint32_t numBlockVertical = mapchipField_->GetNumBlockVertical();
 	uint32_t numBlockHorizontal = mapchipField_->GetNumBlockHorizontal();
 
-	
 	for (uint32_t i = 0; i < numBlockVertical; i++) {
 		for (uint32_t j = 0; j < numBlockHorizontal; j++) {
 			if (mapchipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kEnemy) {
@@ -96,8 +88,6 @@ void GameScene::GenerateEnemy() {
 			}
 		}
 	}
-
-
 }
 
 void GameScene::GenerateGoal() {
@@ -109,32 +99,26 @@ void GameScene::GenerateGoal() {
 			if (mapchipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kGoal) {
 				goal_ = new Goal();
 				Vector3 Position = mapchipField_->GetmapChipPositionIndex(j, i);
-				goal_->Initialize(goalModel_, &camera_,Position);
+				goal_->Initialize(goalModel_, &camera_, Position);
 			}
 		}
 	}
-
-	
-
-
 }
 
 Vector3 GameScene::PlayerStartPosition() {
-	
+
 	uint32_t numBlockVertical = mapchipField_->GetNumBlockVertical();
 	uint32_t numBlockHorizontal = mapchipField_->GetNumBlockHorizontal();
-	Vector3 Position ={};
+	Vector3 Position = {};
 	for (uint32_t i = 0; i < numBlockVertical; i++) {
 		for (uint32_t j = 0; j < numBlockHorizontal; j++) {
 			if (mapchipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kPlayer) {
-				
-				 Position = mapchipField_->GetmapChipPositionIndex(j, i);
-			
+
+				Position = mapchipField_->GetmapChipPositionIndex(j, i);
 			}
 		}
 	}
 	return Position;
-
 }
 
 void GameScene::CheckAllCollisions() {
@@ -153,33 +137,25 @@ void GameScene::CheckAllCollisions() {
 		aabb2 = enemy->GetAABB();
 		if (IsCollision(aabb1, aabb2)) {
 
-			
 			player_->OnCollision(enemy);
 			enemy->OnCollision(player_);
-
 		}
 		// 攻撃判定
 		if (IsCollision(attackAABB, aabb2)) {
 			enemy->HitAttack(player_);
 		}
-
-		
-
 	}
-	//ゴール
+	// ゴール
 	if (goal_) {
-	aabb2 = goal_->GetAABB();
+		aabb2 = goal_->GetAABB();
 		if (IsCollision(aabb1, aabb2)) {
-		goal_->OnCollision(player_);
+			goal_->OnCollision(player_);
 			clear_ = true;
 		}
 	}
-	
-	
 
 #pragma endregion
 }
-
 
 //  ゲームシーンの初期化
 void GameScene::Initialize() {
@@ -198,7 +174,7 @@ void GameScene::Initialize() {
 
 	// 自キャラの初期化
 	Vector3 playerPosition = PlayerStartPosition();
-	player_->Initialize(model_,AttackModel_, teXtureHandle_, &camera_, playerPosition);
+	player_->Initialize(model_, AttackModel_, teXtureHandle_, &camera_, playerPosition);
 	player_->SetMapchipField(mapchipField_);
 	// 修正: player_->SetMapchipField(mapchipField_); に変更
 	//	//ブロックモデル生成
@@ -227,15 +203,13 @@ void GameScene::Initialize() {
 
 	enemy_model_ = Model::CreateFromOBJ("enemy");
 
-
 	GenerateEnemy();
 
-	
 	// デスパーティクル
 	deathParticlesModel_ = Model::CreateFromOBJ("deathParticle");
 	// フェーズ
 	phase_ = Phase::kFadeIn;
-	//フェード
+	// フェード
 	fade_ = new Fade();
 	fade_->Initialize();
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
@@ -250,9 +224,8 @@ void GameScene::Initialize() {
 
 	crearModel_ = Model::CreateFromOBJ("clear", true);
 
-
 	worldTransformClear_.Initialize();
-	
+
 	worldTransformClear_.scale_ = {0.5f, 0.5f, 0.5f};
 
 	RetryModel_ = Model::CreateFromOBJ("Retry", true);
@@ -260,35 +233,24 @@ void GameScene::Initialize() {
 	worldTransformRetry_.scale_ = {0.5f, 0.5f, 0.5f};
 	GenerateGoal();
 
-
-	
 	// BGM再生
-	
-	
-
-	
-	
-
 }
 void GameScene::ChangePhase() {
 	switch (phase_) {
 
-		case Phase::kStart:	
-				if (Input::GetInstance()->TriggerKey(DIK_SPACE)||((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A))&&!(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
+	case Phase::kStart:
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
 			phase_ = Phase::kPlay; // ポーズ解除でプレイに戻る
 		}
-		
-		    break;
+
+		break;
 	case Phase::kPlay:
 		if (player_->IsDead()) {
-			
 
 			phase_ = Phase::kDeath;
-		}
-		else if (goal_->isGoal()) {
+		} else if (goal_->isGoal()) {
 			phase_ = Phase::kClear;
-		}
-		else if (Input::GetInstance()->TriggerKey(DIK_P)||((state_.Gamepad.wButtons & XINPUT_GAMEPAD_START))&&!(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_START)) {
+		} else if (Input::GetInstance()->TriggerKey(DIK_P) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_START)) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_START)) {
 			phase_ = Phase::kPause; // ポーズに遷移
 		}
 		const Vector3 deathParticlesPosition = player_->GetWorldTransform().translation_;
@@ -298,12 +260,11 @@ void GameScene::ChangePhase() {
 
 		break;
 
-
 	case Phase::kDeath:
 		/*if (deathParticles_&&deathParticles_->IsFinished()) {
-			finished_ = true;
+		    finished_ = true;
 		}*/
-	
+
 		break;
 
 	case Phase::kClear:
@@ -314,15 +275,11 @@ void GameScene::ChangePhase() {
 	case Phase::kPause:
 
 		// ポーズ中の処理
-		if (Input::GetInstance()->TriggerKey(DIK_P)||((state_.Gamepad.wButtons & XINPUT_GAMEPAD_START))&&!(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_START)) {
+		if (Input::GetInstance()->TriggerKey(DIK_P) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_START)) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_START)) {
 			phase_ = Phase::kPlay; // ポーズ解除でプレイに戻る
 		}
 		break;
 	}
-	
-
-	
-
 }
 
 // ゲームシーンの更新
@@ -330,8 +287,7 @@ void GameScene::Update() {
 	Input::GetInstance()->GetJoystickState(0, state_);
 	Input::GetInstance()->GetJoystickStatePrevious(0, prevState_);
 
-
-		hitEffects_.remove_if([](HitEffect *hitEffect) {
+	hitEffects_.remove_if([](HitEffect* hitEffect) {
 		if (hitEffect->IsDead()) {
 			delete hitEffect;
 
@@ -341,25 +297,20 @@ void GameScene::Update() {
 	});
 
 	enemies_.remove_if([](Enemy* enemy) {
-
 		if (enemy->IsDead()) {
 			delete enemy;
 			return true; // 削除する場合はtrueを返す
 		}
 		return false;
-		
-		
-		
 	});
 
 	gaid_->Update();
-	
 
 	ChangePhase();
-	
+
 	switch (phase_) {
 
-		case GameScene::Phase::kFadeIn:
+	case GameScene::Phase::kFadeIn:
 		// フェードの更新
 		fade_->Update();
 		if (fade_->IsFinished()) {
@@ -369,15 +320,15 @@ void GameScene::Update() {
 		// スカイドームの更新
 		skydome_->Update();
 		cameraControlle_->Update();
-		//player_->Update();
+		// player_->Update();
 		//// エネミー
-		//for (Enemy* enemy : enemies_) {
-		//	enemy->Update();	
-		//}
-		//for (HitEffect* hitEffect:hitEffects_){
+		// for (Enemy* enemy : enemies_) {
+		//	enemy->Update();
+		// }
+		// for (HitEffect* hitEffect:hitEffects_){
 		//	hitEffect->Update();
-		//}
-		// ブロックの更新
+		// }
+		//  ブロックの更新
 		for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 			for (WorldTransform* WorldTransformBlock : worldTransformBlockLine) {
 				if (!WorldTransformBlock) {
@@ -389,21 +340,21 @@ void GameScene::Update() {
 		goal_->Update();
 		break;
 
-		case GameScene::Phase::kStart:
+	case GameScene::Phase::kStart:
 
-		//phase_ = GameScene::Phase::kPlay;
-		    // スカイドームの更新
-		    skydome_->Update();
-		    // カメラの更新
-		    cameraControlle_->Update();
-		    // player_の更新
-		  //  player_->Update();
-		    // エネミー
-				
-			break;
+		// phase_ = GameScene::Phase::kPlay;
+		//  スカイドームの更新
+		skydome_->Update();
+		// カメラの更新
+		cameraControlle_->Update();
+		// player_の更新
+		//  player_->Update();
+		// エネミー
+
+		break;
 
 	case GameScene::Phase::kPlay:
-		
+
 		// スカイドームの更新
 		skydome_->Update();
 		// カメラの更新
@@ -412,12 +363,12 @@ void GameScene::Update() {
 		player_->Update();
 		// エネミー
 		for (Enemy* enemy : enemies_) {
-			enemy->Update();	
+			enemy->Update();
 		}
-		for (HitEffect* hitEffect:hitEffects_){
+		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
-		
+
 		///// ブロックの更新
 		for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 			for (WorldTransform* WorldTransformBlock : worldTransformBlockLine) {
@@ -432,21 +383,19 @@ void GameScene::Update() {
 			goal_->Update();
 		}
 		// ゴールの更新
-	
-		CheckAllCollisions();
 
-		
+		CheckAllCollisions();
 
 		break;
 	case GameScene::Phase::kDeath:
 		worldTransformRetry_.translation_ = {camera_.translation_.x, camera_.translation_.y, -2.5f};
 		WorldTransformUpdate(&worldTransformRetry_);
-		if (deathParticles_&&deathParticles_->IsFinished()) {
+		if (deathParticles_ && deathParticles_->IsFinished()) {
 
-			//fade_->Start(Fade::Status::FadeOut, 1.0f);
-			        printf("Phase: kFadeOut に遷移\n");
-			if (Input::GetInstance()->TriggerKey(DIK_SPACE)||((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A))&&!(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A)){
-			phase_ = GameScene::Phase::kFadeOut;
+			// fade_->Start(Fade::Status::FadeOut, 1.0f);
+			printf("Phase: kFadeOut に遷移\n");
+			if (Input::GetInstance()->TriggerKey(DIK_SPACE) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
+				phase_ = GameScene::Phase::kFadeOut;
 			}
 		}
 		// スカイドームの更新
@@ -455,13 +404,13 @@ void GameScene::Update() {
 		cameraControlle_->Update();
 		// エネミー
 		for (Enemy* enemy : enemies_) {
-			enemy->Update();	
+			enemy->Update();
 		}
 		// デスパーティクル
 		if (deathParticles_) {
 			deathParticles_->Update();
 		}
-		for (HitEffect* hitEffect:hitEffects_){
+		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
 		///// ブロックの更新
@@ -480,63 +429,58 @@ void GameScene::Update() {
 		}
 		break;
 
-		case GameScene::Phase::kFadeOut:
+	case GameScene::Phase::kFadeOut:
 		// フェードの更新
-		    fade_->Update();
+		fade_->Update();
 		if (fade_->IsFinished()) {
-		    if (clear_) {
-			Gameend_ = true;
+			if (clear_) {
+				Gameend_ = true;
 			} else {
-			  finished_ = true;
+				finished_ = true;
 			}
-		  
-	
 		}
 
-		
 		skydome_->Update();
 		cameraControlle_->Update();
-		for (Enemy* enemy: enemies_) {
-			enemy->Update();	
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
 		}
-		for (HitEffect* hitEffect:hitEffects_){
+		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
 		break;
-	    case GameScene::Phase::kClear:
-		    // クリア処理
-		    // ここでは何もしないが、必要に応じてクリア処理を追加する
-			worldTransformClear_.translation_ = {camera_.translation_.x, camera_.translation_.y, -2.5f};
+	case GameScene::Phase::kClear:
+		// クリア処理
+		// ここでは何もしないが、必要に応じてクリア処理を追加する
+		worldTransformClear_.translation_ = {camera_.translation_.x, camera_.translation_.y, -2.5f};
 
-			WorldTransformUpdate(&worldTransformClear_);
-			if (Input::GetInstance()->TriggerKey(DIK_SPACE)||((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A))&&!(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
-				phase_ = GameScene::Phase::kFadeOut;
-		    }
-		
-		    skydome_->Update();
-		    cameraControlle_->Update();
-			for (Enemy* enemy: enemies_) {
-				enemy->Update();	
-			}
-			for (HitEffect* hitEffect:hitEffects_){
-				hitEffect->Update();
-			}
-			// ブロックの更新
-			for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-				for (WorldTransform* WorldTransformBlock : worldTransformBlockLine) {
-					if (!WorldTransformBlock) {
-						continue;
-					}
-					WorldTransformUpdate(WorldTransformBlock);
+		WorldTransformUpdate(&worldTransformClear_);
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
+			phase_ = GameScene::Phase::kFadeOut;
+		}
+
+		skydome_->Update();
+		cameraControlle_->Update();
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
+		}
+		for (HitEffect* hitEffect : hitEffects_) {
+			hitEffect->Update();
+		}
+		// ブロックの更新
+		for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
+			for (WorldTransform* WorldTransformBlock : worldTransformBlockLine) {
+				if (!WorldTransformBlock) {
+					continue;
 				}
+				WorldTransformUpdate(WorldTransformBlock);
 			}
-		    break;
+		}
+		break;
 
-		case GameScene::Phase::kPause:
+	case GameScene::Phase::kPause:
 
-			
-
-		    break;
+		break;
 	}
 }
 // ゲームシーンの描画
@@ -548,8 +492,7 @@ void GameScene::Draw() {
 
 	switch (phase_) {
 	case GameScene::Phase::kClear:
-		
-		
+
 		crearModel_->Draw(worldTransformClear_, camera_);
 		break;
 	case GameScene::Phase::kDeath:
@@ -560,9 +503,9 @@ void GameScene::Draw() {
 	if (!player_->IsDead()) {
 		player_->Draw();
 	}
-	
+
 	DrawBlock();
-	
+
 	// スカイドームの描画
 	skydome_->Draw();
 	///
@@ -574,8 +517,8 @@ void GameScene::Draw() {
 	if (deathParticles_) {
 		deathParticles_->Draw();
 	}
-	for (HitEffect* hitEffect:hitEffects_){
-	hitEffect->Draw();
+	for (HitEffect* hitEffect : hitEffects_) {
+		hitEffect->Draw();
 	}
 
 	// ゴールの描画
@@ -587,22 +530,18 @@ void GameScene::Draw() {
 	Sprite::PreDraw(dxCommon->GetCommandList());
 
 	fade_->Draw();
-	
-switch (phase_) {
-	
+
+	switch (phase_) {
+
 	case GameScene::Phase::kFadeIn:
 	case GameScene::Phase::kStart:
 	case GameScene::Phase::kPause:
 		gaid_->Draw();
 
 		break;
-
-
 	}
-	
-	Sprite::PostDraw();
 
-	
+	Sprite::PostDraw();
 
 #ifdef _DEBUG
 	if (Input::GetInstance()->TriggerKey(DIK_TAB)) {
@@ -614,9 +553,8 @@ switch (phase_) {
 	}
 	// enemyのデバッグ描画
 
-	
 	int enemyIndex = 0;
-	enemyIndex =static_cast<int> (enemies_.size());
+	enemyIndex = static_cast<int>(enemies_.size());
 	DebugText::GetInstance()->ConsolePrintf("Enemy Count: %d\n", enemyIndex);
 
 #endif // _DEBUG
@@ -633,60 +571,57 @@ switch (phase_) {
 void GameScene::DrawBlock() {
 
 	// 1. カメラの位置を取得 (WorldTransformではない方のCameraクラスのtranslation_を使用)
-Vector3 cameraPos = camera_.translation_;
+	Vector3 cameraPos = camera_.translation_;
 
-// 2. カメラの視野範囲（ワールド座標）を決定
-// ここではブロック1つを1.0fとし、画面外に余裕を持たせるため、
-// 視野範囲をカメラの中心からX軸±20、Y軸±15と仮定します。
-// ※この値は画面サイズやカメラ設定に合わせて調整が必要です。
-const float kViewRangeX = 20.0f;
-const float kViewRangeY = 15.0f;
+	// 2. カメラの視野範囲（ワールド座標）を決定
+	// ここではブロック1つを1.0fとし、画面外に余裕を持たせるため、
+	// 視野範囲をカメラの中心からX軸±20、Y軸±15と仮定します。
+	// ※この値は画面サイズやカメラ設定に合わせて調整が必要です。
+	const float kViewRangeX = 20.0f;
+	const float kViewRangeY = 15.0f;
 
-// 3. 描画するブロックのワールド座標範囲を計算
-float minX_world = cameraPos.x - kViewRangeX;
-float maxX_world = cameraPos.x + kViewRangeX;
-float minY_world = cameraPos.y - kViewRangeY;
-float maxY_world = cameraPos.y + kViewRangeY;
+	// 3. 描画するブロックのワールド座標範囲を計算
+	float minX_world = cameraPos.x - kViewRangeX;
+	float maxX_world = cameraPos.x + kViewRangeX;
+	float minY_world = cameraPos.y - kViewRangeY;
+	float maxY_world = cameraPos.y + kViewRangeY;
 
-// 4. ワールド座標をマップインデックスに変換（ブロックサイズ1.0fと仮定）
-int minX_index = (int)std::floor(minX_world);
-int maxX_index = (int)std::ceil(maxX_world);
-int minY_index = (int)std::floor(minY_world);
-int maxY_index = (int)std::ceil(maxY_world);
+	// 4. ワールド座標をマップインデックスに変換（ブロックサイズ1.0fと仮定）
+	int minX_index = (int)std::floor(minX_world);
+	int maxX_index = (int)std::ceil(maxX_world);
+	int minY_index = (int)std::floor(minY_world);
+	int maxY_index = (int)std::ceil(maxY_world);
 
-// 5. マップの境界内にインデックスをクランプ（範囲を制限）
-// worldTransformBlocks_のサイズを取得
-int max_row = (int)worldTransformBlocks_.size();
-// 1行目のサイズを列数と仮定（マップが空でなければ）
-int max_col = (max_row > 0) ? (int)worldTransformBlocks_[0].size() : 0;
+	// 5. マップの境界内にインデックスをクランプ（範囲を制限）
+	// worldTransformBlocks_のサイズを取得
+	int max_row = (int)worldTransformBlocks_.size();
+	// 1行目のサイズを列数と仮定（マップが空でなければ）
+	int max_col = (max_row > 0) ? (int)worldTransformBlocks_[0].size() : 0;
 
-// Y軸（行）の開始と終了インデックス
-int startY = max(0, minY_index);
-int endY = min(max_row, maxY_index);
+	// Y軸（行）の開始と終了インデックス
+	int startY = max(0, minY_index);
+	int endY = min(max_row, maxY_index);
 
-// X軸（列）の開始と終了インデックス
-int startX = max(0, minX_index);
-int endX = min(max_col, maxX_index);
+	// X軸（列）の開始と終了インデックス
+	int startX = max(0, minX_index);
+	int endX = min(max_col, maxX_index);
 
+	// 6. 描画ループを修正し、計算した範囲内だけを処理
+	// ブロック
+	for (int y = startY; y < endY; ++y) {
+		for (int x = startX; x < endX; ++x) {
+			// worldTransformBlocks_は [y][x] の順にアクセス
+			WorldTransform* WorldTransformBlock = worldTransformBlocks_[y][x];
 
-// 6. 描画ループを修正し、計算した範囲内だけを処理
-// ブロック
-for (int y = startY; y < endY; ++y) {
-    for (int x = startX; x < endX; ++x) {
-        // worldTransformBlocks_は [y][x] の順にアクセス
-        WorldTransform* WorldTransformBlock = worldTransformBlocks_[y][x];
-
-        // nullptrチェックは残します
-        if (!WorldTransformBlock) {
-            continue;
-        }
-        blockM_->Draw(*WorldTransformBlock, camera_);
-    }
-}
-	
+			// nullptrチェックは残します
+			if (!WorldTransformBlock) {
+				continue;
+			}
+			blockM_->Draw(*WorldTransformBlock, camera_);
+		}
+	}
 }
 void GameScene::CreateHitEffect(const Vector3& position) {
-	HitEffect* newHiteFFect= HitEffect::Create(position);
+	HitEffect* newHiteFFect = HitEffect::Create(position);
 	hitEffects_.push_back(newHiteFFect);
-
 }

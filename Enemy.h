@@ -96,6 +96,8 @@ private:
 	MapChipField* mapChipField_ = nullptr; ///< マップチップフィールドへのポインタ
 
 	LRDirection lrDirection_ = LRDirection::kLeft; ///< キャラクターの向き
+	static inline const float kViewRangeX = 20.0f; 
+    static inline const float kViewRangeY = 15.0f;
 	                                               
 	
 };

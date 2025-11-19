@@ -80,8 +80,20 @@ void Enemy::Update() {
 	
 };
 void Enemy::Draw(){
+	float minX_world = camera_->translation_.x - kViewRangeX;
+    float maxX_world = camera_->translation_.x + kViewRangeX;
+    float minY_world = camera_->translation_.y - kViewRangeY;
+    float maxY_world = camera_->translation_.y + kViewRangeY;
 
-model_->Draw(worldTransform_,*camera_);
+
+if (worldTransform_.translation_.x + kWidth/2.0f >= minX_world && // エネミーの右端が画面の左端より右にある
+    worldTransform_.translation_.x - kWidth/2.0f <= maxX_world && // エネミーの左端が画面の右端より左にある
+    worldTransform_.translation_.y + kHeight/2.0f >= minY_world &&
+    worldTransform_.translation_.y - kHeight/2.0f <= maxY_world) 
+{
+    // 描画実行
+    model_->Draw(worldTransform_, *camera_);
+}
 };
 Vector3 Enemy::GetWorldPosition() {
 	Vector3 worldPos;
