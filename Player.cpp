@@ -124,7 +124,7 @@ void Player::BehaviorRootUpdate() {
 			worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
 		}
 	}
-	if (Input::GetInstance()->TriggerKey(DIK_X)) {
+	if (Input::GetInstance()->TriggerKey(DIK_X)|| (state_.Gamepad.wButtons & XINPUT_GAMEPAD_Y)) {
 
 		behaviorRequest_ = Behavior::kDash;
 		// 攻撃やジャンプなどのアクション入力が入った場合は旋回を即完了させる
