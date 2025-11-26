@@ -85,6 +85,7 @@ void GameScene::GenerateEnemy() {
 				Vector3 enemyPosition = mapchipField_->GetmapChipPositionIndex(j, i);
 				newEnemy->Initialize(enemy_model_, &camera_, enemyPosition);
 				newEnemy->setGameScene(this);
+				newEnemy->SetMapChipField(mapchipField_);
 				enemies_.push_back(newEnemy);
 			}
 		}
@@ -348,6 +349,7 @@ void GameScene::Update() {
 		// エネミー
 		for (Enemy* enemy : enemies_) {
 			enemy->Update();
+
 		}
 		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
