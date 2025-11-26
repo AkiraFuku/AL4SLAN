@@ -527,7 +527,7 @@ void Player::inputMove() {
 		// 落下速度
 
 		velocity_ = Add(velocity_, Vector3(0, -kGravityAcceleration / 60.0f, 0));
-		if (tachWall_) {
+		if (tachWall_&& !Input::GetInstance()->PushKey(DIK_DOWN)) {
 			// 壁に触れているときは落下速度を抑える
 			velocity_.y = std::max(velocity_.y, -kWallSlideSpeed);
 		}
