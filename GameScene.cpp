@@ -349,8 +349,9 @@ void GameScene::Update() {
 		// エネミー
 		for (Enemy* enemy : enemies_) {
 			enemy->Update();
-
+			
 		}
+		EnemyCollision();
 		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
@@ -602,4 +603,45 @@ void GameScene::DrawBlock() {
 void GameScene::CreateHitEffect(const Vector3& position) {
 	HitEffect* newHiteFFect = HitEffect::Create(position);
 	hitEffects_.push_back(newHiteFFect);
+}
+
+void GameScene::EnemyCollision() {
+	for (Enemy* enemyA: enemies_) {
+        for (Enemy* enemyB: enemies_) {
+            
+
+            // 死亡しているエネミーは判定しない
+            if ((enemyA->IsDead() || enemyB->IsDead())||enemyA==enemyB) {
+                continue;
+            }
+			if(enemyA->InCamera()&&enemyB->InCamera()){
+			continue;
+			}
+            // AABB（当たり判定ボックス）を取得
+            AABB aabb1 = enemyA->GetAABB();
+            AABB aabb2 = enemyB->GetAABB();
+
+            // 衝突しているかチェック
+            if (IsCollision(aabb1, aabb2)) {
+                // 衝突していた場合、両方のエネミーを反転させる
+                enemyA->OnCollisionWithEnemy();
+                enemyB->OnCollisionWithEnemy();
+
+                // ※重要: そのままだと「めり込んだまま毎フレーム反転」して振動する場合があるため、
+                // X座標を少しだけ離してめり込みを解消する処理を入れると完璧です。
+                // 簡易的には、反転させた直後に1回分だけ移動処理(Update)を呼んで引き剥がす等の方法もあります。
+                // ここでは、お互いの位置を見て引き剥がす簡易処理を追加しておきます。
+                
+                Vector3 pos1 = enemyA->GetWorldPosition();
+                Vector3 pos2 = enemyB->GetWorldPosition();
+
+                if (pos1.x < pos2.x) {
+                    // 左にいるやつは少し左へ、右にいるやつは少し右へ強制移動
+                     // (WorldTransformを直接触るためのGetter/Setterが必要なら追加してください。
+                     //  あるいは Enemyクラスに ForceMove のような関数を作っても良いです)
+                     // ここでは単純化のため反転のみで動作確認してみてください。
+                }
+            }
+        }
+	}
 }

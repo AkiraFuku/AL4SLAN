@@ -126,4 +126,6 @@ public:
 	bool IsFinished() const { return finished_; }
 	bool IsGameEnd() const { return Gameend_; }
 	 void CreateHitEffect(const Vector3 & position);
+
+	 void EnemyCollision();
 };

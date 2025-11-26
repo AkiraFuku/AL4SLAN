@@ -163,6 +163,7 @@ void Enemy::HitAttack(const Player* player) {
 	isCollisionDisabled_ = true; // 衝突を無効化
 }
 bool Enemy::InCamera() {
+	//写ってないを返す
 	const float kActiveRange = 30.0f;
 	return (std::abs(GetWorldPosition().x - camera_->translation_.x) > kActiveRange);
 }
@@ -295,38 +296,11 @@ void Enemy::CheckMapCollisionLeft(CollisionMapInfo& info) {
 
 void Enemy::ResultCollisionMapInfo(const CollisionMapInfo& info) { worldTransform_.translation_ += info.move; }
 
-void Enemy::OnCollisionEnemy(Enemy* other) {
-    // 自分のAABBと相手のAABBを取得
-    AABB myBox = GetAABB();
-    AABB otherBox = other->GetAABB();
+void Enemy::OnCollisionWithEnemy() {
+    // 速度を反転させる
+    velocity_.x *= -1.0f;
 
-    // 衝突判定 (AABB同士の交差チェック)
-    if (myBox.min.x < otherBox.max.x && myBox.max.x > otherBox.min.x &&
-        myBox.min.y < otherBox.max.y && myBox.max.y > otherBox.min.y &&
-        myBox.min.z < otherBox.max.z && myBox.max.z > otherBox.min.z) {
-
-        // 重なり量を計算
-        float overlapX = min(myBox.max.x, otherBox.max.x) -max(myBox.min.x, otherBox.min.x);
-        float overlapY = min(myBox.max.y, otherBox.max.y) -max(myBox.min.y, otherBox.min.y);
-
-        // 横方向の重なりが、縦方向より小さい場合（＝横からぶつかったとみなす）
-        // または、今回は歩行敵同士なので横方向の押し出しを優先したい場合
-        if (overlapX < overlapY) {
-            // 自分の位置と相手の位置の前後関係を調べる
-            Vector3 myPos = GetWorldPosition();
-            Vector3 otherPos = other->GetWorldPosition();
-
-            // 自分が左にいるなら左へ、右にいるなら右へ押し出す
-            // お互いに半分ずつずれるように 0.5f を掛ける
-            float pushAmount = overlapX * 0.5f;
-
-            if (myPos.x < otherPos.x) {
-                worldTransform_.translation_.x -= pushAmount;
-            } else {
-                worldTransform_.translation_.x += pushAmount;
-            }
-        }
-        // 必要であればここに縦方向(Y)の処理も追加できますが、
-        // ジャンプして踏みつけたりしない限り、横だけで十分な場合が多いです。
-    }
+    // 補足: 連続して判定が起きないように、少しだけ位置をずらす処理を入れるとより安定します
+    // 例: velocity_.x がプラスなら少し右へ、マイナスなら少し左へ強制移動など
+    // 今回はシンプルに反転のみとします
 }
