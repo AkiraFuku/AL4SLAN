@@ -11,20 +11,8 @@ class Player;
 class MapChipField;
 class GameScene;
 enum class LRDirection { kRight, kLeft,  };
-struct CollisionMapInfo {
-		bool isCeiling = false; ///< 天井に衝突しているか
-		bool isFloor = false;   ///< 床に衝突しているか
-		bool isWall = false;    ///< 壁に衝突しているか
-		Vector3 move; ///< 移動パラメータ
-	};
-enum Corner {
-		kRightBottom, ///< 右下
-		kLeftBottom,  ///< 左下
-		kRightTop,    ///< 右上
-		kLeftTop,     ///< 左上
-		kNumCorner   ///< コーナーの数
-	
-};
+
+
 class Enemy {
 public:
 	enum class Behavior {
@@ -56,17 +44,7 @@ public:
 
 	void setGameScene(GameScene*gameScene){ gameScene_=gameScene;}
 
-	// マップチップフィールドの設定
-	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
-	void CheckMapCollisionUp(CollisionMapInfo &info);
-	void CheckMapCollisionDown(CollisionMapInfo &info);
-	void CheckMapCollisionRight(CollisionMapInfo &info);
-	void CheckMapCollisionLeft(CollisionMapInfo &info);
-	Vector3 CornerPosition(const Vector3& center,Corner corner);
-	void   ResultCollisionMapInfo(const CollisionMapInfo& info);
-	void hitCeiling(const CollisionMapInfo& info);
-	void UpdatOnGround(const CollisionMapInfo& info);
-	void HitWall(const CollisionMapInfo& info);
+	
 //カメラに映っているか
 	bool InCamera();
 private:

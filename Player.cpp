@@ -1,10 +1,10 @@
 #include "Player.h"
+#include "Enemy.h"
 #include "MapchipField.h"
 #include "MassFunction.h"
 #include "assert.h"
 #include <algorithm>
 #include <numbers>
-#include "Enemy.h"
 
 void Player::Initialize(Model* model, Model* modelAttack, uint32_t textureHandle, Camera* camera, const Vector3& position) {
 	assert(model);
@@ -220,7 +220,7 @@ void Player::BehaviorAttackUpdate() {
 void Player::BehaviorDashUpdate() {
 	const Vector3 dashVelocity = {0.4f, 0.0f, 0.0f};
 	// velocity_ = {0.0f, 0.0f, 0.0f}; // 攻撃時は移動しない
-	//Vector3 velocity = {};
+	// Vector3 velocity = {};
 	dashParameter_++;
 	switch (dashPhase_) {
 	case Player::DashPhase::kCharge:
@@ -241,7 +241,6 @@ void Player::BehaviorDashUpdate() {
 
 		if (lrDirection_ == LRDirection::kRight) {
 
-		
 			velocity_ = dashVelocity; // ダッシュ中は速度を一定に保つ
 		} else if (lrDirection_ == LRDirection::kLeft) {
 			velocity_ = dashVelocity * -1.0f;
@@ -298,8 +297,8 @@ void Player::BehaviorDashUpdate() {
 	}
 	// 衝突情報を初期化
 	CollisionMapInfo collisionMapInfo = {};
-	collisionMapInfo.move =  velocity_;
-	
+	collisionMapInfo.move = velocity_;
+
 	collisionMapInfo.isFloor = false;
 	collisionMapInfo.isWall = false;
 
@@ -527,7 +526,7 @@ void Player::inputMove() {
 		// 落下速度
 
 		velocity_ = Add(velocity_, Vector3(0, -kGravityAcceleration / 60.0f, 0));
-		if (tachWall_&& !Input::GetInstance()->PushKey(DIK_DOWN)) {
+		if (tachWall_ && !Input::GetInstance()->PushKey(DIK_DOWN)) {
 			// 壁に触れているときは落下速度を抑える
 			velocity_.y = std::max(velocity_.y, -kWallSlideSpeed);
 		}
@@ -602,7 +601,8 @@ void Player::inputMove() {
 	if ((Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_A))) {
 
 		// 壁に触れているとき → 制限なしで壁ジャンプ可能
-		if (tachWall_&&!onGround_) {
+
+		if (tachWall_ && !onGround_) {
 			// 反対方向に弾くような壁ジャンプ
 			if (lrDirection_ == LRDirection::kRight) {
 				velocity_ = {-kJumpAcceleration / 90.0f, kJumpAcceleration / 60.0f, 0};
@@ -613,10 +613,12 @@ void Player::inputMove() {
 			// 壁ジャンプ時はジャンプ回数をリセット（空中ジャンプにも戻せる）
 			jumpCount_ = 0;
 
-		} else if (jumpCount_ < kLimitJumpCount) {
-			// 通常ジャンプ（回数制限あり）
-			jumpCount_++;
+		} else if (onGround_ || jumpCount_ < kLimitJumpCount) {
 			velocity_ = Add(velocity_, Vector3(0, kJumpAcceleration / 60.0f, 0));
+			if (!onGround_) {
+				// 通常ジャンプ（回数制限あり）
+				jumpCount_++;
+			}
 		}
 		Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
 	}
@@ -705,8 +707,6 @@ void Player::HitWall(const CollisionMapInfo& info) {
 		}
 	}
 }
-
-
 
 Vector3 Player::GetWorldPosition() {
 	Vector3 worldPos;
