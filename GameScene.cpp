@@ -68,6 +68,7 @@ void GameScene::GenerateBlock() {
 				worldTransform->Initialize();
 				worldTransformBlocks_[i][j] = worldTransform;
 				worldTransformBlocks_[i][j]->translation_ = mapchipField_->GetBlockPositionByIndex(j, i);
+				WorldTransformUpdate(worldTransform);
 			}
 		}
 	}
@@ -320,23 +321,7 @@ void GameScene::Update() {
 		// スカイドームの更新
 		skydome_->Update();
 		cameraControlle_->Update();
-		// player_->Update();
-		//// エネミー
-		// for (Enemy* enemy : enemies_) {
-		//	enemy->Update();
-		// }
-		// for (HitEffect* hitEffect:hitEffects_){
-		//	hitEffect->Update();
-		// }
-		//  ブロックの更新
-		for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-			for (WorldTransform* WorldTransformBlock : worldTransformBlockLine) {
-				if (!WorldTransformBlock) {
-					continue;
-				}
-				WorldTransformUpdate(WorldTransformBlock);
-			}
-		}
+		
 		goal_->Update();
 		break;
 
@@ -347,9 +332,7 @@ void GameScene::Update() {
 		skydome_->Update();
 		// カメラの更新
 		cameraControlle_->Update();
-		// player_の更新
-		//  player_->Update();
-		// エネミー
+	
 
 		break;
 
@@ -369,16 +352,7 @@ void GameScene::Update() {
 			hitEffect->Update();
 		}
 
-		///// ブロックの更新
-		for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-			for (WorldTransform* WorldTransformBlock : worldTransformBlockLine) {
-				if (!WorldTransformBlock) {
-					continue;
-				}
-
-				WorldTransformUpdate(WorldTransformBlock);
-			}
-		}
+		
 		if (goal_) {
 			goal_->Update();
 		}
@@ -413,16 +387,16 @@ void GameScene::Update() {
 		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
-		///// ブロックの更新
-		for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-			for (WorldTransform* WorldTransformBlock : worldTransformBlockLine) {
-				if (!WorldTransformBlock) {
-					continue;
-				}
+		/////// ブロックの更新
+		//for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
+		//	for (WorldTransform* WorldTransformBlock : worldTransformBlockLine) {
+		//		if (!WorldTransformBlock) {
+		//			continue;
+		//		}
 
-				WorldTransformUpdate(WorldTransformBlock);
-			}
-		}
+		//		WorldTransformUpdate(WorldTransformBlock);
+		//	}
+		//}
 		// ゴールの更新
 		if (goal_) {
 			goal_->Update();
@@ -468,14 +442,14 @@ void GameScene::Update() {
 			hitEffect->Update();
 		}
 		// ブロックの更新
-		for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
+		/*for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 			for (WorldTransform* WorldTransformBlock : worldTransformBlockLine) {
 				if (!WorldTransformBlock) {
 					continue;
 				}
 				WorldTransformUpdate(WorldTransformBlock);
 			}
-		}
+		}*/
 		break;
 
 	case GameScene::Phase::kPause:
