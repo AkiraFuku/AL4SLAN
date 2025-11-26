@@ -304,3 +304,14 @@ void Enemy::OnCollisionWithEnemy() {
     // 例: velocity_.x がプラスなら少し右へ、マイナスなら少し左へ強制移動など
     // 今回はシンプルに反転のみとします
 }
+void Enemy::OnLandOnEnemy(float targetTopY) {
+    // 落下中のみ着地処理を行う（上昇中に頭をぶつけた場合は除外するため）
+    if (velocity_.y <= 0.0f) {
+        // Ｙ速度をリセット（着地）
+        velocity_.y = 0.0f;
+
+        // 位置を相手の頭上に補正
+        // (相手のTop + 自分の身長の半分)
+        worldTransform_.translation_.y = targetTopY + (kHeight / 2.0f);
+    }
+}

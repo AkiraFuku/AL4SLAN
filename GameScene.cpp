@@ -134,7 +134,7 @@ void GameScene::CheckAllCollisions() {
 	// 敵キャラ
 	for (Enemy* enemy : enemies_) {
 
-		if (enemy->IsCollisionDisabled()||enemy->InCamera()) {
+		if (enemy->IsCollisionDisabled() || enemy->InCamera()) {
 			continue; // 衝突判定を無効にしている敵はスキップ
 		}
 		aabb2 = enemy->GetAABB();
@@ -323,7 +323,7 @@ void GameScene::Update() {
 		// スカイドームの更新
 		skydome_->Update();
 		cameraControlle_->Update();
-		
+
 		goal_->Update();
 		break;
 
@@ -334,7 +334,6 @@ void GameScene::Update() {
 		skydome_->Update();
 		// カメラの更新
 		cameraControlle_->Update();
-	
 
 		break;
 
@@ -349,14 +348,11 @@ void GameScene::Update() {
 		// エネミー
 		for (Enemy* enemy : enemies_) {
 			enemy->Update();
-			
 		}
 		EnemyCollision();
 		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
-
-		
 
 		if (goal_) {
 			goal_->Update();
@@ -385,6 +381,7 @@ void GameScene::Update() {
 		for (Enemy* enemy : enemies_) {
 			enemy->Update();
 		}
+		EnemyCollision();
 		// デスパーティクル
 		if (deathParticles_) {
 			deathParticles_->Update();
@@ -392,16 +389,6 @@ void GameScene::Update() {
 		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
-		/////// ブロックの更新
-		//for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-		//	for (WorldTransform* WorldTransformBlock : worldTransformBlockLine) {
-		//		if (!WorldTransformBlock) {
-		//			continue;
-		//		}
-
-		//		WorldTransformUpdate(WorldTransformBlock);
-		//	}
-		//}
 		// ゴールの更新
 		if (goal_) {
 			goal_->Update();
@@ -448,12 +435,12 @@ void GameScene::Update() {
 		}
 		// ブロックの更新
 		/*for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-			for (WorldTransform* WorldTransformBlock : worldTransformBlockLine) {
-				if (!WorldTransformBlock) {
-					continue;
-				}
-				WorldTransformUpdate(WorldTransformBlock);
-			}
+		    for (WorldTransform* WorldTransformBlock : worldTransformBlockLine) {
+		        if (!WorldTransformBlock) {
+		            continue;
+		        }
+		        WorldTransformUpdate(WorldTransformBlock);
+		    }
 		}*/
 		break;
 
@@ -606,42 +593,52 @@ void GameScene::CreateHitEffect(const Vector3& position) {
 }
 
 void GameScene::EnemyCollision() {
-	for (Enemy* enemyA: enemies_) {
-        for (Enemy* enemyB: enemies_) {
-            
+	for (Enemy* enemyA : enemies_) {
+		for (Enemy* enemyB : enemies_) {
 
-            // 死亡しているエネミーは判定しない
-            if ((enemyA->IsDead() || enemyB->IsDead())||enemyA==enemyB) {
-                continue;
-            }
-			if(enemyA->InCamera()&&enemyB->InCamera()){
-			continue;
+			// 死亡しているエネミーは判定しない
+			if ((enemyA->IsDead() || enemyB->IsDead()) || enemyA == enemyB)
+				continue;
+			if (enemyA->InCamera() && enemyB->InCamera())
+				continue;
+			// AABB（当たり判定ボックス）を取得
+			AABB aabb1 = enemyA->GetAABB();
+			AABB aabb2 = enemyB->GetAABB();
+			float overlapX = min(aabb1.max.x, aabb2.max.x) - max(aabb1.min.x, aabb2.min.x);
+			float overlapY = min(aabb1.max.y, aabb2.max.y) - max(aabb1.min.y, aabb2.min.y);
+			// 上下の位置関係を判定 (どちらが上にいるか)
+			Enemy* upperEnemy = (aabb1.min.y > aabb2.min.y) ? enemyA : enemyB;
+			Enemy* lowerEnemy = (upperEnemy == enemyA) ? enemyB : enemyA;
+			// Yの重なりの方が小さい場合 ＝ 「上下方向からの衝突」とみなす
+			if (overlapY < overlapX) {
+
+				// 「上にいるキャラ」が「落下中」であれば、着地させる
+				if (upperEnemy->GetVelocity().y <= 0.0f) {
+					// 下のエネミーの頭頂部 (CenterY + Height/2) を渡して着地
+					float lowerTopY = lowerEnemy->GetWorldPosition().y + (0.8f / 2.0f); // 0.8fはEnemy::kHeight
+					// ※ Enemyクラスに GetHeight() を作るか、定数 kHeight をpublicにするのが理想ですが、
+					// ここでは数値(0.8f)または推定値を使用しています。
+
+					upperEnemy->OnLandOnEnemy(lowerTopY);
+				} else {
+					// 上昇中なら何もしない（スルー）か、頭をぶつけて落下させるなどの処理
+				}
+
 			}
-            // AABB（当たり判定ボックス）を取得
-            AABB aabb1 = enemyA->GetAABB();
-            AABB aabb2 = enemyB->GetAABB();
+			// Xの重なりの方が小さい場合 ＝ 「横方向からの衝突」
+			else {
+				// お互いに方向転換（以前実装した処理）
+				enemyA->OnCollisionWithEnemy();
+				enemyB->OnCollisionWithEnemy();
 
-            // 衝突しているかチェック
-            if (IsCollision(aabb1, aabb2)) {
-                // 衝突していた場合、両方のエネミーを反転させる
-                enemyA->OnCollisionWithEnemy();
-                enemyB->OnCollisionWithEnemy();
-
-                // ※重要: そのままだと「めり込んだまま毎フレーム反転」して振動する場合があるため、
-                // X座標を少しだけ離してめり込みを解消する処理を入れると完璧です。
-                // 簡易的には、反転させた直後に1回分だけ移動処理(Update)を呼んで引き剥がす等の方法もあります。
-                // ここでは、お互いの位置を見て引き剥がす簡易処理を追加しておきます。
-                
-                Vector3 pos1 = enemyA->GetWorldPosition();
-                Vector3 pos2 = enemyB->GetWorldPosition();
-
-                if (pos1.x < pos2.x) {
-                    // 左にいるやつは少し左へ、右にいるやつは少し右へ強制移動
-                     // (WorldTransformを直接触るためのGetter/Setterが必要なら追加してください。
-                     //  あるいは Enemyクラスに ForceMove のような関数を作っても良いです)
-                     // ここでは単純化のため反転のみで動作確認してみてください。
-                }
-            }
-        }
+				// めり込み防止（横に少し押し出す）
+				// 簡易的に、左にいる方は左へ、右にいる方は右へ少しずらす
+				if (aabb1.min.x < aabb2.min.x) {
+					// enemy[i] is Left
+					// ここで座標を直接少しずらす処理を入れるとより安定しますが
+					// OnCollisionWithEnemy()内で速度反転＋微移動していればそのままでOK
+				}
+			}
+		}
 	}
 }

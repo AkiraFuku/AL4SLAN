@@ -68,6 +68,12 @@ public:
 	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
 
 	void OnCollisionWithEnemy();
+
+    const Vector3& GetVelocity() const { return velocity_; }
+
+    // targetTopY: 下にいるエネミーの頭頂部のY座標
+    void OnLandOnEnemy(float targetTopY);
+
 private:
 	// ★追加: 衝突判定関連のメンバ関数
     void MapCollisionCheck(CollisionMapInfo& info);
