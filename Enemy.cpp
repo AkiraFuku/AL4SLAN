@@ -6,7 +6,8 @@
 #include "Player.h"
 #include "HitEffect.h"
 #include "GameScene.h"
-
+#include <cmath>
+#include <iostream>
 void Enemy::Initialize(Model* model, Camera* camera,Vector3& position ) {
 	// NULLチェック
 	assert(model);
@@ -27,6 +28,9 @@ void Enemy::Initialize(Model* model, Camera* camera,Vector3& position ) {
 
 }
 void Enemy::Update() {
+
+	//カメラ外だと動かない
+	
 
 		if (behaviorRequest_ != Behavior::kUnknown) {
 		// 振るまいを変更する
@@ -159,6 +163,10 @@ void Enemy::HitAttack(const Player* player) {
 		
 	
 
+}
+bool Enemy::InCamera(){
+	const float kActiveRange=30.0f;
+	return (std::abs(GetWorldPosition().x-camera_->translation_.x)>kActiveRange) ;
 }
 
 

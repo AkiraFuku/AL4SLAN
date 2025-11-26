@@ -4,6 +4,7 @@
 #include "assert.h"
 #include <algorithm>
 #include <numbers>
+#include "Enemy.h"
 
 void Player::Initialize(Model* model, Model* modelAttack, uint32_t textureHandle, Camera* camera, const Vector3& position) {
 	assert(model);
@@ -704,6 +705,8 @@ void Player::HitWall(const CollisionMapInfo& info) {
 		}
 	}
 }
+
+
 
 Vector3 Player::GetWorldPosition() {
 	Vector3 worldPos;

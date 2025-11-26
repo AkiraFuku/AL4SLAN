@@ -67,7 +67,8 @@ public:
 	void hitCeiling(const CollisionMapInfo& info);
 	void UpdatOnGround(const CollisionMapInfo& info);
 	void HitWall(const CollisionMapInfo& info);
-
+//カメラに映っているか
+	bool InCamera();
 private:
 	WorldTransform worldTransform_; ///< ワールドトランスフォーム
 	Model* model_ = nullptr;    
@@ -98,6 +99,7 @@ private:
 	LRDirection lrDirection_ = LRDirection::kLeft; ///< キャラクターの向き
 	static inline const float kViewRangeX = 20.0f; 
     static inline const float kViewRangeY = 15.0f;
+	
 	                                               
 	
 };
