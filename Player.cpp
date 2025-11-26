@@ -602,7 +602,7 @@ void Player::inputMove() {
 	if ((Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_A))) {
 
 		// 壁に触れているとき → 制限なしで壁ジャンプ可能
-		if (tachWall_) {
+		if (tachWall_&&!onGround_) {
 			// 反対方向に弾くような壁ジャンプ
 			if (lrDirection_ == LRDirection::kRight) {
 				velocity_ = {-kJumpAcceleration / 90.0f, kJumpAcceleration / 60.0f, 0};
