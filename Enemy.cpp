@@ -128,13 +128,7 @@ AABB Enemy::GetAABB() {
 }
 
 void Enemy::OnCollision(const Player* player) {
-	//(void)player;
-	// プレイヤーとの衝突時の処理をここに記述
-	// 例えば、敵を消す、ダメージを与えるなど
-	// 今回は何もしない
-	// ただし、死亡フラグを立てるなどの処理は行う
-
-	/// isDead_ = true; // プレイヤーと衝突したら死亡
+	
 	if (behavior_ == Behavior::kDead) {
 		return;
 	}

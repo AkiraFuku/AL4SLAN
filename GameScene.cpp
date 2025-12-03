@@ -346,10 +346,11 @@ void GameScene::Update() {
 		// player_の更新
 		player_->Update();
 		// エネミー
+		
 		for (Enemy* enemy : enemies_) {
 			enemy->Update();
 		}
-		EnemyCollision();
+		//EnemyCollision();
 		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
@@ -427,9 +428,9 @@ void GameScene::Update() {
 
 		skydome_->Update();
 		cameraControlle_->Update();
-		for (Enemy* enemy : enemies_) {
+		/*for (Enemy* enemy : enemies_) {
 			enemy->Update();
-		}
+		}*/
 		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
