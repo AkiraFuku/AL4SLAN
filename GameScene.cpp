@@ -144,8 +144,10 @@ void GameScene::CheckAllCollisions() {
 			enemy->OnCollision(player_);
 		}
 		// 攻撃判定
-		if (IsCollision(attackAABB, aabb2)) {
-			enemy->HitAttack(player_);
+		if (player_->isAttack()) {
+			if (IsCollision(attackAABB, aabb2)) {
+				enemy->HitAttack(player_);
+			}
 		}
 	}
 	// ゴール
@@ -346,7 +348,7 @@ void GameScene::Update() {
 		// player_の更新
 		player_->Update();
 		// エネミー
-		
+
 		for (Enemy* enemy : enemies_) {
 			enemy->Update();
 		}
@@ -429,13 +431,13 @@ void GameScene::Update() {
 		skydome_->Update();
 		cameraControlle_->Update();
 		/*for (Enemy* enemy : enemies_) {
-			enemy->Update();
+		    enemy->Update();
 		}*/
 		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
 		// ブロックの更新
-		
+
 		break;
 
 	case GameScene::Phase::kPause:
@@ -587,77 +589,80 @@ void GameScene::CreateHitEffect(const Vector3& position) {
 }
 
 void GameScene::EnemyCollision() {
-    // リストの先頭からチェック
-    auto itA = enemies_.begin();
-    for (; itA != enemies_.end(); ++itA) {
-        Enemy* enemyA = *itA;
+	// リストの先頭からチェック
+	auto itA = enemies_.begin();
+	for (; itA != enemies_.end(); ++itA) {
+		Enemy* enemyA = *itA;
 
-        // 次の要素からチェックを開始することで、(A, B) の重複判定と (A, A) の自己判定を防ぐ
-        auto itB = itA;
-        itB++; 
+		// 次の要素からチェックを開始することで、(A, B) の重複判定と (A, A) の自己判定を防ぐ
+		auto itB = itA;
+		itB++;
 
-        for (; itB != enemies_.end(); ++itB) {
-            Enemy* enemyB = *itB;
+		for (; itB != enemies_.end(); ++itB) {
+			Enemy* enemyB = *itB;
 
-            // 死亡している、またはカメラ外のエネミーはスキップ
-            if (enemyA->IsDead() || enemyB->IsDead()) continue;
-            if (enemyA->InCamera() && enemyB->InCamera()) continue;
+			// 死亡している、またはカメラ外のエネミーはスキップ
+			if (enemyA->IsDead() || enemyB->IsDead())
+				continue;
+			if (enemyA->InCamera() && enemyB->InCamera())
+				continue;
 
-            // AABB（当たり判定ボックス）を取得
-            AABB aabb1 = enemyA->GetAABB();
-            AABB aabb2 = enemyB->GetAABB();
+			// AABB（当たり判定ボックス）を取得
+			AABB aabb1 = enemyA->GetAABB();
+			AABB aabb2 = enemyB->GetAABB();
 
-            // AABB同士が当たっているか判定
-            if (aabb1.min.x < aabb2.max.x && aabb1.max.x > aabb2.min.x &&
-                aabb1.min.y < aabb2.max.y && aabb1.max.y > aabb2.min.y &&
-                aabb1.min.z < aabb2.max.z && aabb1.max.z > aabb2.min.z) {
+			// AABB同士が当たっているか判定
+			if (aabb1.min.x < aabb2.max.x && aabb1.max.x > aabb2.min.x && aabb1.min.y < aabb2.max.y && aabb1.max.y > aabb2.min.y && aabb1.min.z < aabb2.max.z && aabb1.max.z > aabb2.min.z) {
 
-                // 重なり量を計算
-                float overlapX = min(aabb1.max.x, aabb2.max.x) - max(aabb1.min.x, aabb2.min.x);
-                float overlapY = min(aabb1.max.y, aabb2.max.y) - max(aabb1.min.y, aabb2.min.y);
+				// 重なり量を計算
+				float overlapX = min(aabb1.max.x, aabb2.max.x) - max(aabb1.min.x, aabb2.min.x);
+				float overlapY = min(aabb1.max.y, aabb2.max.y) - max(aabb1.min.y, aabb2.min.y);
 
-                // 上下の位置関係を判定
-                Enemy* upperEnemy = (aabb1.min.y > aabb2.min.y) ? enemyA : enemyB;
-                Enemy* lowerEnemy = (upperEnemy == enemyA) ? enemyB : enemyA;
+				// 上下の位置関係を判定
+				Enemy* upperEnemy = (aabb1.min.y > aabb2.min.y) ? enemyA : enemyB;
+				Enemy* lowerEnemy = (upperEnemy == enemyA) ? enemyB : enemyA;
 
-                // --- 縦方向の衝突（踏みつけ判定） ---
-                // Yの重なりの方が小さい、かつ 上にいるキャラが落下中
-                if (overlapY < overlapX) {
-                    if (upperEnemy->GetVelocity().y <= 0.0f) {
-                        // 下のエネミーの頭頂部のY座標を計算
-                        // (注: Enemy::kHeightなどはprivateなので、GetWorldPosition等から計算するか、Getterを追加推奨)
-                        float lowerTopY = lowerEnemy->GetWorldPosition().y + (0.8f / 2.0f); 
-                        upperEnemy->OnLandOnEnemy(lowerTopY);
-                    }
-                }
-                // --- 横方向の衝突（押し合い） ---
-                else {
-                    Vector3 posA = enemyA->GetWorldPosition();
-                    Vector3 posB = enemyB->GetWorldPosition();
-                    
-                    // X軸の押し出し量を計算（重なっている分を半分ずつ押し戻す）
-                    float pushBackX = overlapX / 2.0f;
+				// --- 縦方向の衝突（踏みつけ判定） ---
+				// Yの重なりの方が小さい、かつ 上にいるキャラが落下中
+				if (overlapY < overlapX) {
+					if (upperEnemy->GetVelocity().y <= 0.0f) {
+						// 下のエネミーの頭頂部のY座標を計算
+						// (注: Enemy::kHeightなどはprivateなので、GetWorldPosition等から計算するか、Getterを追加推奨)
+						float lowerTopY = lowerEnemy->GetWorldPosition().y + (0.8f / 2.0f);
+						upperEnemy->OnLandOnEnemy(lowerTopY);
+					}
+				}
+				// --- 横方向の衝突（押し合い） ---
+				else {
+					Vector3 posA = enemyA->GetWorldPosition();
+					Vector3 posB = enemyB->GetWorldPosition();
 
-                    // 位置関係によって左右に押し出す + 速度反転
-                    if (posA.x < posB.x) {
-                        // Aが左、Bが右
-                        enemyA->AddPosition({ -pushBackX, 0, 0 }); // 左へ押し戻す
-                        enemyB->AddPosition({ pushBackX, 0, 0 });  // 右へ押し戻す
-                        
-                        // 互いに相手の方を向いていたら反転させる
-                        if (enemyA->GetVelocity().x > 0) enemyA->OnCollisionWithEnemy();
-                        if (enemyB->GetVelocity().x < 0) enemyB->OnCollisionWithEnemy();
-                    }
-                    else {
-                        // Aが右、Bが左
-                        enemyA->AddPosition({ pushBackX, 0, 0 });  // 右へ押し戻す
-                        enemyB->AddPosition({ -pushBackX, 0, 0 }); // 左へ押し戻す
+					// X軸の押し出し量を計算（重なっている分を半分ずつ押し戻す）
+					float pushBackX = overlapX / 2.0f;
 
-                        if (enemyA->GetVelocity().x < 0) enemyA->OnCollisionWithEnemy();
-                        if (enemyB->GetVelocity().x > 0) enemyB->OnCollisionWithEnemy();
-                    }
-                }
-            }
-        }
-    }
+					// 位置関係によって左右に押し出す + 速度反転
+					if (posA.x < posB.x) {
+						// Aが左、Bが右
+						enemyA->AddPosition({-pushBackX, 0, 0}); // 左へ押し戻す
+						enemyB->AddPosition({pushBackX, 0, 0});  // 右へ押し戻す
+
+						// 互いに相手の方を向いていたら反転させる
+						if (enemyA->GetVelocity().x > 0)
+							enemyA->OnCollisionWithEnemy();
+						if (enemyB->GetVelocity().x < 0)
+							enemyB->OnCollisionWithEnemy();
+					} else {
+						// Aが右、Bが左
+						enemyA->AddPosition({pushBackX, 0, 0});  // 右へ押し戻す
+						enemyB->AddPosition({-pushBackX, 0, 0}); // 左へ押し戻す
+
+						if (enemyA->GetVelocity().x < 0)
+							enemyA->OnCollisionWithEnemy();
+						if (enemyB->GetVelocity().x > 0)
+							enemyB->OnCollisionWithEnemy();
+					}
+				}
+			}
+		}
+	}
 }
