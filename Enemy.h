@@ -74,6 +74,8 @@ public:
     // targetTopY: 下にいるエネミーの頭頂部のY座標
     void OnLandOnEnemy(float targetTopY);
 
+	//めり込まない
+	void AddPosition(const Vector3& offset);
 private:
 	// ★追加: 衝突判定関連のメンバ関数
     void MapCollisionCheck(CollisionMapInfo& info);

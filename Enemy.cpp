@@ -242,58 +242,93 @@ void Enemy::CheckMapCollisionDown(CollisionMapInfo& info) {
 }
 
 void Enemy::CheckMapCollisionRight(CollisionMapInfo& info) {
-	if (info.move.x <= 0.0f)
-		return;
+    if (info.move.x <= 0.0f)
+        return;
 
-	std::vector<Vector3> positionsNew(kNumCorner);
-	for (uint32_t i = 0; i < positionsNew.size(); ++i) {
-		positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
-	}
+    std::vector<Vector3> positionsNew(kNumCorner);
+    for (uint32_t i = 0; i < positionsNew.size(); ++i) {
+        positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
+    }
 
-	bool hit = false;
-	// 右上
-	MapChipField::IndexSet indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop]);
-	if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock)
-		hit = true;
-	// 右下
-	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
-	if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock)
-		hit = true;
+    bool hit = false;
+    MapChipField::IndexSet hitIndexSet = {}; // ★追加：実際に当たったブロックの情報を保存
 
-	if (hit) {
-		indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(+kWidth / 2.0f, 0, 0));
-		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-		info.move.x = max(0.0f, rect.left - worldTransform_.translation_.x - (kWidth / 2.0f + kBlank));
-		info.isWall = true;
-	}
+    // 右上
+    MapChipField::IndexSet indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop]);
+    if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
+        hit = true;
+        hitIndexSet = indexSet; // ★当たったブロックを記憶
+    }
+    
+    // 右下
+    // (右上ですでに当たっていても、右下もチェックして上書き更新しても良い。
+    //  一般的に壁は垂直なのでどちらでも良いが、確実にブロックがある方を使う必要がある)
+    if (!hit) { // まだ当たっていなければ右下をチェック
+        indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
+        if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
+            hit = true;
+            hitIndexSet = indexSet; // ★当たったブロックを記憶
+        }
+    } else {
+        // 念のため右下もチェック（両方当たっている場合は壁として扱う）
+        MapChipField::IndexSet indexSetBottom = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
+        if (mapChipField_->GetMapChipTypeByIndex(indexSetBottom.xIndex, indexSetBottom.yIndex) == MapChipType::kBlock) {
+             hitIndexSet = indexSetBottom; 
+        }
+    }
+
+    if (hit) {
+        // ★修正: 再計算せず、記憶しておいた hitIndexSet を使う
+        // indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(+kWidth / 2.0f, 0, 0));
+        
+        MapChipField::Rect rect = mapChipField_->GetRectByIndex(hitIndexSet.xIndex, hitIndexSet.yIndex);
+        info.move.x = max(0.0f, rect.left - worldTransform_.translation_.x - (kWidth / 2.0f + kBlank));
+        info.isWall = true;
+    }
 }
 void Enemy::CheckMapCollisionLeft(CollisionMapInfo& info) {
-	if (info.move.x >= 0.0f)
-		return;
+    if (info.move.x >= 0.0f)
+        return;
 
-	std::vector<Vector3> positionsNew(kNumCorner);
-	for (uint32_t i = 0; i < positionsNew.size(); ++i) {
-		positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
-	}
+    std::vector<Vector3> positionsNew(kNumCorner);
+    for (uint32_t i = 0; i < positionsNew.size(); ++i) {
+        positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
+    }
 
-	bool hit = false;
-	// 左上
-	MapChipField::IndexSet indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop]);
-	if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock)
-		hit = true;
-	// 左下
-	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom]);
-	if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock)
-		hit = true;
+    bool hit = false;
+    MapChipField::IndexSet hitIndexSet = {}; // ★追加
 
-	if (hit) {
-		indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(-kWidth / 2.0f, 0, 0));
-		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-		info.move.x = min(0.0f, rect.right - worldTransform_.translation_.x + (kWidth / 2.0f + kBlank));
-		info.isWall = true;
-	}
+    // 左上
+    MapChipField::IndexSet indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop]);
+    if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
+        hit = true;
+        hitIndexSet = indexSet;
+    }
+
+    // 左下
+    if (!hit) {
+        indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom]);
+        if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
+            hit = true;
+            hitIndexSet = indexSet;
+        }
+    } else {
+        // 両方当たっている場合のチェック（任意）
+        MapChipField::IndexSet indexSetBottom = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom]);
+         if (mapChipField_->GetMapChipTypeByIndex(indexSetBottom.xIndex, indexSetBottom.yIndex) == MapChipType::kBlock) {
+            hitIndexSet = indexSetBottom;
+        }
+    }
+
+    if (hit) {
+        // ★修正: 記憶しておいた hitIndexSet を使う
+        // indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(-kWidth / 2.0f, 0, 0));
+        
+        MapChipField::Rect rect = mapChipField_->GetRectByIndex(hitIndexSet.xIndex, hitIndexSet.yIndex);
+        info.move.x = min(0.0f, rect.right - worldTransform_.translation_.x + (kWidth / 2.0f + kBlank));
+        info.isWall = true;
+    }
 }
-
 void Enemy::ResultCollisionMapInfo(const CollisionMapInfo& info) { worldTransform_.translation_ += info.move; }
 
 void Enemy::OnCollisionWithEnemy() {
@@ -314,4 +349,7 @@ void Enemy::OnLandOnEnemy(float targetTopY) {
         // (相手のTop + 自分の身長の半分)
         worldTransform_.translation_.y = targetTopY + (kHeight / 2.0f);
     }
+}
+void Enemy::AddPosition(const Vector3& offset) {
+    worldTransform_.translation_ += offset;
 }

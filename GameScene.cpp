@@ -627,16 +627,25 @@ void GameScene::EnemyCollision() {
 			}
 			// Xの重なりの方が小さい場合 ＝ 「横方向からの衝突」
 			else {
-				// お互いに方向転換（以前実装した処理）
-				enemyA->OnCollisionWithEnemy();
-				enemyB->OnCollisionWithEnemy();
+				Vector3 pos1 = enemyA->GetWorldPosition();
+				Vector3 pos2 = enemyB->GetWorldPosition();
+				Vector3 vel1 = enemyA->GetVelocity();
+				Vector3 vel2 = enemyB->GetVelocity();
 
-				// めり込み防止（横に少し押し出す）
-				// 簡易的に、左にいる方は左へ、右にいる方は右へ少しずらす
-				if (aabb1.min.x < aabb2.min.x) {
-					// enemy[i] is Left
-					// ここで座標を直接少しずらす処理を入れるとより安定しますが
-					// OnCollisionWithEnemy()内で速度反転＋微移動していればそのままでOK
+				// エネミーi が エネミーj の左にいて、かつ右（相手の方）に向かっているなら反転
+				if (pos1.x < pos2.x && vel1.x > 0.0f) {
+					enemyA->OnCollisionWithEnemy();
+				}
+				// エネミーi が エネミーj の右にいて、かつ左（相手の方）に向かっているなら反転
+				else if (pos1.x > pos2.x && vel1.x < 0.0f) {
+					enemyA->OnCollisionWithEnemy();
+				}
+
+				// エネミーj についても同様
+				if (pos2.x < pos1.x && vel2.x > 0.0f) {
+					enemyB->OnCollisionWithEnemy();
+				} else if (pos2.x > pos1.x && vel2.x < 0.0f) {
+					enemyB->OnCollisionWithEnemy();
 				}
 			}
 		}
