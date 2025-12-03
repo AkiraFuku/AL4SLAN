@@ -4,6 +4,7 @@
 #include "MassFunction.h"
 #include <algorithm>
 #include <numbers>
+#include "MapCollider.h"
 
 using namespace KamataEngine;
 
@@ -24,22 +25,17 @@ public:
 		kDead,    ///< 死亡行動
 
 	};
-	// 衝突判定結果を格納する構造体（Playerと同じ）
-	struct CollisionMapInfo {
-		bool isCeiling = false; ///< 天井に衝突しているか
-		bool isFloor = false;   ///< 床に衝突しているか
-		bool isWall = false;    ///< 壁に衝突しているか
-		Vector3 move;           ///< 移動パラメータ
-	};
+	
+	
 
-	// 角の定義（Playerと同じ）
-	enum Corner {
-		kRightBottom, ///< 右下
-		kLeftBottom,  ///< 左下
-		kRightTop,    ///< 右上
-		kLeftTop,     ///< 左上
-		kNumCorner    ///< コーナーの数
-	};
+	//// 角の定義（Playerと同じ）
+	//enum Corner {
+	//	kRightBottom, ///< 右下
+	//	kLeftBottom,  ///< 左下
+	//	kRightTop,    ///< 右上
+	//	kLeftTop,     ///< 左上
+	//	kNumCorner    ///< コーナーの数
+	//};
 	void Initialize(Model* model, Camera* camera, Vector3& position);
 	/// <summary>
 	/// 更新
@@ -65,7 +61,7 @@ public:
 	// カメラに映っているか
 	bool InCamera();
 
-	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
+	void SetMapChipField(MapChipField* mapChipField);
 
 	void OnCollisionWithEnemy();
 
@@ -78,18 +74,19 @@ public:
 	void AddPosition(const Vector3& offset);
 private:
 	// ★追加: 衝突判定関連のメンバ関数
-    void MapCollisionCheck(CollisionMapInfo& info);
+   /* void MapCollisionCheck(CollisionMapInfo& info);
     void CheckMapCollisionUp(CollisionMapInfo& info);
     void CheckMapCollisionDown(CollisionMapInfo& info);
     void CheckMapCollisionRight(CollisionMapInfo& info);
     void CheckMapCollisionLeft(CollisionMapInfo& info);
-    void ResultCollisionMapInfo(const CollisionMapInfo& info);
-    Vector3 CornerPosition(const Vector3& center, Corner corner);
+  */  void ResultCollisionMapInfo(const CollisionMapInfo& info);
+  //  Vector3 CornerPosition(const Vector3& center, Corner corner);
 private:
 	WorldTransform worldTransform_; ///< ワールドトランスフォーム
 	Model* model_ = nullptr;
 	Camera* camera_ = nullptr;
 
+	std::unique_ptr<MapCollider> mapCollider_;
 	MapChipField* mapChipField_ = nullptr;
 	static inline const float kWalkSpeed = 0.02f;
 	Vector3 velocity_ = {};

@@ -27,8 +27,8 @@ void Enemy::Initialize(Model* model, Camera* camera, Vector3& position) {
 }
 void Enemy::Update() {
 	if (collisionCooldown_ > 0.0f) {
-        collisionCooldown_ -= 1.0f / 60.0f;
-    }
+		collisionCooldown_ -= 1.0f / 60.0f;
+	}
 	// カメラ外だと動かない
 
 	if (behaviorRequest_ != Behavior::kUnknown) {
@@ -60,7 +60,10 @@ void Enemy::Update() {
 		collisionMapInfo.move = velocity_;
 
 		// マップ衝突判定
-		MapCollisionCheck(collisionMapInfo);
+		
+		if (mapCollider_) {
+			mapCollider_->CheckCollision(worldTransform_.translation_, kWidth - kBlank, kHeight - kBlank, collisionMapInfo);
+		}
 
 		// 判定結果を反映
 		ResultCollisionMapInfo(collisionMapInfo);
@@ -130,7 +133,7 @@ AABB Enemy::GetAABB() {
 }
 
 void Enemy::OnCollision(const Player* player) {
-	
+
 	if (behavior_ == Behavior::kDead) {
 		return;
 	}
@@ -159,197 +162,45 @@ void Enemy::HitAttack(const Player* player) {
 	isCollisionDisabled_ = true; // 衝突を無効化
 }
 bool Enemy::InCamera() {
-	//写ってないを返す
+	// 写ってないを返す
 	const float kActiveRange = 30.0f;
 	return (std::abs(GetWorldPosition().x - camera_->translation_.x) > kActiveRange);
 }
 
-// ★追加: 角の座標を取得する関数
-Vector3 Enemy::CornerPosition(const Vector3& center, Corner corner) {
-	Vector3 offsetTable[kNumCorner] = {
-	    {+kWidth / 2.0f, -kHeight / 2.0f, 0.0f}, // kRightBottom
-	    {-kWidth / 2.0f, -kHeight / 2.0f, 0.0f}, // kLeftBottom
-	    {+kWidth / 2.0f, +kHeight / 2.0f, 0.0f}, // kRightTop
-	    {-kWidth / 2.0f, +kHeight / 2.0f, 0.0f}  // kLeftTop
-	};
-	return center + offsetTable[static_cast<uint32_t>(corner)];
-}
-// ★追加: マップ衝突判定の統括関数
-void Enemy::MapCollisionCheck(CollisionMapInfo& info) {
-	if (mapChipField_) {
-		CheckMapCollisionUp(info);
-		CheckMapCollisionDown(info);
-		CheckMapCollisionRight(info);
-		CheckMapCollisionLeft(info);
-	}
-}
-void Enemy::CheckMapCollisionUp(CollisionMapInfo& info) {
-	if (info.move.y <= 0.0f)
-		return;
+void Enemy::SetMapChipField(MapChipField* mapChipField) {
 
-	std::vector<Vector3> positionsNew(kNumCorner);
-	for (uint32_t i = 0; i < positionsNew.size(); ++i) {
-		positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
-	}
+	mapCollider_ = std::make_unique<MapCollider>();
 
-	bool hit = false;
-	// 左上
-	MapChipField::IndexSet indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop]);
-	if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock)
-		hit = true;
-	// 右上
-	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop]);
-	if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock)
-		hit = true;
-
-	if (hit) {
-		indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(0, +kHeight / 2.0f, 0));
-		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-		info.move.y = max(0.0f, rect.bottom - worldTransform_.translation_.y - (kHeight / 2.0f + kBlank));
-		info.isCeiling = true;
+	mapChipField_ = mapChipField;
+	if (mapCollider_) {
+		mapCollider_->Initialize(mapChipField_);
 	}
 }
 
-void Enemy::CheckMapCollisionDown(CollisionMapInfo& info) {
-	if (info.move.y >= 0.0f)
-		return;
 
-	std::vector<Vector3> positionsNew(kNumCorner);
-	for (uint32_t i = 0; i < positionsNew.size(); ++i) {
-		positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
-	}
-
-	bool hit = false;
-	// 左下
-	MapChipField::IndexSet indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom]);
-	if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock)
-		hit = true;
-	// 右下
-	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
-	if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock)
-		hit = true;
-
-	if (hit) {
-		indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(0, -kHeight / 2.0f, 0));
-		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-		info.move.y = min(0.0f, rect.top - worldTransform_.translation_.y + (kHeight / 2.0f + kBlank));
-		info.isFloor = true;
-	}
-}
-
-void Enemy::CheckMapCollisionRight(CollisionMapInfo& info) {
-    if (info.move.x <= 0.0f)
-        return;
-
-    std::vector<Vector3> positionsNew(kNumCorner);
-    for (uint32_t i = 0; i < positionsNew.size(); ++i) {
-        positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
-    }
-
-    bool hit = false;
-    MapChipField::IndexSet hitIndexSet = {}; // ★追加：実際に当たったブロックの情報を保存
-
-    // 右上
-    MapChipField::IndexSet indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop]);
-    if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
-        hit = true;
-        hitIndexSet = indexSet; // ★当たったブロックを記憶
-    }
-    
-    // 右下
-    // (右上ですでに当たっていても、右下もチェックして上書き更新しても良い。
-    //  一般的に壁は垂直なのでどちらでも良いが、確実にブロックがある方を使う必要がある)
-    if (!hit) { // まだ当たっていなければ右下をチェック
-        indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
-        if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
-            hit = true;
-            hitIndexSet = indexSet; // ★当たったブロックを記憶
-        }
-    } else {
-        // 念のため右下もチェック（両方当たっている場合は壁として扱う）
-        MapChipField::IndexSet indexSetBottom = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
-        if (mapChipField_->GetMapChipTypeByIndex(indexSetBottom.xIndex, indexSetBottom.yIndex) == MapChipType::kBlock) {
-             hitIndexSet = indexSetBottom; 
-        }
-    }
-
-    if (hit) {
-        // ★修正: 再計算せず、記憶しておいた hitIndexSet を使う
-        // indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(+kWidth / 2.0f, 0, 0));
-        
-        MapChipField::Rect rect = mapChipField_->GetRectByIndex(hitIndexSet.xIndex, hitIndexSet.yIndex);
-        info.move.x = max(0.0f, rect.left - worldTransform_.translation_.x - (kWidth / 2.0f + kBlank));
-        info.isWall = true;
-    }
-}
-void Enemy::CheckMapCollisionLeft(CollisionMapInfo& info) {
-    if (info.move.x >= 0.0f)
-        return;
-
-    std::vector<Vector3> positionsNew(kNumCorner);
-    for (uint32_t i = 0; i < positionsNew.size(); ++i) {
-        positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
-    }
-
-    bool hit = false;
-    MapChipField::IndexSet hitIndexSet = {}; // ★追加
-
-    // 左上
-    MapChipField::IndexSet indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop]);
-    if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
-        hit = true;
-        hitIndexSet = indexSet;
-    }
-
-    // 左下
-    if (!hit) {
-        indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom]);
-        if (mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex) == MapChipType::kBlock) {
-            hit = true;
-            hitIndexSet = indexSet;
-        }
-    } else {
-        // 両方当たっている場合のチェック（任意）
-        MapChipField::IndexSet indexSetBottom = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom]);
-         if (mapChipField_->GetMapChipTypeByIndex(indexSetBottom.xIndex, indexSetBottom.yIndex) == MapChipType::kBlock) {
-            hitIndexSet = indexSetBottom;
-        }
-    }
-
-    if (hit) {
-        // ★修正: 記憶しておいた hitIndexSet を使う
-        // indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(-kWidth / 2.0f, 0, 0));
-        
-        MapChipField::Rect rect = mapChipField_->GetRectByIndex(hitIndexSet.xIndex, hitIndexSet.yIndex);
-        info.move.x = min(0.0f, rect.right - worldTransform_.translation_.x + (kWidth / 2.0f + kBlank));
-        info.isWall = true;
-    }
-}
 void Enemy::ResultCollisionMapInfo(const CollisionMapInfo& info) { worldTransform_.translation_ += info.move; }
 
 void Enemy::OnCollisionWithEnemy() {
 	if (collisionCooldown_ > 0.0f) {
-        return;
-    }
-    // 速度を反転させる
-    velocity_.x *= -1.0f;
+		return;
+	}
+	// 速度を反転させる
+	velocity_.x *= -1.0f;
 
-    // 補足: 連続して判定が起きないように、少しだけ位置をずらす処理を入れるとより安定します
-    // 例: velocity_.x がプラスなら少し右へ、マイナスなら少し左へ強制移動など
-    // 今回はシンプルに反転のみとします
-	collisionCooldown_ = 0.2f; 
+	// 補足: 連続して判定が起きないように、少しだけ位置をずらす処理を入れるとより安定します
+	// 例: velocity_.x がプラスなら少し右へ、マイナスなら少し左へ強制移動など
+	// 今回はシンプルに反転のみとします
+	collisionCooldown_ = 0.2f;
 }
 void Enemy::OnLandOnEnemy(float targetTopY) {
-    // 落下中のみ着地処理を行う（上昇中に頭をぶつけた場合は除外するため）
-    if (velocity_.y <= 0.0f) {
-        // Ｙ速度をリセット（着地）
-        velocity_.y = 0.0f;
+	// 落下中のみ着地処理を行う（上昇中に頭をぶつけた場合は除外するため）
+	if (velocity_.y <= 0.0f) {
+		// Ｙ速度をリセット（着地）
+		velocity_.y = 0.0f;
 
-        // 位置を相手の頭上に補正
-        // (相手のTop + 自分の身長の半分)
-        worldTransform_.translation_.y = targetTopY + (kHeight / 2.0f);
-    }
+		// 位置を相手の頭上に補正
+		// (相手のTop + 自分の身長の半分)
+		worldTransform_.translation_.y = targetTopY + (kHeight / 2.0f);
+	}
 }
-void Enemy::AddPosition(const Vector3& offset) {
-    worldTransform_.translation_ += offset;
-}
+void Enemy::AddPosition(const Vector3& offset) { worldTransform_.translation_ += offset; }
