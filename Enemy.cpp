@@ -26,7 +26,9 @@ void Enemy::Initialize(Model* model, Camera* camera, Vector3& position) {
 	walkTimer_ = 0.0f;
 }
 void Enemy::Update() {
-
+	if (collisionCooldown_ > 0.0f) {
+        collisionCooldown_ -= 1.0f / 60.0f;
+    }
 	// カメラ外だと動かない
 
 	if (behaviorRequest_ != Behavior::kUnknown) {
@@ -326,12 +328,16 @@ void Enemy::CheckMapCollisionLeft(CollisionMapInfo& info) {
 void Enemy::ResultCollisionMapInfo(const CollisionMapInfo& info) { worldTransform_.translation_ += info.move; }
 
 void Enemy::OnCollisionWithEnemy() {
+	if (collisionCooldown_ > 0.0f) {
+        return;
+    }
     // 速度を反転させる
     velocity_.x *= -1.0f;
 
     // 補足: 連続して判定が起きないように、少しだけ位置をずらす処理を入れるとより安定します
     // 例: velocity_.x がプラスなら少し右へ、マイナスなら少し左へ強制移動など
     // 今回はシンプルに反転のみとします
+	collisionCooldown_ = 0.2f; 
 }
 void Enemy::OnLandOnEnemy(float targetTopY) {
     // 落下中のみ着地処理を行う（上昇中に頭をぶつけた場合は除外するため）

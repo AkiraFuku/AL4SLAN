@@ -350,7 +350,7 @@ void GameScene::Update() {
 		for (Enemy* enemy : enemies_) {
 			enemy->Update();
 		}
-		//EnemyCollision();
+		EnemyCollision();
 		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
@@ -435,14 +435,7 @@ void GameScene::Update() {
 			hitEffect->Update();
 		}
 		// ブロックの更新
-		/*for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-		    for (WorldTransform* WorldTransformBlock : worldTransformBlockLine) {
-		        if (!WorldTransformBlock) {
-		            continue;
-		        }
-		        WorldTransformUpdate(WorldTransformBlock);
-		    }
-		}*/
+		
 		break;
 
 	case GameScene::Phase::kPause:
@@ -594,61 +587,77 @@ void GameScene::CreateHitEffect(const Vector3& position) {
 }
 
 void GameScene::EnemyCollision() {
-	for (Enemy* enemyA : enemies_) {
-		for (Enemy* enemyB : enemies_) {
+    // リストの先頭からチェック
+    auto itA = enemies_.begin();
+    for (; itA != enemies_.end(); ++itA) {
+        Enemy* enemyA = *itA;
 
-			// 死亡しているエネミーは判定しない
-			if ((enemyA->IsDead() || enemyB->IsDead()) || enemyA == enemyB)
-				continue;
-			if (enemyA->InCamera() && enemyB->InCamera())
-				continue;
-			// AABB（当たり判定ボックス）を取得
-			AABB aabb1 = enemyA->GetAABB();
-			AABB aabb2 = enemyB->GetAABB();
-			float overlapX = min(aabb1.max.x, aabb2.max.x) - max(aabb1.min.x, aabb2.min.x);
-			float overlapY = min(aabb1.max.y, aabb2.max.y) - max(aabb1.min.y, aabb2.min.y);
-			// 上下の位置関係を判定 (どちらが上にいるか)
-			Enemy* upperEnemy = (aabb1.min.y > aabb2.min.y) ? enemyA : enemyB;
-			Enemy* lowerEnemy = (upperEnemy == enemyA) ? enemyB : enemyA;
-			// Yの重なりの方が小さい場合 ＝ 「上下方向からの衝突」とみなす
-			if (overlapY < overlapX) {
+        // 次の要素からチェックを開始することで、(A, B) の重複判定と (A, A) の自己判定を防ぐ
+        auto itB = itA;
+        itB++; 
 
-				// 「上にいるキャラ」が「落下中」であれば、着地させる
-				if (upperEnemy->GetVelocity().y <= 0.0f) {
-					// 下のエネミーの頭頂部 (CenterY + Height/2) を渡して着地
-					float lowerTopY = lowerEnemy->GetWorldPosition().y + (0.8f / 2.0f); // 0.8fはEnemy::kHeight
-					// ※ Enemyクラスに GetHeight() を作るか、定数 kHeight をpublicにするのが理想ですが、
-					// ここでは数値(0.8f)または推定値を使用しています。
+        for (; itB != enemies_.end(); ++itB) {
+            Enemy* enemyB = *itB;
 
-					upperEnemy->OnLandOnEnemy(lowerTopY);
-				} else {
-					// 上昇中なら何もしない（スルー）か、頭をぶつけて落下させるなどの処理
-				}
+            // 死亡している、またはカメラ外のエネミーはスキップ
+            if (enemyA->IsDead() || enemyB->IsDead()) continue;
+            if (enemyA->InCamera() && enemyB->InCamera()) continue;
 
-			}
-			// Xの重なりの方が小さい場合 ＝ 「横方向からの衝突」
-			else {
-				Vector3 pos1 = enemyA->GetWorldPosition();
-				Vector3 pos2 = enemyB->GetWorldPosition();
-				Vector3 vel1 = enemyA->GetVelocity();
-				Vector3 vel2 = enemyB->GetVelocity();
+            // AABB（当たり判定ボックス）を取得
+            AABB aabb1 = enemyA->GetAABB();
+            AABB aabb2 = enemyB->GetAABB();
 
-				// エネミーi が エネミーj の左にいて、かつ右（相手の方）に向かっているなら反転
-				if (pos1.x < pos2.x && vel1.x > 0.0f) {
-					enemyA->OnCollisionWithEnemy();
-				}
-				// エネミーi が エネミーj の右にいて、かつ左（相手の方）に向かっているなら反転
-				else if (pos1.x > pos2.x && vel1.x < 0.0f) {
-					enemyA->OnCollisionWithEnemy();
-				}
+            // AABB同士が当たっているか判定
+            if (aabb1.min.x < aabb2.max.x && aabb1.max.x > aabb2.min.x &&
+                aabb1.min.y < aabb2.max.y && aabb1.max.y > aabb2.min.y &&
+                aabb1.min.z < aabb2.max.z && aabb1.max.z > aabb2.min.z) {
 
-				// エネミーj についても同様
-				if (pos2.x < pos1.x && vel2.x > 0.0f) {
-					enemyB->OnCollisionWithEnemy();
-				} else if (pos2.x > pos1.x && vel2.x < 0.0f) {
-					enemyB->OnCollisionWithEnemy();
-				}
-			}
-		}
-	}
+                // 重なり量を計算
+                float overlapX = min(aabb1.max.x, aabb2.max.x) - max(aabb1.min.x, aabb2.min.x);
+                float overlapY = min(aabb1.max.y, aabb2.max.y) - max(aabb1.min.y, aabb2.min.y);
+
+                // 上下の位置関係を判定
+                Enemy* upperEnemy = (aabb1.min.y > aabb2.min.y) ? enemyA : enemyB;
+                Enemy* lowerEnemy = (upperEnemy == enemyA) ? enemyB : enemyA;
+
+                // --- 縦方向の衝突（踏みつけ判定） ---
+                // Yの重なりの方が小さい、かつ 上にいるキャラが落下中
+                if (overlapY < overlapX) {
+                    if (upperEnemy->GetVelocity().y <= 0.0f) {
+                        // 下のエネミーの頭頂部のY座標を計算
+                        // (注: Enemy::kHeightなどはprivateなので、GetWorldPosition等から計算するか、Getterを追加推奨)
+                        float lowerTopY = lowerEnemy->GetWorldPosition().y + (0.8f / 2.0f); 
+                        upperEnemy->OnLandOnEnemy(lowerTopY);
+                    }
+                }
+                // --- 横方向の衝突（押し合い） ---
+                else {
+                    Vector3 posA = enemyA->GetWorldPosition();
+                    Vector3 posB = enemyB->GetWorldPosition();
+                    
+                    // X軸の押し出し量を計算（重なっている分を半分ずつ押し戻す）
+                    float pushBackX = overlapX / 2.0f;
+
+                    // 位置関係によって左右に押し出す + 速度反転
+                    if (posA.x < posB.x) {
+                        // Aが左、Bが右
+                        enemyA->AddPosition({ -pushBackX, 0, 0 }); // 左へ押し戻す
+                        enemyB->AddPosition({ pushBackX, 0, 0 });  // 右へ押し戻す
+                        
+                        // 互いに相手の方を向いていたら反転させる
+                        if (enemyA->GetVelocity().x > 0) enemyA->OnCollisionWithEnemy();
+                        if (enemyB->GetVelocity().x < 0) enemyB->OnCollisionWithEnemy();
+                    }
+                    else {
+                        // Aが右、Bが左
+                        enemyA->AddPosition({ pushBackX, 0, 0 });  // 右へ押し戻す
+                        enemyB->AddPosition({ -pushBackX, 0, 0 }); // 左へ押し戻す
+
+                        if (enemyA->GetVelocity().x < 0) enemyA->OnCollisionWithEnemy();
+                        if (enemyB->GetVelocity().x > 0) enemyB->OnCollisionWithEnemy();
+                    }
+                }
+            }
+        }
+    }
 }

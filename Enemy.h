@@ -118,4 +118,6 @@ private:
 	static inline const float kViewRangeY = 15.0f;
 	static inline const float kGravity = -0.1f;
 	static inline const float kLimitFallSpeed = -2.0f;
+
+	float collisionCooldown_ = 0.0f;
 };
