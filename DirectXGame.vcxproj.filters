@@ -16,6 +16,12 @@
     <Filter Include="シェーダー ファイル">
       <UniqueIdentifier>{718c7f4c-fc51-40ad-a221-b9456a7a1a3c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="efect">
+      <UniqueIdentifier>{e8b41a68-833c-4349-9203-50687dbb17c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game">
+      <UniqueIdentifier>{5bccfee2-3045-4939-af92-750bb6e96da6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -24,46 +30,49 @@
     <ClCompile Include="GameScene.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="CameraController.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DeathParticles.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Enemy.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Fade.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Gaid.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Goal.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="HitEffect.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="MapchipField.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="MassFunction.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Pause.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Skydome.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="TitleScene.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="CameraController.cpp">
+      <Filter>efect</Filter>
+    </ClCompile>
+    <ClCompile Include="DeathParticles.cpp">
+      <Filter>efect</Filter>
+    </ClCompile>
+    <ClCompile Include="HitEffect.cpp">
+      <Filter>efect</Filter>
+    </ClCompile>
+    <ClCompile Include="Pause.cpp">
+      <Filter>efect</Filter>
+    </ClCompile>
+    <ClCompile Include="Skydome.cpp">
+      <Filter>efect</Filter>
+    </ClCompile>
+    <ClCompile Include="Fade.cpp">
+      <Filter>efect</Filter>
+    </ClCompile>
+    <ClCompile Include="Enemy.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="Goal.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="MapchipField.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="MassFunction.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
     <ClCompile Include="worldT.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="MapCollider.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -121,46 +130,49 @@
     <ClInclude Include="GameScene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="CameraController.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DeathParticles.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Enemy.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Fade.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Gaid.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Goal.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="HitEffect.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="MapchipField.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="MassFunction.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Pause.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Skydome.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="TitleScene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="CameraController.h">
+      <Filter>efect</Filter>
+    </ClInclude>
+    <ClInclude Include="DeathParticles.h">
+      <Filter>efect</Filter>
+    </ClInclude>
+    <ClInclude Include="HitEffect.h">
+      <Filter>efect</Filter>
+    </ClInclude>
+    <ClInclude Include="Skydome.h">
+      <Filter>efect</Filter>
+    </ClInclude>
+    <ClInclude Include="Pause.h">
+      <Filter>efect</Filter>
+    </ClInclude>
+    <ClInclude Include="Fade.h">
+      <Filter>efect</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="Goal.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="MassFunction.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>game</Filter>
+    </ClInclude>
     <ClInclude Include="worldT.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="MapchipField.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="MapCollider.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

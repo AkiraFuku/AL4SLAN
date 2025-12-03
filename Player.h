@@ -2,6 +2,7 @@
 #define NOMINMAX
 #include "KamataEngine.h"
 #include "MassFunction.h"
+#include "MapCollider.h"
 
 using namespace KamataEngine;
 class MapChipField;
@@ -22,12 +23,6 @@ public:
 		kDash,    ///< ダッシュ行動
 	};
 
-struct CollisionMapInfo {
-		bool isCeiling = false; ///< 天井に衝突しているか
-		bool isFloor = false;   ///< 床に衝突しているか
-		bool isWall = false;    ///< 壁に衝突しているか
-		Vector3 move; ///< 移動パラメータ
-	};
 enum Corner {
 		kRightBottom, ///< 右下
 		kLeftBottom,  ///< 左下
@@ -74,13 +69,13 @@ enum Corner {
     const WorldTransform& GetWorldTransform() const { return worldTransform_; }
 	const Vector3& getVelocity() const { return velocity_; }
 	
-	void SetMapchipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
-	void MapCollisionCheck(CollisionMapInfo& collisionMapInfo);
+	void SetMapchipField(MapChipField* mapChipField) ;
+	/*void MapCollisionCheck(CollisionMapInfo& collisionMapInfo);
 	void CheckMapCollisionUp(CollisionMapInfo &info);
 	void CheckMapCollisionDown(CollisionMapInfo &info);
 	void CheckMapCollisionRight(CollisionMapInfo &info);
 	void CheckMapCollisionLeft(CollisionMapInfo &info);
-	void inputMove();
+	*/void inputMove();
 	Vector3 CornerPosition(const Vector3& center,Corner corner);
 	void   ResultCollisionMapInfo(const CollisionMapInfo& info);
 	void hitCeiling(const CollisionMapInfo& info);
@@ -142,6 +137,9 @@ private:
 	static inline const float  kLimitFallSpeed = 0.5f;
 	//跳躍加速度
 	static inline const float kJumpAcceleration=5.0f;
+	
+	std::unique_ptr<MapCollider> mapCollider_ ;
+	
 	MapChipField* mapChipField_ = nullptr; ///< マップチップフィールドへのポインタ
 	static inline const float kWidth = 0.8f; ///< キャラクターの幅
 	static inline const float kHeight = 0.8f; ///< キャラクターの高さ

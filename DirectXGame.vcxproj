@@ -116,6 +116,7 @@
     <ClCompile Include="HitEffect.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MapchipField.cpp" />
+    <ClCompile Include="MapCollider.cpp" />
     <ClCompile Include="MassFunction.cpp" />
     <ClCompile Include="Pause.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -209,6 +210,7 @@
     <ClInclude Include="Goal.h" />
     <ClInclude Include="HitEffect.h" />
     <ClInclude Include="MapchipField.h" />
+    <ClInclude Include="MapCollider.h" />
     <ClInclude Include="MassFunction.h" />
     <ClInclude Include="Pause.h" />
     <ClInclude Include="Player.h" />
