@@ -87,9 +87,9 @@ void Player::BehaviorRootUpdate() {
 	// 衝突判定
 	CollisionMapInfo collisionMapInfo;
 	collisionMapInfo.move = velocity_;
-	
+
 	if (mapCollider_) {
-	
+
 		mapCollider_->CheckCollision(worldTransform_.translation_, kWidth, kHeight, collisionMapInfo);
 	}
 
@@ -303,7 +303,7 @@ void Player::BehaviorDashUpdate() {
 	CollisionMapInfo collisionMapInfo = {};
 	collisionMapInfo.move = velocity_;
 
-	if(mapCollider_){
+	if (mapCollider_) {
 		mapCollider_->CheckCollision(worldTransform_.translation_, kWidth, kHeight, collisionMapInfo);
 	}
 	worldTransform_.translation_ += collisionMapInfo.move;
@@ -343,13 +343,12 @@ void Player::Draw() {
 		}
 	}
 }
-void Player::SetMapchipField(MapChipField* mapChipField) { 
+void Player::SetMapchipField(MapChipField* mapChipField) {
 	mapCollider_ = std::make_unique<MapCollider>();
 	mapChipField_ = mapChipField;
 	if (mapCollider_) {
 		mapCollider_->Initialize(mapChipField_);
 	}
-
 }
 
 void Player::inputMove() {
@@ -358,12 +357,15 @@ void Player::inputMove() {
 	bool keyRight = Input::GetInstance()->PushKey(DIK_RIGHT);
 	bool keyLeft = Input::GetInstance()->PushKey(DIK_LEFT);
 	bool stick = fabs(lx) > deadZone;
+
+	// 接地状態ならジャンプ回数リセット
 	if (onGround_) {
 		jumpCount_ = 0;
 	} else {
 		// 落下速度
-
 		velocity_ = Add(velocity_, Vector3(0, -kGravityAcceleration / 60.0f, 0));
+
+		// ★ここが重要：地面にいない時だけ壁ずり落ちを適用する
 		if (tachWall_ && !Input::GetInstance()->PushKey(DIK_DOWN)) {
 			// 壁に触れているときは落下速度を抑える
 			velocity_.y = std::max(velocity_.y, -kWallSlideSpeed);
@@ -373,7 +375,7 @@ void Player::inputMove() {
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
 
-	// キー入力
+	// キー入力 (左右移動)
 	if (keyRight || keyLeft || stick) {
 		Vector3 acceleration = {};
 
@@ -428,7 +430,6 @@ void Player::inputMove() {
 		velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
 	} else {
 		// 減速
-
 		velocity_.x *= (1.0f - kAttenution);
 	}
 	//
@@ -436,28 +437,35 @@ void Player::inputMove() {
 		velocity_.x = 0.0f;
 	}
 
+	// ---------------------------------------------------------
+	// ジャンプ処理
+	// ---------------------------------------------------------
 	if ((Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_A))) {
 
-		// 壁に触れているとき → 制限なしで壁ジャンプ可能
+		// 優先順位1: 地面にいるなら「通常ジャンプ」
+		// 床と壁の両方に触れている場合、ここで引っかかり、下の壁ジャンプは無視されます。
+		if (onGround_) {
+			velocity_.y += kJumpAcceleration / 60.0f; // Addではなく直接加算かY成分の上書きを推奨
 
-		if (tachWall_ && !onGround_) {
+			// 通常ジャンプ時のX速度は維持（必要ならここで調整）
+		}
+		// 優先順位2: 地面にいなくて、壁に触れているなら「壁ジャンプ」
+		else if (tachWall_) {
 			// 反対方向に弾くような壁ジャンプ
 			if (lrDirection_ == LRDirection::kRight) {
 				velocity_ = {-kJumpAcceleration / 90.0f, kJumpAcceleration / 60.0f, 0};
 			} else {
 				velocity_ = {+kJumpAcceleration / 90.0f, kJumpAcceleration / 60.0f, 0};
 			}
-
-			// 壁ジャンプ時はジャンプ回数をリセット（空中ジャンプにも戻せる）
+			// 壁ジャンプ時はジャンプ回数をリセット
 			jumpCount_ = 0;
-
-		} else if (onGround_ || jumpCount_ < kLimitJumpCount) {
-			velocity_ = Add(velocity_, Vector3(0, kJumpAcceleration / 60.0f, 0));
-			if (!onGround_) {
-				// 通常ジャンプ（回数制限あり）
-				jumpCount_++;
-			}
 		}
+		// 優先順位3: それ以外（空中にいて壁にも触れていない）なら「空中ジャンプ」
+		else if (jumpCount_ < kLimitJumpCount) {
+			velocity_.y += kJumpAcceleration / 60.0f;
+			jumpCount_++;
+		}
+
 		Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
 	}
 }
@@ -486,16 +494,20 @@ void Player::hitCeiling(const CollisionMapInfo& info) {
 void Player::UpdatOnGround(const CollisionMapInfo& info) {
 
 	if (onGround_) {
-		info;
+		// info; // この行は削除してもOK
 		if (velocity_.y > 0.0f) {
 			onGround_ = false;
 		} else {
 			// 落下判定
 			std::array<Vector3, kNumCorner> positionsNew;
-			// 移動後の各頂点座標を計算
+			
+			// ▼▼▼ 修正: + info.move を削除しました ▼▼▼
+			// 移動後の各頂点座標を計算 (worldTransform_.translation_ は既に移動済み)
 			for (uint32_t i = 0; i < positionsNew.size(); ++i) {
-				positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
+				positionsNew[i] = CornerPosition(worldTransform_.translation_, static_cast<Corner>(i));
 			}
+			// ▲▲▲ 修正ここまで ▲▲▲
+
 			MapChipType mapChipType;
 			// 真下の当たり判定
 			bool hit = false;
@@ -533,19 +545,70 @@ void Player::UpdatOnGround(const CollisionMapInfo& info) {
 
 void Player::HitWall(const CollisionMapInfo& info) {
 
-	if (tachWall_) {
-		if (!info.isWall) {
-			// 壁から離れた
-			tachWall_ = false;
+	// 1. 移動による物理衝突があった場合（最優先）
+	if (info.isWall) {
+		velocity_.x *= (1.0f - kAttenuationWall);
+		tachWall_ = true;
+		return; // 確実に壁に触れているのでここで終了
+	}
+
+	// 2. 物理衝突がない場合でも、見た目上壁に接しているかを判定する（チャタリング防止）
+	// 接地判定(UpdatOnGround)と同様に、少し横を調べる
+	
+	const float kWallSearchDistance = 0.06f; // 壁判定を行う距離（kGroundSearchHeightと同程度）
+	bool hit = false;
+
+	// 現在の各頂点座標を取得（移動補正後の座標）
+	std::array<Vector3, kNumCorner> positionsNew;
+	for (uint32_t i = 0; i < positionsNew.size(); ++i) {
+		positionsNew[i] = CornerPosition(worldTransform_.translation_, static_cast<Corner>(i));
+	}
+
+	// 左右どちらを調べるか？（入力方向や向きで判断、あるいは両方）
+	// ここではシンプルに「現在の向き(lrDirection_)」の方向を調べます
+	if (lrDirection_ == LRDirection::kRight) {
+		// 右側の壁をチェック（右下と右上）
+		MapChipField::IndexSet indexSet;
+		MapChipType mapChipType;
+
+		// 右下
+		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom] + Vector3(kWallSearchDistance, 0, 0));
+		mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+		if (mapChipType == MapChipType::kBlock) hit = true;
+
+		// 右上
+		if (!hit) {
+			indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop] + Vector3(kWallSearchDistance, 0, 0));
+			mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+			if (mapChipType == MapChipType::kBlock) hit = true;
 		}
-	} else {
-		if (info.isWall) {
-			velocity_.x *= (1.0f - kAttenuationWall);
-			tachWall_ = true;
+	} 
+	else if (lrDirection_ == LRDirection::kLeft) {
+		// 左側の壁をチェック（左下と左上）
+		MapChipField::IndexSet indexSet;
+		MapChipType mapChipType;
+
+		// 左下
+		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom] + Vector3(-kWallSearchDistance, 0, 0));
+		mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+		if (mapChipType == MapChipType::kBlock) hit = true;
+
+		// 左上
+		if (!hit) {
+			indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop] + Vector3(-kWallSearchDistance, 0, 0));
+			mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+			if (mapChipType == MapChipType::kBlock) hit = true;
 		}
 	}
-}
 
+	// 判定結果を反映
+	tachWall_ = hit;
+
+	// 壁に張り付いているなら速度を抑える（オプション）
+	 if (tachWall_) {
+	 	velocity_.x *= (1.0f - kAttenuationWall);
+	 }
+}
 Vector3 Player::GetWorldPosition() {
 	Vector3 worldPos;
 

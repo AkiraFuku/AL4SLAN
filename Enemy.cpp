@@ -26,10 +26,10 @@ void Enemy::Initialize(Model* model, Camera* camera, Vector3& position) {
 	walkTimer_ = 0.0f;
 }
 void Enemy::Update() {
+	
 	if (collisionCooldown_ > 0.0f) {
 		collisionCooldown_ -= 1.0f / 60.0f;
 	}
-	// カメラ外だと動かない
 
 	if (behaviorRequest_ != Behavior::kUnknown) {
 		// 振るまいを変更する
