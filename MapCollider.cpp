@@ -84,7 +84,8 @@ void MapCollider::CheckMapCollisionDown(const Vector3& position, float width, fl
 	MapChipField::IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(bottomLeft);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == MapChipType::kBlock) {
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
+	if (mapChipType == MapChipType::kBlock&& mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
 	}
 	// 右下の当たり判定
