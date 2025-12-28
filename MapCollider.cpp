@@ -5,9 +5,7 @@
 
 using namespace KamataEngine;
 
-void MapCollider::Initialize(MapChipField* mapChipField) {
-	mapChipField_ = mapChipField;
-}
+void MapCollider::Initialize(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
 
 void MapCollider::CheckCollision(const Vector3& position, float width, float height, CollisionMapInfo& info) {
 	// 初期化
@@ -56,10 +54,14 @@ void MapCollider::CheckMapCollisionUp(const Vector3& position, float width, floa
 	if (hit) {
 		// 中心座標でインデックス再取得
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(position + Vector3(0.0f, +height / 2.0f, 0.0f));
-		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-		// 上方向の移動量を補正
-		info.move.y = max(0.0f, rect.bottom - position.y - (height / 2.0f + kBlank));
-		info.isCeiling = true;
+		MapChipField::IndexSet indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(position);
+		if (indexSet.yIndex != indexSetNow.yIndex) {
+			// 天井音を鳴らすなどの処理をここに追加可能
+			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
+			// 上方向の移動量を補正
+			info.move.y = max(0.0f, rect.bottom - position.y - (height / 2.0f + kBlank));
+			info.isCeiling = true;
+		}
 	}
 }
 
@@ -85,7 +87,7 @@ void MapCollider::CheckMapCollisionDown(const Vector3& position, float width, fl
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(bottomLeft);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
-	if (mapChipType == MapChipType::kBlock&& mapChipTypeNext != MapChipType::kBlock) {
+	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
 	}
 	// 右下の当たり判定
@@ -100,9 +102,13 @@ void MapCollider::CheckMapCollisionDown(const Vector3& position, float width, fl
 
 	if (hit) {
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(position + info.move + Vector3(0.0f, -height / 2.0f, 0.0f));
-		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-		info.move.y = min(0.0f, rect.top - position.y + (height / 2.0f + kBlank));
-		info.isFloor = true;
+		MapChipField::IndexSet indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(position);
+		if (indexSet.yIndex != indexSetNow.yIndex) {
+			// 落下音を鳴らすなどの処理をここに追加可能
+			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
+			info.move.y = min(0.0f, rect.top - position.y + (height / 2.0f + kBlank));
+			info.isFloor = true;
+		}
 	}
 }
 
@@ -110,7 +116,7 @@ void MapCollider::CheckMapCollisionRight(const Vector3& position, float width, f
 	if (info.move.x <= 0.0f) {
 		return;
 	}
-	
+
 	std::array<Vector3, kNumCorner> positionsNew;
 	for (uint32_t i = 0; i < positionsNew.size(); ++i) {
 		positionsNew[i] = CornerPosition(position + info.move, width, height, static_cast<Corner>(i));
@@ -137,9 +143,12 @@ void MapCollider::CheckMapCollisionRight(const Vector3& position, float width, f
 
 	if (hit) {
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(position + info.move + Vector3(+width / 2.0f, 0.0f, 0.0f));
-		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-		info.move.x = max(0.0f, rect.left - position.x - (width / 2.0f + kBlank));
-		info.isWall = true;
+		MapChipField::IndexSet indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(position);
+		if (indexSet.xIndex != indexSetNow.xIndex) {
+			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
+			info.move.x = max(0.0f, rect.left - position.x - (width / 2.0f + kBlank));
+			info.isWall = true;
+		}
 	}
 }
 
@@ -172,18 +181,21 @@ void MapCollider::CheckMapCollisionLeft(const Vector3& position, float width, fl
 
 	if (hit) {
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(position + info.move + Vector3(-width / 2.0f, 0.0f, 0.0f));
-		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-		info.move.x = min(0.0f, rect.right - position.x + (width / 2.0f + kBlank));
-		info.isWall = true;
+		MapChipField::IndexSet indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(position);
+		if (indexSet.xIndex != indexSetNow.xIndex) {
+			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
+			info.move.x = min(0.0f, rect.right - position.x + (width / 2.0f + kBlank));
+			info.isWall = true;
+		}
 	}
 }
 
 Vector3 MapCollider::CornerPosition(const Vector3& center, float width, float height, Corner corner) {
 	Vector3 OffsetTable[kNumCorner] = {
-		Vector3{+width / 2.0f, -height / 2.0f, 0.0f}, // kRightBottom
-		Vector3{-width / 2.0f, -height / 2.0f, 0.0f}, // kLeftBottom
-		Vector3{+width / 2.0f, +height / 2.0f, 0.0f}, // kRightTop
-		Vector3{-width / 2.0f, +height / 2.0f, 0.0f}  // kLeftTop
+	    Vector3{+width / 2.0f, -height / 2.0f, 0.0f}, // kRightBottom
+	    Vector3{-width / 2.0f, -height / 2.0f, 0.0f}, // kLeftBottom
+	    Vector3{+width / 2.0f, +height / 2.0f, 0.0f}, // kRightTop
+	    Vector3{-width / 2.0f, +height / 2.0f, 0.0f}  // kLeftTop
 	};
 	return center + OffsetTable[static_cast<uint32_t>(corner)];
 }

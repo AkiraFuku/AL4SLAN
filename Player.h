@@ -125,13 +125,13 @@ private:
 	bool onGround_ = true;
 	// 壁接触フラグ
 	bool tachWall_ = false;
-
+	bool attackSEPlayed_ = false;
 	// 重力加速度
 	static inline const float kGravityAcceleration = 0.98f;
 	// 落下速度制限
 	static inline const float kLimitFallSpeed = 0.5f;
 	// 跳躍加速度
-	static inline const float kJumpAcceleration = 5.0f;
+	static inline const float kJumpAcceleration = 10.0f;
 	static inline const int kMaxJumpCount = 2;
 	std::unique_ptr<MapCollider> mapCollider_;
 
@@ -171,9 +171,9 @@ private:
 	WorldTransform worldTransformMove_; ///< 1フレーム前のワールドトランスフォーム
 
 	// コントローラー
-	XINPUT_STATE state_;
+	XINPUT_STATE state_ = {};
 
-	XINPUT_STATE prevState_;
+	XINPUT_STATE prevState_ = {};
 
 	uint32_t jumpSEHandle_;
 

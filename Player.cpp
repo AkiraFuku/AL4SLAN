@@ -78,6 +78,8 @@ void Player::Update() {
 
 	WorldTransformUpdate(&worldTransform_);
 	WorldTransformUpdate(&worldTransformAttack_);
+
+	prevState_ = state_;
 }
 void Player::BehaviorRootUpdate() {
 
@@ -115,9 +117,8 @@ void Player::BehaviorRootUpdate() {
 		worldTransform_.rotation_.y = EaseInOut(destinationRotationY, turnFirstRotationY_, turnTimer_ / kTimeTurn);
 	}
 	// 攻撃に切り替え
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_X)) {
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_X &&!( prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_X))) {
 
-		// behaviorRequest_ = Behavior::kDash;
 		behaviorRequest_ = Behavior::kAttack;
 		// 攻撃やジャンプなどのアクション入力が入った場合は旋回を即完了させる
 		turnTimer_ = 0.0f;
@@ -129,7 +130,7 @@ void Player::BehaviorRootUpdate() {
 			worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
 		}
 	}
-	if (Input::GetInstance()->TriggerKey(DIK_X)) {
+	if (Input::GetInstance()->TriggerKey(DIK_X) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER && prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)) {
 
 		behaviorRequest_ = Behavior::kDash;
 		// 攻撃やジャンプなどのアクション入力が入った場合は旋回を即完了させる
@@ -166,27 +167,22 @@ void Player::BehaviorAttackUpdate() {
 	}
 	case Player::AttackPhase::kAttack: {
 
-		/*	if (lrDirection_ == LRDirection::kRight) {
-
-		        velocity = attackVelocity;
-		    } else if (lrDirection_ == LRDirection::kLeft) {
-		        velocity = attackVelocity * -1.0f;
-		    }*/
-		// float t = static_cast<float>(attackParameter_) / kAttackTime; // 1秒間の攻撃
-		// worldTransform_.scale_.z = EaseOut(0.3f, 1.3f, t);
-		// worldTransform_.scale_.y = EaseIn(1.6f, 0.7f, t);
 		if (attackParameter_ >= kAttackTime) {
 			attackPhase_ = AttackPhase::kAfter;
 			attackParameter_ = 0;
 		}
 
 		// 攻撃SE再生
-		Audio::GetInstance()->PlayWave(attackSEHandle_, false);
+		if (!Audio::GetInstance()->IsPlaying(attackSEHandle_) && !attackSEPlayed_) {
+			Audio::GetInstance()->PlayWave(attackSEHandle_, false);
+			attackSEPlayed_ = true; // SE再生中フラグを立てる
+		}
+
 		break;
 	}
 
 	case Player::AttackPhase::kAfter: {
-
+		attackSEPlayed_ = false;
 		// float t = static_cast<float>(attackParameter_) / kAfterTime; // 1秒間の攻撃後
 		// worldTransform_.scale_.z = EaseOut(1.3f, 1.0f, t);
 		// worldTransform_.scale_.y = EaseOut(0.7f, 1.0f, t);
@@ -440,13 +436,15 @@ void Player::inputMove() {
 	// ---------------------------------------------------------
 	// ジャンプ処理
 	// ---------------------------------------------------------
-	if ((Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_A))) {
+	if ((Input::GetInstance()->TriggerKey(DIK_UP)) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A))) {
 
 		// 優先順位1: 地面にいるなら「通常ジャンプ」
 		// 床と壁の両方に触れている場合、ここで引っかかり、下の壁ジャンプは無視されます。
 		if (onGround_) {
 			velocity_.y += kJumpAcceleration / 60.0f; // Addではなく直接加算かY成分の上書きを推奨
-
+			if (!Audio::GetInstance()->IsPlaying(jumpSEHandle_)) {
+				Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
+			}
 			// 通常ジャンプ時のX速度は維持（必要ならここで調整）
 		}
 		// 優先順位2: 地面にいなくて、壁に触れているなら「壁ジャンプ」
@@ -459,14 +457,18 @@ void Player::inputMove() {
 			}
 			// 壁ジャンプ時はジャンプ回数をリセット
 			jumpCount_ = 0;
+			if (!Audio::GetInstance()->IsPlaying(jumpSEHandle_)) {
+				Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
+			}
 		}
 		// 優先順位3: それ以外（空中にいて壁にも触れていない）なら「空中ジャンプ」
 		else if (jumpCount_ < kLimitJumpCount) {
 			velocity_.y += kJumpAcceleration / 60.0f;
-			jumpCount_++;
+			jumpCount_++; // なってなければジャンプSE再生
+			if (!Audio::GetInstance()->IsPlaying(jumpSEHandle_)) {
+				Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
+			}
 		}
-
-		Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
 	}
 }
 
@@ -500,7 +502,7 @@ void Player::UpdatOnGround(const CollisionMapInfo& info) {
 		} else {
 			// 落下判定
 			std::array<Vector3, kNumCorner> positionsNew;
-			
+
 			// ▼▼▼ 修正: + info.move を削除しました ▼▼▼
 			// 移動後の各頂点座標を計算 (worldTransform_.translation_ は既に移動済み)
 			for (uint32_t i = 0; i < positionsNew.size(); ++i) {
@@ -554,7 +556,7 @@ void Player::HitWall(const CollisionMapInfo& info) {
 
 	// 2. 物理衝突がない場合でも、見た目上壁に接しているかを判定する（チャタリング防止）
 	// 接地判定(UpdatOnGround)と同様に、少し横を調べる
-	
+
 	const float kWallSearchDistance = 0.06f; // 壁判定を行う距離（kGroundSearchHeightと同程度）
 	bool hit = false;
 
@@ -574,30 +576,33 @@ void Player::HitWall(const CollisionMapInfo& info) {
 		// 右下
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom] + Vector3(kWallSearchDistance, 0, 0));
 		mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-		if (mapChipType == MapChipType::kBlock) hit = true;
+		if (mapChipType == MapChipType::kBlock)
+			hit = true;
 
 		// 右上
 		if (!hit) {
 			indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop] + Vector3(kWallSearchDistance, 0, 0));
 			mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-			if (mapChipType == MapChipType::kBlock) hit = true;
+			if (mapChipType == MapChipType::kBlock)
+				hit = true;
 		}
-	} 
-	else if (lrDirection_ == LRDirection::kLeft) {
+	} else if (lrDirection_ == LRDirection::kLeft) {
 		// 左側の壁をチェック（左下と左上）
 		MapChipField::IndexSet indexSet;
 		MapChipType mapChipType;
 
 		// 左下
-		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom] + Vector3(-kWallSearchDistance, 0, 0));
+	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom] + Vector3(-kWallSearchDistance, 0, 0));
 		mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-		if (mapChipType == MapChipType::kBlock) hit = true;
+		if (mapChipType == MapChipType::kBlock)
+			hit = true;
 
 		// 左上
 		if (!hit) {
 			indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop] + Vector3(-kWallSearchDistance, 0, 0));
 			mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-			if (mapChipType == MapChipType::kBlock) hit = true;
+			if (mapChipType == MapChipType::kBlock)
+				hit = true;
 		}
 	}
 
@@ -605,9 +610,9 @@ void Player::HitWall(const CollisionMapInfo& info) {
 	tachWall_ = hit;
 
 	// 壁に張り付いているなら速度を抑える（オプション）
-	 if (tachWall_) {
-	 	velocity_.x *= (1.0f - kAttenuationWall);
-	 }
+	if (tachWall_) {
+		velocity_.x *= (1.0f - kAttenuationWall);
+	}
 }
 Vector3 Player::GetWorldPosition() {
 	Vector3 worldPos;
