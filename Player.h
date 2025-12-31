@@ -131,7 +131,7 @@ private:
 	// 落下速度制限
 	static inline const float kLimitFallSpeed = 0.5f;
 	// 跳躍加速度
-	static inline const float kJumpAcceleration = 10.0f;
+	static inline const float kJumpAcceleration = 12.0f;
 	static inline const int kMaxJumpCount = 2;
 	std::unique_ptr<MapCollider> mapCollider_;
 
