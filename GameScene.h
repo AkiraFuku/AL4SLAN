@@ -12,10 +12,11 @@
 #include "HitEffect.h"
 #include "Goal.h"
 #include "Gaid.h"
+#include "IScene.h"
 using namespace KamataEngine ;
 
 
-class GameScene {
+class GameScene : public IScene{
 private:
 	//3Dモデル
 	Model* model_ = nullptr;
@@ -100,14 +101,10 @@ private:
 
 public:
 	
-	//// デストラクタ
-	~GameScene();
-	// 初期化
-	void Initialize();
-	// 更新
-	void Update();
-	// 描画
-	void Draw();
+	~GameScene() override;
+    void Initialize() override;
+    void Update() override;
+    void Draw() override;
 
 	void DrawBlock();
 	//

@@ -2,6 +2,7 @@
 #include "MassFunction.h"
 #include <numbers>
 #include"MapchipField.h"
+#include "SceneManager.h"
 TitleScene::~TitleScene() {
 	delete titleModel_;
 	delete playerModel_;
@@ -88,7 +89,7 @@ void TitleScene::Update() {
 		fade_->Update();
 		if (fade_->IsFinished()) {
 			// フェードアウトが終わったら、次のシーンへ
-			finished_ = true;
+			SceneManager::GetInstance()->ChangeScene(SceneType::kGame);
 		}
 		break;
 	

@@ -120,6 +120,7 @@
     <ClCompile Include="MassFunction.cpp" />
     <ClCompile Include="Pause.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Skydome.cpp" />
     <ClCompile Include="TitleScene.cpp" />
     <ClCompile Include="worldT.cpp" />
@@ -209,11 +210,13 @@
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="Goal.h" />
     <ClInclude Include="HitEffect.h" />
+    <ClInclude Include="IScene.h" />
     <ClInclude Include="MapchipField.h" />
     <ClInclude Include="MapCollider.h" />
     <ClInclude Include="MassFunction.h" />
     <ClInclude Include="Pause.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Skydome.h" />
     <ClInclude Include="TitleScene.h" />
     <ClInclude Include="worldT.h" />

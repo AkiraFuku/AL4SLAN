@@ -1,5 +1,5 @@
 #include "GameScene.h"
-
+#include "SceneManager.h"
 using namespace KamataEngine;
 
 // GameScene::GameScene() {}
@@ -403,9 +403,9 @@ void GameScene::Update() {
 		fade_->Update();
 		if (fade_->IsFinished()) {
 			if (clear_) {
-				Gameend_ = true;
+				SceneManager::GetInstance()->ChangeScene(SceneType::kTitle);
 			} else {
-				finished_ = true;
+				SceneManager::GetInstance()->ChangeScene(SceneType::kGame);
 			}
 		}
 
