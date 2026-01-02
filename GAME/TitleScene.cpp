@@ -89,7 +89,7 @@ void TitleScene::Update() {
 		fade_->Update();
 		if (fade_->IsFinished()) {
 			// フェードアウトが終わったら、次のシーンへ
-			SceneManager::GetInstance()->ChangeScene(SceneType::kGame);
+			SceneManager::GetInstance()->ChangeScene(SceneType::kSelect);
 		}
 		break;
 	

@@ -1,7 +1,8 @@
 #include "SceneManager.h"
-#include "TitleScene.h"
 #include "GameScene.h"
+#include "StageSelectScene.h"
 #include "KamataEngine.h" // エンジン機能を使うため
+#include "TitleScene.h"
 #include <string>
 using namespace KamataEngine;
 
@@ -26,7 +27,7 @@ int SceneManager::Run() {
 	while (true) {
 		// エンジンの更新処理（×ボタンで終了した場合などはループを抜ける）
 		if (KamataEngine::Update()) {
-			break; 
+			break;
 		}
 
 		// --- シーン切り替え処理 ---
@@ -43,7 +44,11 @@ int SceneManager::Run() {
 				currentScene_ = new TitleScene();
 				break;
 			case SceneType::kGame:
-				currentScene_ =new GameScene(currentStage_);
+				currentScene_ = new GameScene(currentStage_);
+				break;
+
+			case SceneType::kSelect:
+				currentScene_ = new StageSelectScene();
 				break;
 			}
 

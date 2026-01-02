@@ -23,7 +23,7 @@ public:
 
 	// 現在のステージ番号を取得する関数
 	int GetCurrentStage() const { return currentStage_; }
-
+	void SetCurrentStage(int stageNo) { currentStage_ = stageNo; }
 private:
 	SceneManager() = default;
 	~SceneManager() = default;

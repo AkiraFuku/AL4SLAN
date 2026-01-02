@@ -5,7 +5,7 @@ using namespace KamataEngine;
  
 	 stageNo_ = stageNo;
  }
-
+ 
 
 GameScene::~GameScene() {
 	delete player_;

@@ -124,6 +124,7 @@
     <ClCompile Include="GAME\Skydome.cpp" />
     <ClCompile Include="GAME\TitleScene.cpp" />
     <ClCompile Include="GAME\worldT.cpp" />
+    <ClCompile Include="GAME\StageSelectScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\TerrainPS.hlsl">
@@ -220,6 +221,7 @@
     <ClInclude Include="GAME\Skydome.h" />
     <ClInclude Include="GAME\TitleScene.h" />
     <ClInclude Include="GAME\worldT.h" />
+    <ClInclude Include="GAME\StageSelectScene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
