@@ -10,11 +10,7 @@ PauseMenu::~PauseMenu() {
 void PauseMenu::Initialize() {
 	isPaused_ = false;
 	cursor_ = 0;
-	uint32_t textureHandle = TextureManager::Load("white1x1.png");
-	// 画面全体を覆う黒いスプライトを作成（半透明）
-	overlay_ = Sprite::Create(textureHandle, Vector2{ 0, 0 });
-	overlay_->SetSize(Vector2(WinApp::kWindowWidth, WinApp::kWindowHeight));
-	overlay_->SetColor(Vector4(0, 0, 0, 0.5f)); 
+
 }
 
 PauseResult PauseMenu::Update() {

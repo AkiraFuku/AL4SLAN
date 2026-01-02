@@ -5,21 +5,24 @@
 Fade* Fade::GetInstance() {
 	static Fade instance;
 	return &instance;
+	// 既に作成済みなら再作成しないようにガード
+	
 }
 
 // ★追加: デストラクタ（終了時にスプライトを解放）
 Fade::~Fade() {
-// 既に作成済みなら再作成しないようにガード
-	if (!sprite_) {
+	if (sprite_) {
+		delete sprite_;
+		sprite_ = nullptr;
+	}
+
+}
+void Fade::Initialize(){  
+if (!sprite_) {
 		sprite_ = Sprite::Create(0, Vector2{});
 		sprite_->SetSize(Vector2(WinApp::kWindowWidth, WinApp::kWindowHeight));
 		sprite_->SetColor(Vector4(0, 0, 0, 1.0f));
 	}
-}
-void Fade::Initialize(){  
-	sprite_= Sprite::Create(0,Vector2{});  
-	sprite_->SetSize(Vector2(WinApp::kWindowWidth, WinApp::kWindowHeight));  
-	sprite_->SetColor(Vector4(0, 0, 0,1.0f));  
 };  
 void Fade::Update(){  
 	switch (status_) {  
@@ -54,7 +57,7 @@ void Fade::Draw() {
 	if (status_== Status::None) {
 		return;  
 	}
-
+	if (!sprite_) return;
 	Sprite::PreDraw(DirectXCommon::GetInstance()->GetCommandList());  
 	sprite_->Draw();  
 	Sprite::PostDraw();  

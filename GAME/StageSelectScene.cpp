@@ -3,7 +3,8 @@
 
 void StageSelectScene::Initialize() {
     selectStageNo_ = 1;
-   
+   Fade::GetInstance()->Start(Fade::Status::FadeIn, 1.0f);
+    phase_ = StageSelectScene::Phase::kFadeIn;
 }
 
 void StageSelectScene::Update() {
@@ -19,7 +20,7 @@ void StageSelectScene::Update() {
 	case StageSelectScene::Phase::kFadeIn:
          Fade::GetInstance()->Update();
 		if (Fade::GetInstance()->IsFinished()) {
-			Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
+			Fade::GetInstance()->Stop();
 			phase_ = StageSelectScene::Phase::kMain;
 		}
 
@@ -78,6 +79,7 @@ void StageSelectScene::Update() {
 void StageSelectScene::Draw() {
     // 画面に今の選択番号を表示する（仮で文字表示）
     // ※実際には画像やスプライトを使うとかっこよくなります
-
+Fade::GetInstance()->Draw();
     imgui_->Draw();
+    
 }
