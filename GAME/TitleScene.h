@@ -1,6 +1,6 @@
 #pragma once
 #include "KamataEngine.h"
-#include "Fade.h"
+
 #include "Skydome.h"
 #include "Gaid.h"
 #include "IScene.h"
@@ -36,7 +36,7 @@ private:
 	
 
 	Model* playerModel_;
-	Fade* fade_=nullptr;
+	
 	Gaid* gaid_ = nullptr;
 	Phase phase_ = Phase::kFadeIn; // フェーズ
 	XINPUT_STATE state_;

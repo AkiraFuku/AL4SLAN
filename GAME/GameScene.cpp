@@ -1,5 +1,7 @@
 #include "GameScene.h"
 #include "SceneManager.h"
+#include "Fade.h"
+
 using namespace KamataEngine;
  GameScene::GameScene(int stageNo) {
  
@@ -37,7 +39,6 @@ GameScene::~GameScene() {
 	delete deathParticles_;
 	delete deathParticlesModel_;
 
-	delete fade_;
 
 	delete hitEffectModel_;
 	for (HitEffect* hitEffect : hitEffects_) {
@@ -221,9 +222,8 @@ void GameScene::Initialize() {
 	// フェーズ
 	phase_ = Phase::kFadeIn;
 	// フェード
-	fade_ = new Fade();
-	fade_->Initialize();
-	fade_->Start(Fade::Status::FadeIn, 1.0f);
+
+	Fade::GetInstance()->Start(Fade::Status::FadeIn, 1.0f);
 
 	// 　ヒットエフェクトの初期化
 	hitEffectModel_ = Model::CreateFromOBJ("particle", true);
@@ -323,9 +323,9 @@ void GameScene::Update() {
 
 	case GameScene::Phase::kFadeIn:
 		// フェードの更新
-		fade_->Update();
-		if (fade_->IsFinished()) {
-			fade_->Start(Fade::Status::FadeOut, 1.0f);
+		Fade::GetInstance()->Update();
+		if (Fade::GetInstance()->IsFinished()) {
+			Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
 			phase_ = GameScene::Phase::kStart;
 		}
 		// スカイドームの更新
@@ -406,8 +406,8 @@ void GameScene::Update() {
 
 	case GameScene::Phase::kFadeOut:
 		// フェードの更新
-		fade_->Update();
-		if (fade_->IsFinished()) {
+		Fade::GetInstance()->Update();
+		if (Fade::GetInstance()->IsFinished()) {
 			if (clear_) {
 // もし最終ステージならタイトルへ、そうでなければ次のステージへ
     // ここでは仮に全3ステージとします
@@ -510,7 +510,7 @@ void GameScene::Draw() {
 
 	Sprite::PreDraw(dxCommon->GetCommandList());
 
-	fade_->Draw();
+	Fade::GetInstance()->Draw();
 
 	switch (phase_) {
 

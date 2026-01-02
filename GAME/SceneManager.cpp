@@ -3,6 +3,7 @@
 #include "StageSelectScene.h"
 #include "KamataEngine.h" // エンジン機能を使うため
 #include "TitleScene.h"
+#include "Fade.h"
 #include <string>
 using namespace KamataEngine;
 
@@ -23,6 +24,7 @@ int SceneManager::Run() {
 	// DirectXの初期化情報の取得などが必要ならここで行う
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
+	Fade::GetInstance()->Initialize();
 	// --- メインループ ---
 	while (true) {
 		// エンジンの更新処理（×ボタンで終了した場合などはループを抜ける）
@@ -76,6 +78,8 @@ int SceneManager::Run() {
 	if (currentScene_) {
 		delete currentScene_;
 		currentScene_ = nullptr;
+
+
 	}
 
 	return 0; // 正常終了

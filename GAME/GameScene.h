@@ -8,7 +8,6 @@
 #include "CameraController.h"
 #include "Enemy.h"
 #include "DeathParticles.h"
-#include "Fade.h"
 #include "HitEffect.h"
 #include "Goal.h"
 #include "Gaid.h"
@@ -70,8 +69,6 @@ private:
 	 bool finished_ = false; // ゲーム終了フラグ	
 	 bool Gameend_ = false;  // ゲーム終了フラグ
 	 bool clear_ = false;    // クリアフラグ
-	 // フェード
-	 Fade* fade_ = nullptr;
 
 	 // ヒットエフェクト
 	 

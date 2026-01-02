@@ -1,12 +1,12 @@
 #include "TitleScene.h"
 #include "MassFunction.h"
 #include <numbers>
+#include "Fade.h"
 #include"MapchipField.h"
 #include "SceneManager.h"
 TitleScene::~TitleScene() {
 	delete titleModel_;
 	delete playerModel_;
-	delete fade_;
 	delete skydome_;
 	delete modelSkydome_;
 	delete gaid_;
@@ -37,10 +37,8 @@ void TitleScene::Initialize() {
 
 	worldTransformPlayer_.translation_.y = -10.0f;
 
-	fade_ = new Fade();
-	fade_->Initialize();
 
-	fade_->Start(Fade::Status::FadeIn, 1.0f);
+	Fade::GetInstance()->Start(Fade::Status::FadeIn, 1.0f);
 
 	gaid_ = new Gaid();
 
@@ -62,14 +60,14 @@ void TitleScene::Update() {
 	Input::GetInstance()->GetJoystickStatePrevious(0, prevState_);
 	switch (phase_) {
 	case TitleScene::Phase::kFadeIn:
-		fade_->Update();
-		if (fade_->IsFinished()) {
+		Fade::GetInstance()->Update();
+		if (Fade::GetInstance()->IsFinished()) {
 			phase_ = TitleScene::Phase::kMain;
 		}
 		break;
 	case TitleScene::Phase::kMain:
 		if (Input::GetInstance()->PushKey(DIK_SPACE)||(state_.Gamepad.wButtons  & XINPUT_GAMEPAD_A)) {
-			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
 			phase_ = TitleScene::Phase::kFadeOut;
 			
 		}
@@ -86,8 +84,8 @@ void TitleScene::Update() {
 		break;
 
 	case TitleScene::Phase::kFadeOut:
-		fade_->Update();
-		if (fade_->IsFinished()) {
+		Fade::GetInstance()->Update();
+		if (Fade::GetInstance()->IsFinished()) {
 			// フェードアウトが終わったら、次のシーンへ
 			SceneManager::GetInstance()->ChangeScene(SceneType::kSelect);
 		}
@@ -130,7 +128,7 @@ void TitleScene::Draw() {
 	
 
 	Model::PostDraw();
-	fade_->Draw();
+	Fade::GetInstance()->Draw();
 
 
 	if (phase_ == Phase::kGaid) {
