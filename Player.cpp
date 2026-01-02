@@ -451,9 +451,9 @@ void Player::inputMove() {
 		else if (tachWall_) {
 			// 反対方向に弾くような壁ジャンプ
 			if (lrDirection_ == LRDirection::kRight) {
-				velocity_ = {-kJumpAcceleration / 90.0f, kJumpAcceleration / 60.0f, 0};
+				velocity_ = {-kJumpAcceleration / 120.0f, kJumpAcceleration / 60.0f, 0};
 			} else {
-				velocity_ = {+kJumpAcceleration / 90.0f, kJumpAcceleration / 60.0f, 0};
+				velocity_ = {+kJumpAcceleration / 120.0f, kJumpAcceleration / 60.0f, 0};
 			}
 			// 壁ジャンプ時はジャンプ回数をリセット
 			jumpCount_ = 0;

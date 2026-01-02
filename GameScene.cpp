@@ -495,8 +495,8 @@ void GameScene::Draw() {
 
 	switch (phase_) {
 
-	case GameScene::Phase::kFadeIn:
-	case GameScene::Phase::kStart:
+	/*case GameScene::Phase::kFadeIn:
+	case GameScene::Phase::kStart:*/
 	case GameScene::Phase::kPause:
 		gaid_->Draw();
 
