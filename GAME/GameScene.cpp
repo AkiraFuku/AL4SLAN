@@ -6,6 +6,7 @@ using namespace KamataEngine;
  GameScene::GameScene(int stageNo) {
  
 	 stageNo_ = stageNo;
+	
  }
  
 
@@ -50,6 +51,8 @@ GameScene::~GameScene() {
 
 	delete goalModel_;
 	delete gaid_;
+
+	delete pauseMenu_;
 }
 // ゲームシーンのブロック生成
 void GameScene::GenerateBlock() {
@@ -243,7 +246,8 @@ void GameScene::Initialize() {
 	worldTransformRetry_.Initialize();
 	worldTransformRetry_.scale_ = {0.5f, 0.5f, 0.5f};
 	GenerateGoal();
-
+	 pauseMenu_ = new PauseMenu();
+    pauseMenu_->Initialize();
 	// BGM再生
 }
 void GameScene::ChangePhase() {
@@ -261,8 +265,6 @@ void GameScene::ChangePhase() {
 			phase_ = Phase::kDeath;
 		} else if (goal_->isGoal()) {
 			phase_ = Phase::kClear;
-		} else if (Input::GetInstance()->TriggerKey(DIK_P) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_START)) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_START)) {
-			phase_ = Phase::kPause; // ポーズに遷移
 		}
 		const Vector3 deathParticlesPosition = player_->GetWorldTransform().translation_;
 
@@ -283,18 +285,25 @@ void GameScene::ChangePhase() {
 		// ここでは何もしないが、必要に応じてクリア処理を追加する
 		break;
 
-	case Phase::kPause:
-
-		// ポーズ中の処理
-		if (Input::GetInstance()->TriggerKey(DIK_P) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_START)) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_START)) {
-			phase_ = Phase::kPlay; // ポーズ解除でプレイに戻る
-		}
-		break;
+	
 	}
 }
 
 // ゲームシーンの更新
 void GameScene::Update() {
+
+	PauseResult res = pauseMenu_->Update();
+
+    // 2. ポーズメニューの結果に応じた処理
+    if (res == PauseResult::kGoTitle) {
+        SceneManager::GetInstance()->ChangeScene(SceneType::kTitle);
+        return; // シーン切り替え時は以降の処理をしない
+    }
+
+    // 3. ポーズ中ならゲームの更新をスキップ
+    if (pauseMenu_->IsPaused()) {
+        return; 
+    }
 	Input::GetInstance()->GetJoystickState(0, state_);
 	Input::GetInstance()->GetJoystickStatePrevious(0, prevState_);
 
@@ -459,9 +468,7 @@ void GameScene::Update() {
 
 		break;
 
-	case GameScene::Phase::kPause:
-
-		break;
+	break;
 	}
 }
 // ゲームシーンの描画
@@ -512,16 +519,7 @@ void GameScene::Draw() {
 
 	Fade::GetInstance()->Draw();
 
-	switch (phase_) {
-
-	/*case GameScene::Phase::kFadeIn:
-	case GameScene::Phase::kStart:*/
-	case GameScene::Phase::kPause:
-		gaid_->Draw();
-
-		break;
-	}
-
+	pauseMenu_->Draw();
 	Sprite::PostDraw();
 
 #ifdef _DEBUG
@@ -548,6 +546,7 @@ void GameScene::Draw() {
 	} else {
 		camera_.TransferMatrix();
 	}
+	
 }
 void GameScene::DrawBlock() {
 
