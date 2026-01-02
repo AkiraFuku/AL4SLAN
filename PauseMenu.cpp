@@ -10,7 +10,17 @@ PauseMenu::~PauseMenu() {
 void PauseMenu::Initialize() {
 	isPaused_ = false;
 	cursor_ = 0;
-
+	if (!overlay_) {
+		// テクスチャ0番（通常は白など）を使ってスプライト生成
+		overlay_ = Sprite::Create(0, Vector2{ 0.0f, 0.0f });
+		
+		// 画面全体を覆うサイズに設定
+		overlay_->SetSize(Vector2(WinApp::kWindowWidth, WinApp::kWindowHeight));
+		
+		// 半透明の黒に設定 (R, G, B, A) 
+		// 0.5f で50%の透け感になります
+		overlay_->SetColor(Vector4(0.0f, 0.0f, 0.0f, 0.5f));
+	}
 }
 
 PauseResult PauseMenu::Update() {
@@ -80,10 +90,12 @@ void PauseMenu::Draw() {
 	// ポーズ中じゃなければ描画しない
 	if (!isPaused_) return;
 
+	Sprite::PreDraw( DirectXCommon::GetInstance()->GetCommandList());
 	//// 背景（半透明の黒）
-	//if (overlay_) {
-	//	overlay_->Draw();
-	//}
+	if (overlay_) {
+		overlay_->Draw();
+	}
+	Sprite::PostDraw();
 
 	// 文字描画
 	// ※座標は適宜調整してください

@@ -33,5 +33,5 @@ private:
 	int cursor_ = 0;
 
 	// 背景を暗くするためのスプライト
-	KamataEngine::Sprite* overlay_ = nullptr;
+Sprite* overlay_ = nullptr;
 };
