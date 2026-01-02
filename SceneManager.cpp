@@ -2,7 +2,7 @@
 #include "TitleScene.h"
 #include "GameScene.h"
 #include "KamataEngine.h" // エンジン機能を使うため
-
+#include <string>
 using namespace KamataEngine;
 
 SceneManager* SceneManager::GetInstance() {
@@ -43,7 +43,7 @@ int SceneManager::Run() {
 				currentScene_ = new TitleScene();
 				break;
 			case SceneType::kGame:
-				currentScene_ = new GameScene();
+				currentScene_ =new GameScene(currentStage_);
 				break;
 			}
 

@@ -127,7 +127,7 @@
     <None Include="Resources\shaders\Terrain.hlsli">
       <Filter>シェーダー ファイル</Filter>
     </None>
-    <None Include="Resources\Stage\blocks.csv">
+    <None Include="Resources\Stage\blocks1.csv">
       <Filter>リソース ファイル</Filter>
     </None>
   </ItemGroup>

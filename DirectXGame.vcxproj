@@ -196,7 +196,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <None Include="Resources\shaders\Terrain.hlsli" />
-    <None Include="Resources\Stage\blocks.csv" />
+    <None Include="Resources\Stage\blocks1.csv" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\shaders\Sprite.hlsli" />

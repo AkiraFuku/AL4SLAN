@@ -14,11 +14,19 @@ public:
 	// シーン変更リクエスト
 	void ChangeScene(SceneType sceneType);
 
+	// ステージを進める関数を追加
+    void NextStage() { currentStage_++; }
+    
+    // ステージ番号をリセットする関数（タイトルに戻る時など）
+    void ResetStage() { currentStage_ = 1; }
+
 private:
 	SceneManager() = default;
 	~SceneManager() = default;
 	SceneManager(const SceneManager&) = delete;
 	SceneManager& operator=(const SceneManager&) = delete;
+
+
 
 	// 現在のシーン
 	IScene* currentScene_ = nullptr;
@@ -26,4 +34,7 @@ private:
 	// 次のシーン予約用
 	SceneType nextSceneType_ = SceneType::kTitle;
 	bool isSceneChanged_ = false;
+
+	int currentStage_ = 1;
+
 };

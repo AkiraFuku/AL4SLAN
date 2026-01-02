@@ -97,11 +97,14 @@ private:
 	 //uint32_t bgmHandle_ = 0;
 
 	 //uint32_t PlayHandle_ = 0;
+
+	 int stageNo_ =-1;
 	 
 
 public:
 	
 	~GameScene() override;
+	GameScene(int stageNo);
     void Initialize() override;
     void Update() override;
     void Draw() override;

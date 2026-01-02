@@ -1,9 +1,11 @@
 #include "GameScene.h"
 #include "SceneManager.h"
 using namespace KamataEngine;
+ GameScene::GameScene(int stageNo) {
+ 
+	 stageNo_ = stageNo;
+ }
 
-// GameScene::GameScene() {}
-//
 
 GameScene::~GameScene() {
 	delete player_;
@@ -171,7 +173,11 @@ void GameScene::Initialize() {
 	camera_.Initialize();
 
 	mapchipField_ = new MapChipField();
-	mapchipField_->LoadMapChipCsv("Resources/Stage/blocks.csv");
+
+	std::stringstream ss;
+    ss << "Resources/Stage/blocks" << stageNo_ << ".csv";
+    std::string fileName = ss.str();
+	mapchipField_->LoadMapChipCsv(fileName);
 
 	// 自キャラ生成
 	player_ = new Player();
