@@ -20,6 +20,10 @@ public:
     // ステージ番号をリセットする関数（タイトルに戻る時など）
     void ResetStage() { currentStage_ = 1; }
 
+
+	// 現在のステージ番号を取得する関数
+	int GetCurrentStage() const { return currentStage_; }
+
 private:
 	SceneManager() = default;
 	~SceneManager() = default;

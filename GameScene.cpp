@@ -409,8 +409,21 @@ void GameScene::Update() {
 		fade_->Update();
 		if (fade_->IsFinished()) {
 			if (clear_) {
-				SceneManager::GetInstance()->ChangeScene(SceneType::kTitle);
-			} else {
+// もし最終ステージならタイトルへ、そうでなければ次のステージへ
+    // ここでは仮に全3ステージとします
+    const int kMaxStage = 2;
+
+    if (SceneManager::GetInstance()->GetCurrentStage() >= kMaxStage) {
+        // 全クリアなのでタイトルへ
+        SceneManager::GetInstance()->ChangeScene(SceneType::kTitle);
+        SceneManager::GetInstance()->ResetStage(); // ステージを1に戻す
+    } else {
+        // 次のステージへ
+        SceneManager::GetInstance()->NextStage(); // 番号を +1
+        
+        // もう一度 GameScene を読み直すことで、次のCSVが読み込まれる
+        SceneManager::GetInstance()->ChangeScene(SceneType::kGame);
+    }			} else {
 				SceneManager::GetInstance()->ChangeScene(SceneType::kGame);
 			}
 		}
