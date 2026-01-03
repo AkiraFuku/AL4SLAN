@@ -6,6 +6,7 @@
 struct StageData {
 	std::string name; // ファイル名 (例: field1.csv)
 	int32_t timeLimit;
+
 };
 
 class StageManager {

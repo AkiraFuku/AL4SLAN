@@ -24,9 +24,12 @@ void Enemy::Initialize(Model* model, Camera* camera, Vector3& position) {
 	worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
 	velocity_ = {-kWalkSpeed, 0.0f, 0.0f};
 	walkTimer_ = 0.0f;
+	WorldTransformUpdate(&worldTransform_);
 }
 void Enemy::Update() {
-	
+	if (InCamera()) {
+        return; 
+    }
 	if (collisionCooldown_ > 0.0f) {
 		collisionCooldown_ -= 1.0f / 60.0f;
 	}

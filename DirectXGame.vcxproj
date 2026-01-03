@@ -118,7 +118,6 @@
     <ClCompile Include="GAME\MapchipField.cpp" />
     <ClCompile Include="GAME\MapCollider.cpp" />
     <ClCompile Include="GAME\MassFunction.cpp" />
-    <ClCompile Include="GAME\Pause.cpp" />
     <ClCompile Include="GAME\Player.cpp" />
     <ClCompile Include="GAME\SceneManager.cpp" />
     <ClCompile Include="GAME\Skydome.cpp" />
@@ -219,7 +218,6 @@
     <ClInclude Include="GAME\MapchipField.h" />
     <ClInclude Include="GAME\MapCollider.h" />
     <ClInclude Include="GAME\MassFunction.h" />
-    <ClInclude Include="GAME\Pause.h" />
     <ClInclude Include="GAME\Player.h" />
     <ClInclude Include="GAME\SceneManager.h" />
     <ClInclude Include="GAME\Skydome.h" />

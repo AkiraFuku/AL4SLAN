@@ -3,6 +3,7 @@
 #include "MassFunction.h"
 #include <vector>
 #include <math.h>
+#include <StageManager.h>
 
 enum class MapChipType {
 	kBlank,

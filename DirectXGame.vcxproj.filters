@@ -60,9 +60,6 @@
     <ClCompile Include="GAME\MassFunction.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="GAME\Pause.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="GAME\Player.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -181,9 +178,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GAME\MassFunction.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GAME\Pause.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GAME\Player.h">
