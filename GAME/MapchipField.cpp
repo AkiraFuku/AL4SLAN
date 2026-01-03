@@ -67,7 +67,7 @@ MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex
 		return MapChipType::kBlank;
 	}
 	// マップチップのデータを取得
-	return mapChipData_.data[yIndex][xIndex];
+	return mapChipData_.data[yIndex][xIndex].type;
 }
 
 Vector3 MapChipField::GetBlockPositionByIndex(uint32_t xIndex, uint32_t yIndex) { 
