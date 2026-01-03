@@ -46,6 +46,7 @@ public:
 	void ResetMapChipData();
 	void LoadMapChipCsv(const std::string& filePath);
 	MapChipType GetMapChipTypeByIndex(uint32_t xIndex,uint32_t yIndex) ;
+	uint8_t GetMapChipSubIDByIndex(uint32_t xIndex,uint32_t yIndex);
 	Vector3 GetBlockPositionByIndex(uint32_t xIndex, uint32_t yIndex) ;
 	// ブロックの行数
 	uint32_t GetNumBlockVertical() { return kNumBlockVertical; }

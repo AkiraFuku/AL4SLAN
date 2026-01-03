@@ -70,6 +70,19 @@ MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex
 	return mapChipData_.data[yIndex][xIndex].type;
 }
 
+uint8_t MapChipField::GetMapChipSubIDByIndex(uint32_t xIndex, uint32_t yIndex) { 
+	// 範囲外チェック
+	if (xIndex<0||kNumBlockHorizontal-1<xIndex) {
+		return 0;
+	}
+	// 範囲外チェック
+	if (yIndex < 0 || kNumBlockVertical - 1 < yIndex) {
+		return 0;
+	}
+	// マップチップのデータを取得
+	return mapChipData_.data[yIndex][xIndex].subID;
+}
+
 Vector3 MapChipField::GetBlockPositionByIndex(uint32_t xIndex, uint32_t yIndex) { 
 	return Vector3(kBlockWidth*xIndex,kBlockHeight*(kNumBlockVertical-1-yIndex),0); 
 }
