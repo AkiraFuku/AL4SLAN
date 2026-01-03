@@ -41,5 +41,5 @@ private:
 
 	int currentStage_ = 1;
 
-	StageManager* stageMnager=nullptr;
+	
 };

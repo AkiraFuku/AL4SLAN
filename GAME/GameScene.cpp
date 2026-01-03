@@ -1,14 +1,9 @@
 #include "GameScene.h"
-#include "SceneManager.h"
 #include "Fade.h"
+#include "SceneManager.h"
 
 using namespace KamataEngine;
- GameScene::GameScene(int stageNo) {
- 
-	 stageNo_ = stageNo;
-	
- }
- 
+GameScene::GameScene(int stageNo) { stageNo_ = stageNo; }
 
 GameScene::~GameScene() {
 	delete player_;
@@ -39,7 +34,6 @@ GameScene::~GameScene() {
 
 	delete deathParticles_;
 	delete deathParticlesModel_;
-
 
 	delete hitEffectModel_;
 	for (HitEffect* hitEffect : hitEffects_) {
@@ -173,14 +167,21 @@ void GameScene::Initialize() {
 	teXtureHandle_ = TextureManager::Load("img_thumb_08_01.png");
 	// モデルの生成
 	model_ = Model::CreateFromOBJ("player", true);
-
 	camera_.Initialize();
-
 	mapchipField_ = new MapChipField();
 
+	/*std::stringstream ss;
+	ss << "Resources/Stage/field" << stageNo_ << ".csv";
+	std::string fileName = ss.str();*/
+	// データ取得
+	int stageIndex = stageNo_ - 1;
+	StageData data = StageManager::GetInstance()->GetStageData(stageIndex);
+
+	// パスを作成 (stageDatas.csv にファイル名だけ入っていると仮定)
+	// 例: Resources/Stage/field1.csv
 	std::stringstream ss;
-    ss << "Resources/Stage/field" << stageNo_ << ".csv";
-    std::string fileName = ss.str();
+	ss << "Resources/Stage/" << data.name<< ".csv";
+	std::string fileName = ss.str();
 	mapchipField_->LoadMapChipCsv(fileName);
 
 	// 自キャラ生成
@@ -246,8 +247,8 @@ void GameScene::Initialize() {
 	worldTransformRetry_.Initialize();
 	worldTransformRetry_.scale_ = {0.5f, 0.5f, 0.5f};
 	GenerateGoal();
-	 pauseMenu_ = new PauseMenu();
-    pauseMenu_->Initialize();
+	pauseMenu_ = new PauseMenu();
+	pauseMenu_->Initialize();
 	// BGM再生
 }
 void GameScene::ChangePhase() {
@@ -284,8 +285,6 @@ void GameScene::ChangePhase() {
 		// クリア処理
 		// ここでは何もしないが、必要に応じてクリア処理を追加する
 		break;
-
-	
 	}
 }
 
@@ -294,16 +293,16 @@ void GameScene::Update() {
 
 	PauseResult res = pauseMenu_->Update();
 
-    // 2. ポーズメニューの結果に応じた処理
-    if (res == PauseResult::kGoTitle) {
-        SceneManager::GetInstance()->ChangeScene(SceneType::kTitle);
-        return; // シーン切り替え時は以降の処理をしない
-    }
+	// 2. ポーズメニューの結果に応じた処理
+	if (res == PauseResult::kGoTitle) {
+		SceneManager::GetInstance()->ChangeScene(SceneType::kTitle);
+		return; // シーン切り替え時は以降の処理をしない
+	}
 
-    // 3. ポーズ中ならゲームの更新をスキップ
-    if (pauseMenu_->IsPaused()) {
-        return; 
-    }
+	// 3. ポーズ中ならゲームの更新をスキップ
+	if (pauseMenu_->IsPaused()) {
+		return;
+	}
 	Input::GetInstance()->GetJoystickState(0, state_);
 	Input::GetInstance()->GetJoystickStatePrevious(0, prevState_);
 
@@ -418,21 +417,22 @@ void GameScene::Update() {
 		Fade::GetInstance()->Update();
 		if (Fade::GetInstance()->IsFinished()) {
 			if (clear_) {
-// もし最終ステージならタイトルへ、そうでなければ次のステージへ
-    // ここでは仮に全3ステージとします
-    const int kMaxStage = 2;
+				// もし最終ステージならタイトルへ、そうでなければ次のステージへ
+				// ここでは仮に全3ステージとします
+				const int kMaxStage = StageManager::GetInstance()->GetStageNum();
 
-    if (SceneManager::GetInstance()->GetCurrentStage() >= kMaxStage) {
-        // 全クリアなのでタイトルへ
-        SceneManager::GetInstance()->ChangeScene(SceneType::kTitle);
-        SceneManager::GetInstance()->ResetStage(); // ステージを1に戻す
-    } else {
-        // 次のステージへ
-        SceneManager::GetInstance()->NextStage(); // 番号を +1
-        
-        // もう一度 GameScene を読み直すことで、次のCSVが読み込まれる
-        SceneManager::GetInstance()->ChangeScene(SceneType::kGame);
-    }			} else {
+				if (SceneManager::GetInstance()->GetCurrentStage() >= kMaxStage) {
+					// 全クリアなのでタイトルへ
+					SceneManager::GetInstance()->ChangeScene(SceneType::kTitle);
+					SceneManager::GetInstance()->ResetStage(); // ステージを1に戻す
+				} else {
+					// 次のステージへ
+					SceneManager::GetInstance()->NextStage(); // 番号を +1
+
+					// もう一度 GameScene を読み直すことで、次のCSVが読み込まれる
+					SceneManager::GetInstance()->ChangeScene(SceneType::kGame);
+				}
+			} else {
 				SceneManager::GetInstance()->ChangeScene(SceneType::kGame);
 			}
 		}
@@ -468,7 +468,7 @@ void GameScene::Update() {
 
 		break;
 
-	break;
+		break;
 	}
 }
 // ゲームシーンの描画
@@ -499,9 +499,8 @@ void GameScene::Draw() {
 	///
 	// エネミー
 	for (Enemy* enemy : enemies_) {
-		if(!enemy->InCamera()){
-		enemy->Draw();
-		
+		if (!enemy->InCamera()) {
+			enemy->Draw();
 		}
 	}
 	// デスパーティクル
@@ -549,7 +548,6 @@ void GameScene::Draw() {
 	} else {
 		camera_.TransferMatrix();
 	}
-	
 }
 void GameScene::DrawBlock() {
 
@@ -623,10 +621,11 @@ void GameScene::EnemyCollision() {
 			Enemy* enemyB = *itB;
 
 			// 死亡している、またはカメラ外のエネミーはスキップ
-			if (enemyA->IsDead() || enemyB->IsDead())continue;
-				
-			if (enemyA->InCamera() && enemyB->InCamera())continue;
-				
+			if (enemyA->IsDead() || enemyB->IsDead())
+				continue;
+
+			if (enemyA->InCamera() && enemyB->InCamera())
+				continue;
 
 			// AABB（当たり判定ボックス）を取得
 			AABB aabb1 = enemyA->GetAABB();

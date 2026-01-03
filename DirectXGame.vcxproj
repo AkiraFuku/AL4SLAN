@@ -201,6 +201,7 @@
     <None Include="Resources\shaders\Terrain.hlsli" />
     <None Include="Resources\Stage\field1.csv" />
     <None Include="Resources\Stage\blocks2.csv" />
+    <None Include="Resources\Stage\stageDatas.csv" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\shaders\Sprite.hlsli" />
