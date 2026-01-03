@@ -12,8 +12,13 @@ enum class MapChipType {
 	kGoal,
 
 };
+struct MapChipDataUnit {
+
+	MapChipType type;
+	uint8_t subID;
+};
 struct MapChipData {
-	std::vector<std::vector<MapChipType>> data; ///< マップチップデータ
+	std::vector<std::vector<MapChipDataUnit>> data; ///< マップチップデータ
 	                       
 };
 
