@@ -180,7 +180,7 @@ void GameScene::Initialize() {
 	// パスを作成 (stageDatas.csv にファイル名だけ入っていると仮定)
 	// 例: Resources/Stage/field1.csv
 	std::stringstream ss;
-	ss << "Resources/Stage/" << data.name<< ".csv";
+	ss << "Resources/Stage/" << data.name << ".csv";
 	std::string fileName = ss.str();
 	mapchipField_->LoadMapChipCsv(fileName);
 
@@ -364,7 +364,9 @@ void GameScene::Update() {
 		// エネミー
 
 		for (Enemy* enemy : enemies_) {
-			enemy->Update();
+			if (!enemy->InCamera()) {
+				enemy->Update();
+			}
 		}
 		EnemyCollision();
 		for (HitEffect* hitEffect : hitEffects_) {
@@ -558,9 +560,8 @@ void GameScene::DrawBlock() {
 	// ここではブロック1つを1.0fとし、画面外に余裕を持たせるため、
 	// 視野範囲をカメラの中心からX軸±20、Y軸±15と仮定します。
 	// ※この値は画面サイズやカメラ設定に合わせて調整が必要です。
-	const float kViewRangeX = 20.0f;
-	const float kViewRangeY = 15.0f;
-
+	const float kViewRangeX = 14.0f; // 元の 20.0f から縮小
+	const float kViewRangeY = 10.0f; // 元の 15.0f から縮小
 	// 3. 描画するブロックのワールド座標範囲を計算
 	float minX_world = cameraPos.x - kViewRangeX;
 	float maxX_world = cameraPos.x + kViewRangeX;
@@ -621,11 +622,23 @@ void GameScene::EnemyCollision() {
 			Enemy* enemyB = *itB;
 
 			// 死亡している、またはカメラ外のエネミーはスキップ
-			if (enemyA->IsDead() || enemyB->IsDead())
+			if (enemyA->IsDead() || enemyB->IsDead()) {
 				continue;
+			}
 
-			if (enemyA->InCamera() && enemyB->InCamera())
+			// 【重要】修正ポイント
+			// どちらか一方でも画面外(InCamera()がtrue)なら、物理演算をスキップする
+			// ※ 元のコードは && (両方画面外なら) でしたが、|| (どちらかが画面外なら) にした方が軽くなります
+			if (enemyA->InCamera() || enemyB->InCamera()) {
 				continue;
+			}
+			// 【追加】簡易的な距離チェック
+			// AABB（箱）の判定をする前に、X座標だけで明らかに離れていたら計算しない
+			float distX = std::abs(enemyA->GetWorldPosition().x - enemyB->GetWorldPosition().x);
+			// 敵のサイズ(仮に1.0f)の2倍以上離れていたら衝突の可能性なしとしてスキップ
+			if (distX > 2.0f) {
+				continue;
+			}
 
 			// AABB（当たり判定ボックス）を取得
 			AABB aabb1 = enemyA->GetAABB();
