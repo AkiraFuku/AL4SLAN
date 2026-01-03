@@ -5,19 +5,19 @@
 #include <cassert>
 #include <string>
 namespace{
-    std::map<std::string, MapChipType> mapChipTable= {
-     {"0", MapChipType::kBlank},
-     {"1", MapChipType::kBlock},
-	 {"2", MapChipType::kEnemy},
-	 {"3", MapChipType::kPlayer},
-     {"4", MapChipType::kGoal  }
+    std::map<char, MapChipType> mapChipTable= {
+     {'0', MapChipType::kBlank},
+     {'B', MapChipType::kBlock},
+	 {'E', MapChipType::kEnemy},
+	 {'P', MapChipType::kPlayer},
+     {'G', MapChipType::kGoal  }
     };
 }
 
 void MapChipField::ResetMapChipData() {
     mapChipData_.data.clear();
 	mapChipData_.data.resize(kNumBlockVertical);
-	for (std::vector<MapChipType>& mapChipDataLine:mapChipData_.data) {
+	for (std::vector<MapChipDataUnit>& mapChipDataLine:mapChipData_.data) {
 		mapChipDataLine.resize(kNumBlockHorizontal);
 	}
 }
@@ -41,9 +41,13 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 			std::string word;
 			getline(line_Stream, word, ',');
 
-			if (mapChipTable.contains(word)) {
-				mapChipData_.data[i][j] = mapChipTable[word];
-			} 
+			if (word.empty()) {
+				continue;
+			}
+			if (!mapChipTable.contains(word[0])) {
+				continue;
+			}
+		
 		}
 	}
 }
