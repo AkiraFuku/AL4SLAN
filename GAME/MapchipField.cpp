@@ -44,10 +44,15 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 			if (word.empty()) {
 				continue;
 			}
-			if (!mapChipTable.contains(word[0])) {
+			if (!mapChipTable.contains(word[kChipType])) {
 				continue;
 			}
+			mapChipData_.data[i][j].type=mapChipTable[word[kChipType]];
 		
+			if (word.size()<=kChipSubID) {
+				continue;
+			}
+			mapChipData_.data[i][j].subID = static_cast<uint8_t>(word[kChipSubID] - '0');
 		}
 	}
 }

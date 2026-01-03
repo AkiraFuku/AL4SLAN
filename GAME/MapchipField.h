@@ -58,5 +58,10 @@ public:
 	// マップチップのデータを取得
 	Rect GetRectByIndex(uint32_t xIndex, uint32_t yIndex);
 
+	enum MapChipCherIndex {
+		kChipType=0,
+		kChipSubID=1,
+
+	};
 };
 
