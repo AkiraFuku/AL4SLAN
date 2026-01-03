@@ -13,6 +13,7 @@
 #include "IScene.h"
 #include "PauseMenu.h"
 #include "StageManager.h"
+#include "ResultMenu.h"
 using namespace KamataEngine ;
 
 
@@ -99,6 +100,9 @@ private:
 	 int stageNo_ =-1;
 	 
 	 PauseMenu* pauseMenu_ = nullptr; // 変数を追加
+	 ResultMenu* resultMenu_ = nullptr;
+
+	 int nextSceneRequest_=0;
 public:
 	
 	~GameScene() override;

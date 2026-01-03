@@ -22,66 +22,72 @@
     <Filter Include="game">
       <UniqueIdentifier>{5bccfee2-3045-4939-af92-750bb6e96da6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game\system">
+      <UniqueIdentifier>{613d13d2-82cf-47c1-a3d2-716df891ec14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="GAME\CameraController.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GAME\DeathParticles.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="GAME\Enemy.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GAME\Fade.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="GAME\Gaid.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="GAME\GameScene.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="GAME\Goal.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GAME\HitEffect.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GAME\MapchipField.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GAME\MapCollider.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GAME\MassFunction.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="GAME\Player.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="GAME\SceneManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="GAME\Skydome.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="GAME\TitleScene.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GAME\Fade.cpp">
+      <Filter>efect</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\HitEffect.cpp">
+      <Filter>efect</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\CameraController.cpp">
+      <Filter>efect</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\DeathParticles.cpp">
+      <Filter>efect</Filter>
     </ClCompile>
     <ClCompile Include="GAME\worldT.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>game\system</Filter>
     </ClCompile>
-    <ClCompile Include="GAME\StageSelectScene.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GAME\GameScene.cpp">
+      <Filter>game\system</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\MapchipField.cpp">
+      <Filter>game\system</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\MapCollider.cpp">
+      <Filter>game\system</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\MassFunction.cpp">
+      <Filter>game\system</Filter>
     </ClCompile>
     <ClCompile Include="PauseMenu.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>game\system</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\SceneManager.cpp">
+      <Filter>game\system</Filter>
     </ClCompile>
     <ClCompile Include="StageManager.cpp">
+      <Filter>game\system</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\TitleScene.cpp">
+      <Filter>game\system</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\StageSelectScene.cpp">
+      <Filter>game\system</Filter>
+    </ClCompile>
+    <ClCompile Include="ResultMenu.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -144,64 +150,67 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GAME\CameraController.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GAME\DeathParticles.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="GAME\Enemy.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GAME\Fade.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GAME\Gaid.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GAME\GameScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="GAME\Goal.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GAME\HitEffect.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GAME\IScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GAME\MapchipField.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GAME\MapCollider.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GAME\MassFunction.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GAME\Player.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GAME\SceneManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="GAME\Skydome.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GAME\TitleScene.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GAME\DeathParticles.h">
+      <Filter>efect</Filter>
     </ClInclude>
-    <ClInclude Include="GAME\worldT.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GAME\CameraController.h">
+      <Filter>efect</Filter>
     </ClInclude>
-    <ClInclude Include="GAME\StageSelectScene.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GAME\Fade.h">
+      <Filter>efect</Filter>
+    </ClInclude>
+    <ClInclude Include="GAME\HitEffect.h">
+      <Filter>efect</Filter>
+    </ClInclude>
+    <ClInclude Include="GAME\GameScene.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="GAME\IScene.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="GAME\MapchipField.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="GAME\MapCollider.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="GAME\MassFunction.h">
+      <Filter>game\system</Filter>
     </ClInclude>
     <ClInclude Include="PauseMenu.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="GAME\SceneManager.h">
+      <Filter>game\system</Filter>
     </ClInclude>
     <ClInclude Include="StageManager.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="GAME\StageSelectScene.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="GAME\TitleScene.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="GAME\worldT.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="ResultMenu.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

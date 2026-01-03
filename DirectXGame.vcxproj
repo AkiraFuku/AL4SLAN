@@ -125,6 +125,7 @@
     <ClCompile Include="GAME\worldT.cpp" />
     <ClCompile Include="GAME\StageSelectScene.cpp" />
     <ClCompile Include="PauseMenu.cpp" />
+    <ClCompile Include="ResultMenu.cpp" />
     <ClCompile Include="StageManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -225,6 +226,7 @@
     <ClInclude Include="GAME\worldT.h" />
     <ClInclude Include="GAME\StageSelectScene.h" />
     <ClInclude Include="PauseMenu.h" />
+    <ClInclude Include="ResultMenu.h" />
     <ClInclude Include="StageManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

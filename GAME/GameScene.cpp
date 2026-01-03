@@ -47,6 +47,7 @@ GameScene::~GameScene() {
 	delete gaid_;
 
 	delete pauseMenu_;
+	delete resultMenu_;
 }
 // ゲームシーンのブロック生成
 void GameScene::GenerateBlock() {
@@ -249,6 +250,7 @@ void GameScene::Initialize() {
 	GenerateGoal();
 	pauseMenu_ = new PauseMenu();
 	pauseMenu_->Initialize();
+	resultMenu_ = new ResultMenu();
 	// BGM再生
 }
 void GameScene::ChangePhase() {
@@ -264,8 +266,10 @@ void GameScene::ChangePhase() {
 		if (player_->IsDead()) {
 
 			phase_ = Phase::kDeath;
+			resultMenu_->Initialize(false);
 		} else if (goal_->isGoal()) {
 			phase_ = Phase::kClear;
+			resultMenu_->Initialize(true);
 		}
 		const Vector3 deathParticlesPosition = player_->GetWorldTransform().translation_;
 
@@ -385,12 +389,20 @@ void GameScene::Update() {
 		worldTransformRetry_.translation_ = {camera_.translation_.x, camera_.translation_.y, -2.5f};
 		WorldTransformUpdate(&worldTransformRetry_);
 		if (deathParticles_ && deathParticles_->IsFinished()) {
-
-			// fade_->Start(Fade::Status::FadeOut, 1.0f);
-			printf("Phase: kFadeOut に遷移\n");
-			if (Input::GetInstance()->TriggerKey(DIK_SPACE) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
-				phase_ = GameScene::Phase::kFadeOut;
-			}
+			ResultMenu::ResultSelection result = resultMenu_->Update();
+			if (result == ResultMenu::ResultSelection::kRetry) {
+                // リトライ -> フェードアウトへ (clear_フラグはfalseのまま)
+                clear_ = false;
+                nextSceneRequest_ = 0; // 通常進行
+                phase_ = GameScene::Phase::kFadeOut;
+                Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f); // フェード開始
+            }
+            else if (result == ResultMenu::ResultSelection ::kTitle) {
+                // タイトルへ
+                nextSceneRequest_ = 1; // タイトルへ行くフラグ
+                phase_ = GameScene::Phase::kFadeOut;
+                Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
+            }
 		}
 		// スカイドームの更新
 		skydome_->Update();
@@ -414,10 +426,52 @@ void GameScene::Update() {
 		}
 		break;
 
-	case GameScene::Phase::kFadeOut:
+	
+	case GameScene::Phase::kClear:
+		// クリア処理
+		// ここでは何もしないが、必要に応じてクリア処理を追加する
+		worldTransformClear_.translation_ = {camera_.translation_.x, camera_.translation_.y, -2.5f};
+		WorldTransformUpdate(&worldTransformClear_);
+		{
+             ResultMenu::ResultSelection result = resultMenu_->Update();
+
+            if (result ==  ResultMenu::ResultSelection::kNext) {
+                // 次のステージへ -> フェードアウトへ
+                clear_ = true; // 次へ進むフラグ
+                nextSceneRequest_ = 0; // 通常進行
+                phase_ = GameScene::Phase::kFadeOut;
+                Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
+            }
+            else if (result ==  ResultMenu::ResultSelection::kTitle) {
+                // タイトルへ
+                nextSceneRequest_ = 1; // タイトルへ
+                phase_ = GameScene::Phase::kFadeOut;
+                Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
+            }
+        }
+
+		skydome_->Update();
+		cameraControlle_->Update();
+		/*for (Enemy* enemy : enemies_) {
+		    enemy->Update();
+		}*/
+		for (HitEffect* hitEffect : hitEffects_) {
+			hitEffect->Update();
+		}
+		// ブロックの更新
+
+		break;
+
+		case GameScene::Phase::kFadeOut:
 		// フェードの更新
 		Fade::GetInstance()->Update();
 		if (Fade::GetInstance()->IsFinished()) {
+			// 【追加】タイトルへのリクエストがあればそちらを優先
+            if (nextSceneRequest_ == 1) {
+                SceneManager::GetInstance()->ChangeScene(SceneType::kSelect);
+                return;
+            }
+			
 			if (clear_) {
 				// もし最終ステージならタイトルへ、そうでなければ次のステージへ
 				// ここでは仮に全3ステージとします
@@ -425,7 +479,7 @@ void GameScene::Update() {
 
 				if (SceneManager::GetInstance()->GetCurrentStage() >= kMaxStage) {
 					// 全クリアなのでタイトルへ
-					SceneManager::GetInstance()->ChangeScene(SceneType::kTitle);
+					SceneManager::GetInstance()->ChangeScene(SceneType::kSelect);
 					SceneManager::GetInstance()->ResetStage(); // ステージを1に戻す
 				} else {
 					// 次のステージへ
@@ -447,29 +501,6 @@ void GameScene::Update() {
 		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
-		break;
-	case GameScene::Phase::kClear:
-		// クリア処理
-		// ここでは何もしないが、必要に応じてクリア処理を追加する
-		worldTransformClear_.translation_ = {camera_.translation_.x, camera_.translation_.y, -2.5f};
-
-		WorldTransformUpdate(&worldTransformClear_);
-		if (Input::GetInstance()->TriggerKey(DIK_SPACE) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
-			phase_ = GameScene::Phase::kFadeOut;
-		}
-
-		skydome_->Update();
-		cameraControlle_->Update();
-		/*for (Enemy* enemy : enemies_) {
-		    enemy->Update();
-		}*/
-		for (HitEffect* hitEffect : hitEffects_) {
-			hitEffect->Update();
-		}
-		// ブロックの更新
-
-		break;
-
 		break;
 	}
 }
@@ -518,6 +549,15 @@ void GameScene::Draw() {
 		goal_->Draw();
 	}
 	Model::PostDraw();
+
+
+	// 【追加】クリアか死亡フェーズならリザルトメニューを描画
+    if (phase_ == Phase::kClear || phase_ == Phase::kDeath) {
+        // パーティクル演出が終わってから表示したい場合は条件を追加してください
+        if (deathParticles_ && deathParticles_->IsFinished() || phase_ == Phase::kClear) {
+             resultMenu_->Draw();
+        }
+    }
 
 	Sprite::PreDraw(dxCommon->GetCommandList());
 
