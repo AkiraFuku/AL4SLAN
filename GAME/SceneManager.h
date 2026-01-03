@@ -2,7 +2,7 @@
 #include <memory>
 #include "IScene.h"
 #include "KamataEngine.h" // 必要に応じてinclude
-
+#include "StageManager.h"
 class SceneManager {
 public:
 	// シングルトンインスタンス取得
@@ -41,4 +41,5 @@ private:
 
 	int currentStage_ = 1;
 
+	StageManager* stageMnager=nullptr;
 };

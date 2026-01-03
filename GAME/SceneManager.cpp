@@ -23,7 +23,8 @@ int SceneManager::Run() {
 
 	// DirectXの初期化情報の取得などが必要ならここで行う
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
-
+	stageMnager=new StageManager;
+	stageMnager->RoadStage();
 	Fade::GetInstance()->Initialize();
 	// --- メインループ ---
 	while (true) {
@@ -81,6 +82,6 @@ int SceneManager::Run() {
 
 
 	}
-
+	delete stageMnager;
 	return 0; // 正常終了
 }

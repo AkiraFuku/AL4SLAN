@@ -1,15 +1,15 @@
 #pragma once
+#include "Fade.h"
 #include "IScene.h"
 #include "KamataEngine.h" // DrawFormatStringなどを使う場合
-#include "Fade.h"
+#include "StageManager.h"
 using namespace KamataEngine;
 class StageSelectScene : public IScene {
 public:
-
 	enum class Phase {
 
-		kFadeIn, // フェードイン
-		kMain,   // メイン
+		kFadeIn,  // フェードイン
+		kMain,    // メイン
 		kFadeOut, // フェードアウト
 
 	};
@@ -18,12 +18,11 @@ public:
 	void Draw() override;
 
 private:
-	// 現在選択しているステージ番号（初期値 1）
-	int selectStageNo_ = 1;
+	StageManager* stageMNG_;
+	    // 現在選択しているステージ番号（初期値 1）
+	    uint32_t selectStageNo_ = 1;
 	ImGuiManager* imgui_ = ImGuiManager::GetInstance();
 	// 選択できる最大ステージ数（3ステージある場合）
-	const int kMaxStage_ = 2;
+	const int kMaxStage_ = ;
 	Phase phase_ = Phase::kFadeIn; // フェーズ
-
-	
 };

@@ -2,7 +2,6 @@
 #include "KamataEngine.h"
 #include "Player.h"
 #include <vector>
-//#include "MassFunction.h"
 #include "Skydome.h"
 #include "MapchipField.h"
 #include "CameraController.h"
@@ -13,6 +12,7 @@
 #include "Gaid.h"
 #include "IScene.h"
 #include "PauseMenu.h"
+#include "StageManager.h"
 using namespace KamataEngine ;
 
 
