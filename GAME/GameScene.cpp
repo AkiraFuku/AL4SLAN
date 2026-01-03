@@ -179,7 +179,7 @@ void GameScene::Initialize() {
 	mapchipField_ = new MapChipField();
 
 	std::stringstream ss;
-    ss << "Resources/Stage/blocks" << stageNo_ << ".csv";
+    ss << "Resources/Stage/field" << stageNo_ << ".csv";
     std::string fileName = ss.str();
 	mapchipField_->LoadMapChipCsv(fileName);
 

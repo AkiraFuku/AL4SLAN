@@ -126,6 +126,7 @@
     <ClCompile Include="GAME\worldT.cpp" />
     <ClCompile Include="GAME\StageSelectScene.cpp" />
     <ClCompile Include="PauseMenu.cpp" />
+    <ClCompile Include="StageManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\TerrainPS.hlsl">
@@ -198,7 +199,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <None Include="Resources\shaders\Terrain.hlsli" />
-    <None Include="Resources\Stage\blocks1.csv" />
+    <None Include="Resources\Stage\field1.csv" />
     <None Include="Resources\Stage\blocks2.csv" />
   </ItemGroup>
   <ItemGroup>
@@ -225,6 +226,7 @@
     <ClInclude Include="GAME\worldT.h" />
     <ClInclude Include="GAME\StageSelectScene.h" />
     <ClInclude Include="PauseMenu.h" />
+    <ClInclude Include="StageManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
