@@ -199,6 +199,7 @@
     </FxCompile>
     <None Include="Resources\shaders\Terrain.hlsli" />
     <None Include="Resources\Stage\blocks1.csv" />
+    <None Include="Resources\Stage\blocks2.csv" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\shaders\Sprite.hlsli" />

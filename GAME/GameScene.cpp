@@ -499,7 +499,10 @@ void GameScene::Draw() {
 	///
 	// エネミー
 	for (Enemy* enemy : enemies_) {
+		if(!enemy->InCamera()){
 		enemy->Draw();
+		
+		}
 	}
 	// デスパーティクル
 	if (deathParticles_) {
@@ -620,10 +623,10 @@ void GameScene::EnemyCollision() {
 			Enemy* enemyB = *itB;
 
 			// 死亡している、またはカメラ外のエネミーはスキップ
-			if (enemyA->IsDead() || enemyB->IsDead())
-				continue;
-			if (enemyA->InCamera() && enemyB->InCamera())
-				continue;
+			if (enemyA->IsDead() || enemyB->IsDead())continue;
+				
+			if (enemyA->InCamera() && enemyB->InCamera())continue;
+				
 
 			// AABB（当たり判定ボックス）を取得
 			AABB aabb1 = enemyA->GetAABB();
