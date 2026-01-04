@@ -12,6 +12,7 @@ enum class ResultSelection {
 	kNone,    // 選択中
 	kNext,    // 次のステージへ
 	kRetry,   // リトライ
+	kSelect,  // セレクト画面へ 
 	kTitle    // タイトルへ戻る
 };
 	// isClear: trueならクリア画面(Next/Title), falseならゲームオーバー(Retry/Title)

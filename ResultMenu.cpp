@@ -14,7 +14,7 @@ void ResultMenu::Initialize(bool isClear) {
 	isClear_ = isClear;
 	cursor_ = 0;
 	memset(&state_, 0, sizeof(XINPUT_STATE));
-    memset(&prevState_, 0, sizeof(XINPUT_STATE));
+	memset(&prevState_, 0, sizeof(XINPUT_STATE));
 	// 背景がまだなければ生成（PauseMenuと同じ設定）
 	if (!overlay_) {
 		overlay_ = Sprite::Create(0, Vector2{0.0f, 0.0f});
@@ -26,64 +26,83 @@ void ResultMenu::Initialize(bool isClear) {
 ResultMenu::ResultSelection ResultMenu::Update() {
 
 	prevState_ = state_;
-    
-    // (2) 新しい入力を state_ に取得する
-    Input::GetInstance()->GetJoystickState(0, state_);
-	// ImGuiの描画
 
+	// (2) 新しい入力を state_ に取得する
+	Input::GetInstance()->GetJoystickState(0, state_);
+	// ImGuiの描画
 
 	ImGuiManager::GetInstance()->Begin();
 	ImGui::Begin("Result Menu");
 
 	if (isClear_) {
 		ImGui::Text("== STAGE CLEAR ==");
-		if (cursor_ == 0) {
+		// クリア時の表示分岐
+		switch (cursor_) {
+		case 0: // Next
 			ImGui::Text("> Next Stage");
+			ImGui::Text("  Go to Select");
 			ImGui::Text("  Go to Title");
-		} else {
+			break;
+		case 1: // Select
 			ImGui::Text("  Next Stage");
+			ImGui::Text("> Go to Select");
+			ImGui::Text("  Go to Title");
+			break;
+		case 2: // Title
+			ImGui::Text("  Next Stage");
+			ImGui::Text("  Go to Select");
 			ImGui::Text("> Go to Title");
+			break;
 		}
 	} else {
 		ImGui::Text("== GAME OVER ==");
-		if (cursor_ == 0) {
+		// ゲームオーバー時の表示分岐
+		switch (cursor_) {
+		case 0: // Retry
 			ImGui::Text("> Retry");
+			ImGui::Text("  Go to Select");
 			ImGui::Text("  Go to Title");
-		} else {
+			break;
+		case 1: // Select
 			ImGui::Text("  Retry");
+			ImGui::Text("> Go to Select");
+			ImGui::Text("  Go to Title");
+			break;
+		case 2: // Title
+			ImGui::Text("  Retry");
+			ImGui::Text("  Go to Select");
 			ImGui::Text("> Go to Title");
+			break;
 		}
 	}
 
 	ImGui::End();
 	ImGuiManager::GetInstance()->End();
-       // カーソル移動 (上下キー)
+	// カーソル移動 (上下キー)
 	if (Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.sThumbLY > 20000 && prevState_.Gamepad.sThumbLY <= 20000)) {
 		cursor_--;
-		if (cursor_ < 0)
-			cursor_ = 1;
+		if (cursor_ < 0) cursor_ = 2;
 	}
 	if (Input::GetInstance()->TriggerKey(DIK_DOWN) || (state_.Gamepad.sThumbLY < -20000 && prevState_.Gamepad.sThumbLY >= -20000)) {
 		cursor_++;
-		if (cursor_ > 1)
-			cursor_ = 0;
+		if (cursor_ > 2) cursor_ = 0;
 	}
 
 	// 決定 (スペースキー または Aボタン)
 	// ※パッド対応も含める場合はここにパッド入力判定も追加してください
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A))) {
 		if (isClear_) {
-			// クリア時の分岐
-			if (cursor_ == 0)
-				return ResultSelection::kNext;
-			if (cursor_ == 1)
-				return ResultSelection::kTitle;
+			switch (cursor_) {
+			case 0: return ResultSelection::kNext;
+			case 1: return ResultSelection::kSelect; // 追加
+			case 2: return ResultSelection::kTitle;
+			}
 		} else {
-			// ゲームオーバー時の分岐
-			if (cursor_ == 0)
-				return ResultSelection::kRetry;
-			if (cursor_ == 1)
-				return ResultSelection::kTitle;
+			switch (cursor_) {
+			case 0: return ResultSelection::kRetry;
+			case 1: return ResultSelection::kSelect; // 追加
+			case 2: return ResultSelection::kTitle;
+			}
 		}
 	}
 

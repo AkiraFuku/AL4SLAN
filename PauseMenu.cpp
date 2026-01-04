@@ -31,12 +31,22 @@ PauseResult PauseMenu::Update() {
 
 	ImGui::Begin("Pause Menu");
 	ImGui::Text("== PAUSE ==");
-	if (cursor_ == 0) {
+	switch (cursor_) {
+	case 0: // Resume選択中
 		ImGui::Text("> Resume");
+		ImGui::Text("  Go to Select");
 		ImGui::Text("  Go to Title");
-	} else {
+		break;
+	case 1: // Select選択中
 		ImGui::Text("  Resume");
+		ImGui::Text("> Go to Select");
+		ImGui::Text("  Go to Title");
+		break;
+	case 2: // Title選択中
+		ImGui::Text("  Resume");
+		ImGui::Text("  Go to Select");
 		ImGui::Text("> Go to Title");
+		break;
 	}
 
 	ImGui::End();
@@ -60,28 +70,30 @@ PauseResult PauseMenu::Update() {
 
 	// --- 以下、ポーズ中の操作 ---
 
-	// カーソル移動 (上下キー)
+	// カーソル移動 (0 ～ 2 の範囲でループ)
 	if (Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.sThumbLY > 20000 && prevState_.Gamepad.sThumbLY <= 20000)) {
 		cursor_--;
-		if (cursor_ < 0)
-			cursor_ = 1;
+		if (cursor_ < 0) {
+			cursor_ = 2; // 2にループ
+		}
 	}
-
-	// 下入力: キーボード↓ OR スティック下倒し
 	if (Input::GetInstance()->TriggerKey(DIK_DOWN) || (state_.Gamepad.sThumbLY < -20000 && prevState_.Gamepad.sThumbLY >= -20000)) {
 		cursor_++;
-		if (cursor_ > 1)
-			cursor_ = 0;
+		if (cursor_ > 2) {
+			cursor_ = 0; // 0にループ
+		}
 	}
 
 	// 決定 (スペースキー)
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A))) {
-		if (cursor_ == 0) {
-			// ゲームに戻る
+		switch (cursor_) {
+		case 0: // Resume
 			isPaused_ = false;
 			return PauseResult::kResume;
-		} else if (cursor_ == 1) {
-			// タイトルへ
+		case 1: // Select
+			isPaused_ = false;
+			return PauseResult::kSelect;
+		case 2: // Title
 			isPaused_ = false;
 			return PauseResult::kGoTitle;
 		}
