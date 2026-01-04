@@ -58,27 +58,27 @@ PauseResult PauseMenu::Update() {
 	ImGuiManager::GetInstance()->Begin();
 	// #ifdef DEBUG
 
-	ImGui::Begin("Pause Menu");
-	ImGui::Text("== PAUSE ==");
-	switch (cursor_) {
-	case 0: // Resume選択中
-		ImGui::Text("> Resume");
-		ImGui::Text("  Go to Select");
-		ImGui::Text("  Go to Title");
-		break;
-	case 1: // Select選択中
-		ImGui::Text("  Resume");
-		ImGui::Text("> Go to Select");
-		ImGui::Text("  Go to Title");
-		break;
-	case 2: // Title選択中
-		ImGui::Text("  Resume");
-		ImGui::Text("  Go to Select");
-		ImGui::Text("> Go to Title");
-		break;
-	}
+	//ImGui::Begin("Pause Menu");
+	//ImGui::Text("== PAUSE ==");
+	//switch (cursor_) {
+	//case 0: // Resume選択中
+	//	ImGui::Text("> Resume");
+	//	ImGui::Text("  Go to Select");
+	//	ImGui::Text("  Go to Title");
+	//	break;
+	//case 1: // Select選択中
+	//	ImGui::Text("  Resume");
+	//	ImGui::Text("> Go to Select");
+	//	ImGui::Text("  Go to Title");
+	//	break;
+	//case 2: // Title選択中
+	//	ImGui::Text("  Resume");
+	//	ImGui::Text("  Go to Select");
+	//	ImGui::Text("> Go to Title");
+	//	break;
+	//}
 
-	ImGui::End();
+	//ImGui::End();
 	// #endif // DEBUG
 
 	ImGuiManager::GetInstance()->End();

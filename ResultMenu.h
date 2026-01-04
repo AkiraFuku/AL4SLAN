@@ -30,4 +30,17 @@ private:
 
 	XINPUT_STATE state_;
     XINPUT_STATE prevState_;
+	// 項目スプライト
+	KamataEngine::Sprite* spriteNext_   = nullptr;
+	KamataEngine::Sprite* spriteRetry_  = nullptr;
+	KamataEngine::Sprite* spriteSelect_ = nullptr;
+	KamataEngine::Sprite* spriteTitle_  = nullptr;
+	KamataEngine::Sprite* spriteCursor_ = nullptr;
+
+	// テクスチャハンドル
+	uint32_t texNext_   = 0;
+	uint32_t texRetry_  = 0;
+	uint32_t texSelect_ = 0;
+	uint32_t texTitle_  = 0;
+	uint32_t texCursor_ = 0;
 };
