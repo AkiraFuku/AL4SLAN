@@ -295,16 +295,21 @@ void GameScene::Update() {
 
 	PauseResult res = pauseMenu_->Update();
 
-	// 2. ポーズメニューの結果に応じた処理
 	if (res == PauseResult::kGoTitle) {
-		SceneManager::GetInstance()->ChangeScene(SceneType::kTitle);
-		return; // シーン切り替え時は以降の処理をしない
-	}
+        nextSceneRequest_ = 1; // 1: タイトルへ
+        phase_ = Phase::kFadeOut;
+        Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
+    } 
+    else if (res == PauseResult::kSelect) {
+        nextSceneRequest_ = 2; // 2: セレクトへ (新規割り当て)
+        phase_ = Phase::kFadeOut;
+        Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
+    }
 
-	// 3. ポーズ中ならゲームの更新をスキップ
-	if (pauseMenu_->IsPaused()) {
-		return;
-	}
+    // ポーズ中、またはフェードアウト開始直後はゲーム更新を止める
+    if (pauseMenu_->IsPaused() || (phase_ == Phase::kFadeOut && res != PauseResult::kNone)) {
+        return;
+    }
 	Input::GetInstance()->GetJoystickState(0, state_);
 	Input::GetInstance()->GetJoystickStatePrevious(0, prevState_);
 	hitEffects_.erase(
@@ -404,7 +409,12 @@ void GameScene::Update() {
 				nextSceneRequest_ = 1; // タイトルへ行くフラグ
 				phase_ = GameScene::Phase::kFadeOut;
 				Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
-			}
+			}else if (result == ResultMenu::ResultSelection::kSelect) {
+                // 【追加】セレクトへ
+                nextSceneRequest_ = 2; // 2: セレクト
+                phase_ = GameScene::Phase::kFadeOut;
+                Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
+            }
 		}
 		// スカイドームの更新
 		skydome_->Update();
@@ -447,14 +457,16 @@ void GameScene::Update() {
 				nextSceneRequest_ = 1; // タイトルへ
 				phase_ = GameScene::Phase::kFadeOut;
 				Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
-			}
+			}else if (result == ResultMenu::ResultSelection::kSelect) {
+                // 【追加】セレクトへ
+                nextSceneRequest_ = 2; // 2: セレクト
+                phase_ = GameScene::Phase::kFadeOut;
+                Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
+            }
 		}
 
 		skydome_->Update();
 		cameraControlle_->Update();
-		/*for (Enemy* enemy : enemies_) {
-		    enemy->Update();
-		}*/
 		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
@@ -467,11 +479,17 @@ void GameScene::Update() {
 		Fade::GetInstance()->Update();
 		if (Fade::GetInstance()->IsFinished()) {
 			// 【追加】タイトルへのリクエストがあればそちらを優先
-			if (nextSceneRequest_ == 1) {
-				SceneManager::GetInstance()->ChangeScene(SceneType::kSelect);
-				return;
-			}
-
+			// nextSceneRequest_ の値によって遷移先を分岐
+            if (nextSceneRequest_ == 1) {
+                // 1: タイトルへ
+                SceneManager::GetInstance()->ChangeScene(SceneType::kTitle);
+                return;
+            }
+            else if (nextSceneRequest_ == 2) {
+                // 2: セレクト画面へ (追加)
+                SceneManager::GetInstance()->ChangeScene(SceneType::kSelect);
+                return;
+            }
 			if (clear_) {
 				// もし最終ステージならタイトルへ、そうでなければ次のステージへ
 				// ここでは仮に全3ステージとします
