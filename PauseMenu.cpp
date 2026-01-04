@@ -5,6 +5,10 @@ PauseMenu::~PauseMenu() {
 	if (overlay_) {
 		delete overlay_;
 	}
+	if (spriteResume_) delete spriteResume_;
+	if (spriteSelect_) delete spriteSelect_;
+	if (spriteTitle_)  delete spriteTitle_;
+	if (spriteCursor_) delete spriteCursor_;
 }
 
 void PauseMenu::Initialize() {
@@ -21,6 +25,31 @@ void PauseMenu::Initialize() {
 		// 0.5f で50%の透け感になります
 		overlay_->SetColor(Vector4(0.0f, 0.0f, 0.0f, 0.5f));
 	}
+
+	texResume_ = TextureManager::Load("Resume.png");
+	texSelect_ = TextureManager::Load("Select.png");
+	texTitle_  = TextureManager::Load("Title.png");
+	texCursor_ = TextureManager::Load("Cursor.png");
+
+	// スプライト生成
+	spriteResume_ = Sprite::Create(texResume_, { 0, 0 });
+	spriteSelect_ = Sprite::Create(texSelect_, { 0, 0 });
+	spriteTitle_  = Sprite::Create(texTitle_,  { 0, 0 });
+	spriteCursor_ = Sprite::Create(texCursor_, { 0, 0 });
+
+
+
+	// スプライトの配置（画面中央付近に縦並び）
+	float centerX = WinApp::kWindowWidth / 2.0f;
+	float startY = 200.0f; // 最初の項目のY座標
+	float gapY = 100.0f;    // 項目間の間隔
+
+	// 位置設定 (画像を中央揃えにする計算)
+	// ※KamataEngineにSetAnchorPointがある場合は {0.5, 0.5} にして centerX, startY を直接セットしてください
+	// ここでは左上基準と仮定して簡易的に配置します
+	spriteResume_->SetPosition({ centerX - 100, startY });
+	spriteSelect_->SetPosition({ centerX - 100, startY + gapY });
+	spriteTitle_->SetPosition( { centerX - 100, startY + gapY * 2 });
 }
 
 PauseResult PauseMenu::Update() {
@@ -111,6 +140,36 @@ void PauseMenu::Draw() {
 	//// 背景（半透明の黒）
 	if (overlay_) {
 		overlay_->Draw();
+	}
+
+	// === 追加: メニュー項目の描画 ===
+	// 全項目を描画（選択されていないものは少し暗くするなどの演出も可能）
+	if (spriteResume_) {
+		// 選択中は白(通常)、非選択はグレーにする例
+		spriteResume_->SetColor(cursor_ == 0 ? Vector4(1, 1, 1, 1) : Vector4(0.5f, 0.5f, 0.5f, 1));
+		spriteResume_->Draw();
+	}
+	if (spriteSelect_) {
+		spriteSelect_->SetColor(cursor_ == 1 ? Vector4(1, 1, 1, 1) : Vector4(0.5f, 0.5f, 0.5f, 1));
+		spriteSelect_->Draw();
+	}
+	if (spriteTitle_) {
+		spriteTitle_->SetColor(cursor_ == 2 ? Vector4(1, 1, 1, 1) : Vector4(0.5f, 0.5f, 0.5f, 1));
+		spriteTitle_->Draw();
+	}
+
+	// カーソルの描画
+	if (spriteCursor_) {
+		// 現在のカーソル位置に合わせてカーソル画像の座標を更新
+		float cursorX = (WinApp::kWindowWidth / 2.0f) - 160.0f; // 項目の左側に表示
+		float startY = 200.0f;
+		float gapY = 100.0f;
+		
+		// Y座標を cursor_ に応じて計算
+		float currentY = startY + (gapY * cursor_);
+		
+		spriteCursor_->SetPosition({ cursorX, currentY });
+		spriteCursor_->Draw();
 	}
 	Sprite::PostDraw();
 

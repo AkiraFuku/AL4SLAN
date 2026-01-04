@@ -36,4 +36,19 @@ private:
 	Sprite* overlay_ = nullptr;
 	XINPUT_STATE state_;
 	XINPUT_STATE prevState_;
+
+
+	Sprite* spriteResume_ = nullptr;
+	Sprite* spriteSelect_ = nullptr;
+	Sprite* spriteTitle_ = nullptr;
+	
+	// カーソル（矢印など）のスプライト
+	Sprite* spriteCursor_ = nullptr;
+
+	// テクスチャハンドル
+	uint32_t texResume_ = 0;
+	uint32_t texSelect_ = 0;
+	uint32_t texTitle_ = 0;
+	uint32_t texCursor_ = 0;
+
 };
