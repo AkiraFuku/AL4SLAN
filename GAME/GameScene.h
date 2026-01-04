@@ -103,6 +103,19 @@ private:
 	 ResultMenu* resultMenu_ = nullptr;
 
 	 int nextSceneRequest_=0;
+
+	 // === カウントダウン用変数 ===
+    // カウントダウンタイマー (秒数計測用)
+    float countdownTimer_ = 0.0f;
+
+    // スプライト
+    KamataEngine::Sprite* spriteCount_ = nullptr;
+   
+    // テクスチャハンドル
+    uint32_t texHandle3_ = 0;
+    uint32_t texHandle2_ = 0;
+    uint32_t texHandle1_ = 0;
+    uint32_t texHandleGo_ = 0;
 public:
 	
 	~GameScene() override;

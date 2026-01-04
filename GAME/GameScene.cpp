@@ -48,6 +48,8 @@ GameScene::~GameScene() {
 
 	delete pauseMenu_;
 	delete resultMenu_;
+	delete spriteCount_;
+    
 }
 // ゲームシーンのブロック生成
 void GameScene::GenerateBlock() {
@@ -171,15 +173,12 @@ void GameScene::Initialize() {
 	camera_.Initialize();
 	mapchipField_ = new MapChipField();
 
-	/*std::stringstream ss;
-	ss << "Resources/Stage/field" << stageNo_ << ".csv";
-	std::string fileName = ss.str();*/
+
 	// データ取得
 	int stageIndex = stageNo_ - 1;
 	StageData data = StageManager::GetInstance()->GetStageData(stageIndex);
 
 	// パスを作成 (stageDatas.csv にファイル名だけ入っていると仮定)
-	// 例: Resources/Stage/field1.csv
 	std::stringstream ss;
 	ss << "Resources/Stage/" << data.name << ".csv";
 	std::string fileName = ss.str();
@@ -252,14 +251,24 @@ void GameScene::Initialize() {
 	pauseMenu_->Initialize();
 	resultMenu_ = new ResultMenu();
 	// BGM再生
+	texHandle3_  = TextureManager::Load("3.png");
+    texHandle2_  = TextureManager::Load("2.png");
+    texHandle1_  = TextureManager::Load("1.png");
+    texHandleGo_ = TextureManager::Load("Go.png");
+
+	spriteCount_  = Sprite::Create(texHandle3_,  { 0, 0 });
+	
+		Vector2 centerPos = { WinApp::kWindowWidth / 2.0f, WinApp::kWindowHeight / 2.0f };
+		spriteCount_->SetPosition(centerPos);
+		spriteCount_->SetAnchorPoint({ 0.5f, 0.5f });
 }
 void GameScene::ChangePhase() {
 	switch (phase_) {
 
 	case Phase::kStart:
-		if (Input::GetInstance()->TriggerKey(DIK_SPACE) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
-			phase_ = Phase::kPlay; // ポーズ解除でプレイに戻る
-		}
+		//if (Input::GetInstance()->TriggerKey(DIK_SPACE) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
+		//	phase_ = Phase::kPlay; // ポーズ解除でプレイに戻る
+		//}
 
 		break;
 	case Phase::kPlay:
@@ -362,6 +371,14 @@ void GameScene::Update() {
 		skydome_->Update();
 		// カメラの更新
 		cameraControlle_->Update();
+
+		// タイマーを進める (1/60秒ずつ加算)
+        countdownTimer_ += 1.0f / 60.0f;
+
+        // 4秒経過したらゲームプレイへ移行 (3 -> 2 -> 1 -> GO -> Play)
+        if (countdownTimer_ >= 4.0f) {
+            phase_ = GameScene::Phase::kPlay;
+        }
 
 		break;
 
@@ -575,9 +592,31 @@ void GameScene::Draw() {
 			resultMenu_->Draw();
 		}
 	}
-
 	Sprite::PreDraw(dxCommon->GetCommandList());
 
+	if (phase_ == Phase::kStart) {
+        
+        // 0秒〜1秒未満： "3"
+        if (countdownTimer_ < 1.0f) {
+            if (spriteCount_) spriteCount_->SetTextureHandle(texHandle3_);
+        }
+        // 1秒〜2秒未満： "2"
+        else if (countdownTimer_ < 2.0f) {
+              if (spriteCount_) spriteCount_->SetTextureHandle(texHandle2_);
+        }
+        // 2秒〜3秒未満： "1"
+        else if (countdownTimer_ < 3.0f) {
+          if (spriteCount_) spriteCount_->SetTextureHandle(texHandle1_);
+        }
+        // 3秒〜4秒未満： "GO!"
+        else if (countdownTimer_ < 4.0f) {
+           if (spriteCount_) spriteCount_->SetTextureHandle(texHandleGo_);
+        }
+		if (spriteCount_) spriteCount_->Draw();
+		
+    }
+
+	
 	Fade::GetInstance()->Draw();
 
 	pauseMenu_->Draw();

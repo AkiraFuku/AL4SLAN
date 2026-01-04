@@ -3,11 +3,12 @@
 #include "IScene.h"
 #include "KamataEngine.h"
 #include "StageManager.h"
-
+#include "Skydome.h"
 using namespace KamataEngine;
 
 class StageSelectScene : public IScene {
 public:
+	~StageSelectScene()override ;
 	enum class Phase {
 		kFadeIn,  // フェードイン
 		kMain,    // メイン
@@ -27,4 +28,9 @@ private:
 
 	 XINPUT_STATE state_;
 	 XINPUT_STATE prevState_;
+
+	 KamataEngine::Camera camera_; // カメラ
+	Skydome* skydome_ = nullptr;  // スカイドーム本体
+	Model* modelSkydome_ = nullptr; // スカイドームのモデル
+
 };

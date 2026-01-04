@@ -1,10 +1,26 @@
 #include "StageSelectScene.h"
 #include "SceneManager.h"
 
+StageSelectScene::~StageSelectScene() {
+	delete skydome_;
+	delete modelSkydome_;
+}
+
 void StageSelectScene::Initialize() {
 	selectStageNo_ = 1;
 	Fade::GetInstance()->Start(Fade::Status::FadeIn, 1.0f);
 	phase_ = StageSelectScene::Phase::kFadeIn;
+
+	// === 追加: スカイドームの初期化 ===
+	// カメラの初期化
+	camera_.Initialize();
+
+	// スカイドーム用モデルの生成 ("skydome" というobjファイルがある前提)
+	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
+
+	// スカイドームの生成と初期化
+	skydome_ = new Skydome();
+	skydome_->Initialize(modelSkydome_, &camera_);
 }
 
 void StageSelectScene::Update() {
@@ -13,6 +29,9 @@ void StageSelectScene::Update() {
 	Input::GetInstance()->GetJoystickStatePrevious(0, prevState_);
 	Input::GetInstance()->GetJoystickState(0, state_);
 	// --- ステージ選択処理 ---
+
+	camera_;
+	skydome_->Update();
 	imgui_->Begin();
 #ifdef DEBUG
 
@@ -51,8 +70,7 @@ void StageSelectScene::Update() {
 		}
 
 		// 左キー (ステージ番号を戻す)
-		if (Input::GetInstance()->TriggerKey(DIK_LEFT) || 
-            (state_.Gamepad.sThumbLX < -20000 && prevState_.Gamepad.sThumbLX >= -20000)) {
+		if (Input::GetInstance()->TriggerKey(DIK_LEFT) || (state_.Gamepad.sThumbLX < -20000 && prevState_.Gamepad.sThumbLX >= -20000)) {
 			selectStageNo_--;
 			// 0未満になったら最大ステージにする
 			if (selectStageNo_ < 0) {
@@ -87,6 +105,15 @@ void StageSelectScene::Update() {
 }
 
 void StageSelectScene::Draw() {
+	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
+
+	Model::PreDraw(dxCommon->GetCommandList());
+
+	skydome_->Draw();
+	Model::PostDraw();
+	
 	Fade::GetInstance()->Draw();
+
+
 	imgui_->Draw();
 }
