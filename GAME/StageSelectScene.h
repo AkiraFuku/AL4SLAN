@@ -2,13 +2,13 @@
 #include "Fade.h"
 #include "IScene.h"
 #include "KamataEngine.h"
-#include "StageManager.h"
 #include "Skydome.h"
+#include "StageManager.h"
 using namespace KamataEngine;
 
 class StageSelectScene : public IScene {
 public:
-	~StageSelectScene()override ;
+	~StageSelectScene() override;
 	enum class Phase {
 		kFadeIn,  // フェードイン
 		kMain,    // メイン
@@ -23,14 +23,20 @@ private:
 	int selectStageNo_ = 1;
 
 	ImGuiManager* imgui_ = ImGuiManager::GetInstance();
-	
-	Phase phase_ = Phase::kFadeIn; 
 
-	 XINPUT_STATE state_;
-	 XINPUT_STATE prevState_;
+	Phase phase_ = Phase::kFadeIn;
 
-	 KamataEngine::Camera camera_; // カメラ
-	Skydome* skydome_ = nullptr;  // スカイドーム本体
+	XINPUT_STATE state_;
+	XINPUT_STATE prevState_;
+
+	KamataEngine::Camera camera_;   // カメラ
+	Skydome* skydome_ = nullptr;    // スカイドーム本体
 	Model* modelSkydome_ = nullptr; // スカイドームのモデル
+	std::vector<Sprite*> uiSprites_;
 
+	// カーソル（矢印や枠）のスプライト
+	Sprite* spriteCursor_ = nullptr;
+
+	// タイトル画像（装飾用："STAGE SELECT"などの文字）
+	Sprite* spriteHeader_ = nullptr;
 };

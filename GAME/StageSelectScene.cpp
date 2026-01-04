@@ -1,9 +1,16 @@
 #include "StageSelectScene.h"
 #include "SceneManager.h"
-
+#include <numbers>
 StageSelectScene::~StageSelectScene() {
 	delete skydome_;
 	delete modelSkydome_;
+	for (Sprite* sprite : uiSprites_) {
+		delete sprite;
+	}
+	uiSprites_.clear();
+
+	if (spriteCursor_) delete spriteCursor_;
+	if (spriteHeader_) delete spriteHeader_;
 }
 
 void StageSelectScene::Initialize() {
@@ -21,6 +28,44 @@ void StageSelectScene::Initialize() {
 	// スカイドームの生成と初期化
 	skydome_ = new Skydome();
 	skydome_->Initialize(modelSkydome_, &camera_);
+
+	// 1. ステージ数などの情報を取得
+	int maxStage = (int)StageManager::GetInstance()->GetStageNum();
+
+	// 2. 配列をクリア
+	uiSprites_.clear();
+
+	// 3. 選択肢0番: 「タイトルへ戻る」画像
+	// ※ファイル名は適宜変更してください
+	uint32_t texTitleReturn = TextureManager::Load("Title.png"); 
+	Sprite* spriteReturn = Sprite::Create(texTitleReturn, { 0, 0 });
+	spriteReturn->SetAnchorPoint({ 0.5f, 0.5f }); // 中心基準
+	spriteReturn->SetSize({	100.0f,5.0f});
+	uiSprites_.push_back(spriteReturn);
+
+	// 4. 選択肢1番～: 「ステージ数字」画像
+	for (int i = 1; i <= maxStage; i++) {
+		// ファイル名生成 (例: "Stage1.png", "Stage2.png")
+		std::string fileName =  std::to_string(i) + ".png";
+		uint32_t texStage = TextureManager::Load(fileName);
+		
+		Sprite* spriteStage = Sprite::Create(texStage, { 0, 0 });
+		spriteStage->SetAnchorPoint({ 0.5f, 0.5f }); // 中心基準
+		uiSprites_.push_back(spriteStage);
+	}
+	
+
+	// 5. カーソル画像の生成
+	uint32_t texCursor = TextureManager::Load("Cursor.png");
+	spriteCursor_ = Sprite::Create(texCursor, { 0, 0 });
+	spriteCursor_->SetAnchorPoint({ 0.5f, 0.5f });
+	spriteCursor_->SetRotation(std::numbers::pi_v<float>/2.0f);
+
+	// 6. ヘッダー画像の生成（"SELECT STAGE" などのタイトル文字）
+	// 画像がない場合はコメントアウトしてください
+	// uint32_t texHeader = TextureManager::Load("Header.png");
+	// spriteHeader_ = Sprite::Create(texHeader, { WinApp::kWindowWidth / 2.0f, 100.0f });
+	// spriteHeader_->SetAnchorPoint({ 0.5f, 0.5f });
 }
 
 void StageSelectScene::Update() {
@@ -101,6 +146,46 @@ void StageSelectScene::Update() {
 		}
 		break;
 	}
+	// === スプライトの更新（位置合わせ・アニメーション） ===
+	
+	// 画面中心座標
+	float centerX = WinApp::kWindowWidth / 2.0f;
+	float centerY = WinApp::kWindowHeight / 2.0f;
+	float gapX = 300.0f; // 項目同士の間隔
+
+	// すべての項目を配置
+	// 現在選択されている selectStageNo_ が画面中央に来るようにずらして配置するロジック
+	for (int i = 0; i < uiSprites_.size(); i++) {
+		if (uiSprites_[i] == nullptr) continue;
+
+		// 画面中央からのオフセット（選択番号との差分 × 間隔）
+		float offsetX = (float)(i - selectStageNo_) * gapX;
+		
+		Vector2 targetPos = { centerX + offsetX, centerY };
+		
+		// 位置設定
+		uiSprites_[i]->SetPosition(targetPos);
+
+		// 演出：選択中のものは不透明(1.0)、それ以外は半透明(0.5)かつ少し小さくする
+		if (i == selectStageNo_) {
+			uiSprites_[i]->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+			uiSprites_[i]->SetSize({ 200.0f, 200.0f }); // 画像本来のサイズに合わせて調整
+		} else {
+			uiSprites_[i]->SetColor({ 0.5f, 0.5f, 0.5f, 1.0f }); // グレーアウト
+			uiSprites_[i]->SetSize({ 150.0f, 150.0f }); // 小さく
+		}
+	}
+
+	// カーソルは中央に固定（あるいは選択アイテムの上に表示）
+	if (spriteCursor_) {
+		// 少し上に表示
+		spriteCursor_->SetPosition({ centerX, centerY - 150.0f });
+		
+		// ふわふわさせるアニメーション（お好みで）
+		static float floatY = 0;
+		floatY += 0.1f;
+		spriteCursor_->SetPosition({ centerX, centerY - 150.0f + sinf(floatY) * 10.0f });
+	}
 	imgui_->End();
 }
 
@@ -111,9 +196,26 @@ void StageSelectScene::Draw() {
 
 	skydome_->Draw();
 	Model::PostDraw();
-	
-	Fade::GetInstance()->Draw();
+	Sprite::PreDraw(dxCommon->GetCommandList());
+	if (spriteHeader_) spriteHeader_->Draw();
 
+	// 選択肢（現在の選択以外のものを先に描画し、選択中のものを一番上に描画するときれいです）
+	for (int i = 0; i < uiSprites_.size(); i++) {
+		if (i != selectStageNo_ && uiSprites_[i]) {
+			uiSprites_[i]->Draw();
+		}
+	}
+	// 選択中のものを最後に描画（最前面）
+	if (selectStageNo_ >= 0 && selectStageNo_ < uiSprites_.size()) {
+		if (uiSprites_[selectStageNo_]) {
+			uiSprites_[selectStageNo_]->Draw();
+		}
+	}
+
+	// カーソル
+	if (spriteCursor_) spriteCursor_->Draw();
+	Sprite::PostDraw();
+	Fade::GetInstance()->Draw();
 
 	imgui_->Draw();
 }
