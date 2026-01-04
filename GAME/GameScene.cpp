@@ -549,10 +549,10 @@ void GameScene::Draw() {
 	switch (phase_) {
 	case GameScene::Phase::kClear:
 
-		crearModel_->Draw(worldTransformClear_, camera_);
+		//crearModel_->Draw(worldTransformClear_, camera_);
 		break;
 	case GameScene::Phase::kDeath:
-		RetryModel_->Draw(worldTransformRetry_, camera_);
+		//RetryModel_->Draw(worldTransformRetry_, camera_);
 		break;
 	}
 	// カメラの描画

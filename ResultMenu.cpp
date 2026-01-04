@@ -52,51 +52,51 @@ ResultMenu::ResultSelection ResultMenu::Update() {
 	// ImGuiの描画
 
 	ImGuiManager::GetInstance()->Begin();
-	ImGui::Begin("Result Menu");
+	//ImGui::Begin("Result Menu");
 
-	if (isClear_) {
-		ImGui::Text("== STAGE CLEAR ==");
-		// クリア時の表示分岐
-		switch (cursor_) {
-		case 0: // Next
-			ImGui::Text("> Next Stage");
-			ImGui::Text("  Go to Select");
-			ImGui::Text("  Go to Title");
-			break;
-		case 1: // Select
-			ImGui::Text("  Next Stage");
-			ImGui::Text("> Go to Select");
-			ImGui::Text("  Go to Title");
-			break;
-		case 2: // Title
-			ImGui::Text("  Next Stage");
-			ImGui::Text("  Go to Select");
-			ImGui::Text("> Go to Title");
-			break;
-		}
-	} else {
-		ImGui::Text("== GAME OVER ==");
-		// ゲームオーバー時の表示分岐
-		switch (cursor_) {
-		case 0: // Retry
-			ImGui::Text("> Retry");
-			ImGui::Text("  Go to Select");
-			ImGui::Text("  Go to Title");
-			break;
-		case 1: // Select
-			ImGui::Text("  Retry");
-			ImGui::Text("> Go to Select");
-			ImGui::Text("  Go to Title");
-			break;
-		case 2: // Title
-			ImGui::Text("  Retry");
-			ImGui::Text("  Go to Select");
-			ImGui::Text("> Go to Title");
-			break;
-		}
-	}
+	//if (isClear_) {
+	//	ImGui::Text("== STAGE CLEAR ==");
+	//	// クリア時の表示分岐
+	//	switch (cursor_) {
+	//	case 0: // Next
+	//		ImGui::Text("> Next Stage");
+	//		ImGui::Text("  Go to Select");
+	//		ImGui::Text("  Go to Title");
+	//		break;
+	//	case 1: // Select
+	//		ImGui::Text("  Next Stage");
+	//		ImGui::Text("> Go to Select");
+	//		ImGui::Text("  Go to Title");
+	//		break;
+	//	case 2: // Title
+	//		ImGui::Text("  Next Stage");
+	//		ImGui::Text("  Go to Select");
+	//		ImGui::Text("> Go to Title");
+	//		break;
+	//	}
+	//} else {
+	//	ImGui::Text("== GAME OVER ==");
+	//	// ゲームオーバー時の表示分岐
+	//	switch (cursor_) {
+	//	case 0: // Retry
+	//		ImGui::Text("> Retry");
+	//		ImGui::Text("  Go to Select");
+	//		ImGui::Text("  Go to Title");
+	//		break;
+	//	case 1: // Select
+	//		ImGui::Text("  Retry");
+	//		ImGui::Text("> Go to Select");
+	//		ImGui::Text("  Go to Title");
+	//		break;
+	//	case 2: // Title
+	//		ImGui::Text("  Retry");
+	//		ImGui::Text("  Go to Select");
+	//		ImGui::Text("> Go to Title");
+	//		break;
+	//	}
+	//}
 
-	ImGui::End();
+	//ImGui::End();
 	ImGuiManager::GetInstance()->End();
 	// カーソル移動 (上下キー)
 	if (Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.sThumbLY > 20000 && prevState_.Gamepad.sThumbLY <= 20000)) {
