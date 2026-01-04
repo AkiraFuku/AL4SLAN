@@ -24,4 +24,7 @@ private:
 	ImGuiManager* imgui_ = ImGuiManager::GetInstance();
 	
 	Phase phase_ = Phase::kFadeIn; 
+
+	 XINPUT_STATE state_;
+	 XINPUT_STATE prevState_;
 };

@@ -13,17 +13,25 @@ ResultMenu::~ResultMenu() {
 void ResultMenu::Initialize(bool isClear) {
 	isClear_ = isClear;
 	cursor_ = 0;
-
+	memset(&state_, 0, sizeof(XINPUT_STATE));
+    memset(&prevState_, 0, sizeof(XINPUT_STATE));
 	// 背景がまだなければ生成（PauseMenuと同じ設定）
 	if (!overlay_) {
-		overlay_ = Sprite::Create(0, Vector2{ 0.0f, 0.0f });
+		overlay_ = Sprite::Create(0, Vector2{0.0f, 0.0f});
 		overlay_->SetSize(Vector2(WinApp::kWindowWidth, WinApp::kWindowHeight));
 		overlay_->SetColor(Vector4(0.0f, 0.0f, 0.0f, 0.5f)); // 半透明の黒
 	}
 }
 
 ResultMenu::ResultSelection ResultMenu::Update() {
+
+	prevState_ = state_;
+    
+    // (2) 新しい入力を state_ に取得する
+    Input::GetInstance()->GetJoystickState(0, state_);
 	// ImGuiの描画
+
+
 	ImGuiManager::GetInstance()->Begin();
 	ImGui::Begin("Result Menu");
 
@@ -49,28 +57,33 @@ ResultMenu::ResultSelection ResultMenu::Update() {
 
 	ImGui::End();
 	ImGuiManager::GetInstance()->End();
-
-	// カーソル移動 (上下キー)
-	if (Input::GetInstance()->TriggerKey(DIK_UP)) {
+       // カーソル移動 (上下キー)
+	if (Input::GetInstance()->TriggerKey(DIK_UP) || (state_.Gamepad.sThumbLY > 20000 && prevState_.Gamepad.sThumbLY <= 20000)) {
 		cursor_--;
-		if (cursor_ < 0) cursor_ = 1;
+		if (cursor_ < 0)
+			cursor_ = 1;
 	}
-	if (Input::GetInstance()->TriggerKey(DIK_DOWN)) {
+	if (Input::GetInstance()->TriggerKey(DIK_DOWN) || (state_.Gamepad.sThumbLY < -20000 && prevState_.Gamepad.sThumbLY >= -20000)) {
 		cursor_++;
-		if (cursor_ > 1) cursor_ = 0;
+		if (cursor_ > 1)
+			cursor_ = 0;
 	}
 
 	// 決定 (スペースキー または Aボタン)
 	// ※パッド対応も含める場合はここにパッド入力判定も追加してください
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A))) {
 		if (isClear_) {
 			// クリア時の分岐
-			if (cursor_ == 0) return ResultSelection::kNext;
-			if (cursor_ == 1) return ResultSelection::kTitle;
+			if (cursor_ == 0)
+				return ResultSelection::kNext;
+			if (cursor_ == 1)
+				return ResultSelection::kTitle;
 		} else {
 			// ゲームオーバー時の分岐
-			if (cursor_ == 0) return ResultSelection::kRetry;
-			if (cursor_ == 1) return ResultSelection::kTitle;
+			if (cursor_ == 0)
+				return ResultSelection::kRetry;
+			if (cursor_ == 1)
+				return ResultSelection::kTitle;
 		}
 	}
 

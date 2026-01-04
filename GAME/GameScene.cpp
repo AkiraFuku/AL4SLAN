@@ -279,9 +279,7 @@ void GameScene::ChangePhase() {
 		break;
 
 	case Phase::kDeath:
-		/*if (deathParticles_&&deathParticles_->IsFinished()) {
-		    finished_ = true;
-		}*/
+	
 
 		break;
 
@@ -309,23 +307,28 @@ void GameScene::Update() {
 	}
 	Input::GetInstance()->GetJoystickState(0, state_);
 	Input::GetInstance()->GetJoystickStatePrevious(0, prevState_);
-
-	hitEffects_.remove_if([](HitEffect* hitEffect) {
-		if (hitEffect->IsDead()) {
-			delete hitEffect;
-
-			return true;
-		}
-		return false;
-	});
-
-	enemies_.remove_if([](Enemy* enemy) {
-		if (enemy->IsDead()) {
-			delete enemy;
-			return true; // 削除する場合はtrueを返す
-		}
-		return false;
-	});
+	hitEffects_.erase(
+	    std::remove_if(
+	        hitEffects_.begin(), hitEffects_.end(),
+	        [](HitEffect* hitEffects_) {
+		        if (hitEffects_->IsDead()) {
+			        delete hitEffects_;
+			        return true;
+		        }
+		        return false;
+	        }),
+	    hitEffects_.end());
+	enemies_.erase(
+	    std::remove_if(
+	        enemies_.begin(), enemies_.end(),
+	        [](Enemy* enemy) {
+		        if (enemy->IsDead()) {
+			        delete enemy;
+			        return true;
+		        }
+		        return false;
+	        }),
+	    enemies_.end());
 
 	gaid_->Update();
 
@@ -391,18 +394,17 @@ void GameScene::Update() {
 		if (deathParticles_ && deathParticles_->IsFinished()) {
 			ResultMenu::ResultSelection result = resultMenu_->Update();
 			if (result == ResultMenu::ResultSelection::kRetry) {
-                // リトライ -> フェードアウトへ (clear_フラグはfalseのまま)
-                clear_ = false;
-                nextSceneRequest_ = 0; // 通常進行
-                phase_ = GameScene::Phase::kFadeOut;
-                Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f); // フェード開始
-            }
-            else if (result == ResultMenu::ResultSelection ::kTitle) {
-                // タイトルへ
-                nextSceneRequest_ = 1; // タイトルへ行くフラグ
-                phase_ = GameScene::Phase::kFadeOut;
-                Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
-            }
+				// リトライ -> フェードアウトへ (clear_フラグはfalseのまま)
+				clear_ = false;
+				nextSceneRequest_ = 0; // 通常進行
+				phase_ = GameScene::Phase::kFadeOut;
+				Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f); // フェード開始
+			} else if (result == ResultMenu::ResultSelection ::kTitle) {
+				// タイトルへ
+				nextSceneRequest_ = 1; // タイトルへ行くフラグ
+				phase_ = GameScene::Phase::kFadeOut;
+				Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
+			}
 		}
 		// スカイドームの更新
 		skydome_->Update();
@@ -426,29 +428,27 @@ void GameScene::Update() {
 		}
 		break;
 
-	
 	case GameScene::Phase::kClear:
 		// クリア処理
 		// ここでは何もしないが、必要に応じてクリア処理を追加する
 		worldTransformClear_.translation_ = {camera_.translation_.x, camera_.translation_.y, -2.5f};
 		WorldTransformUpdate(&worldTransformClear_);
 		{
-             ResultMenu::ResultSelection result = resultMenu_->Update();
+			ResultMenu::ResultSelection result = resultMenu_->Update();
 
-            if (result ==  ResultMenu::ResultSelection::kNext) {
-                // 次のステージへ -> フェードアウトへ
-                clear_ = true; // 次へ進むフラグ
-                nextSceneRequest_ = 0; // 通常進行
-                phase_ = GameScene::Phase::kFadeOut;
-                Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
-            }
-            else if (result ==  ResultMenu::ResultSelection::kTitle) {
-                // タイトルへ
-                nextSceneRequest_ = 1; // タイトルへ
-                phase_ = GameScene::Phase::kFadeOut;
-                Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
-            }
-        }
+			if (result == ResultMenu::ResultSelection::kNext) {
+				// 次のステージへ -> フェードアウトへ
+				clear_ = true;         // 次へ進むフラグ
+				nextSceneRequest_ = 0; // 通常進行
+				phase_ = GameScene::Phase::kFadeOut;
+				Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
+			} else if (result == ResultMenu::ResultSelection::kTitle) {
+				// タイトルへ
+				nextSceneRequest_ = 1; // タイトルへ
+				phase_ = GameScene::Phase::kFadeOut;
+				Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
+			}
+		}
 
 		skydome_->Update();
 		cameraControlle_->Update();
@@ -462,16 +462,16 @@ void GameScene::Update() {
 
 		break;
 
-		case GameScene::Phase::kFadeOut:
+	case GameScene::Phase::kFadeOut:
 		// フェードの更新
 		Fade::GetInstance()->Update();
 		if (Fade::GetInstance()->IsFinished()) {
 			// 【追加】タイトルへのリクエストがあればそちらを優先
-            if (nextSceneRequest_ == 1) {
-                SceneManager::GetInstance()->ChangeScene(SceneType::kSelect);
-                return;
-            }
-			
+			if (nextSceneRequest_ == 1) {
+				SceneManager::GetInstance()->ChangeScene(SceneType::kSelect);
+				return;
+			}
+
 			if (clear_) {
 				// もし最終ステージならタイトルへ、そうでなければ次のステージへ
 				// ここでは仮に全3ステージとします
@@ -550,14 +550,13 @@ void GameScene::Draw() {
 	}
 	Model::PostDraw();
 
-
 	// 【追加】クリアか死亡フェーズならリザルトメニューを描画
-    if (phase_ == Phase::kClear || phase_ == Phase::kDeath) {
-        // パーティクル演出が終わってから表示したい場合は条件を追加してください
-        if (deathParticles_ && deathParticles_->IsFinished() || phase_ == Phase::kClear) {
-             resultMenu_->Draw();
-        }
-    }
+	if (phase_ == Phase::kClear || phase_ == Phase::kDeath) {
+		// パーティクル演出が終わってから表示したい場合は条件を追加してください
+		if (deathParticles_ && deathParticles_->IsFinished() || phase_ == Phase::kClear) {
+			resultMenu_->Draw();
+		}
+	}
 
 	Sprite::PreDraw(dxCommon->GetCommandList());
 
@@ -600,8 +599,8 @@ void GameScene::DrawBlock() {
 	// ここではブロック1つを1.0fとし、画面外に余裕を持たせるため、
 	// 視野範囲をカメラの中心からX軸±20、Y軸±15と仮定します。
 	// ※この値は画面サイズやカメラ設定に合わせて調整が必要です。
-	const float kViewRangeX = 14.0f; // 元の 20.0f から縮小
-	const float kViewRangeY = 10.0f; // 元の 15.0f から縮小
+	const float kViewRangeX = 12.0f; // 元の 20.0f から縮小
+	const float kViewRangeY = 8.0f;  // 元の 15.0f から縮小
 	// 3. 描画するブロックのワールド座標範囲を計算
 	float minX_world = cameraPos.x - kViewRangeX;
 	float maxX_world = cameraPos.x + kViewRangeX;
@@ -649,86 +648,63 @@ void GameScene::CreateHitEffect(const Vector3& position) {
 }
 
 void GameScene::EnemyCollision() {
-	// リストの先頭からチェック
-	auto itA = enemies_.begin();
-	for (; itA != enemies_.end(); ++itA) {
-		Enemy* enemyA = *itA;
+	// 1. 画面内にいる（処理対象の）エネミーだけを抽出する
+	std::vector<Enemy*> activeEnemies;
+	activeEnemies.reserve(enemies_.size()); // メモリ確保のオーバーヘッドを防ぐ
 
-		// 次の要素からチェックを開始することで、(A, B) の重複判定と (A, A) の自己判定を防ぐ
-		auto itB = itA;
-		itB++;
+	for (Enemy* enemy : enemies_) {
+		// 死亡している、または画面外のエネミーはリストに入れない
+		if (enemy->IsDead() || enemy->InCamera()) {
+			continue;
+		}
+		activeEnemies.push_back(enemy);
+	}
 
-		for (; itB != enemies_.end(); ++itB) {
-			Enemy* enemyB = *itB;
+	// 2. 抽出したエネミー同士だけで判定を行う
+	// これにより、ループ回数が「全エネミーの2乗」から「画面内エネミーの2乗」に激減します
+	for (size_t i = 0; i < activeEnemies.size(); ++i) {
+		for (size_t j = i + 1; j < activeEnemies.size(); ++j) {
+			Enemy* enemyA = activeEnemies[i];
+			Enemy* enemyB = activeEnemies[j];
 
-			// 死亡している、またはカメラ外のエネミーはスキップ
-			if (enemyA->IsDead() || enemyB->IsDead()) {
-				continue;
-			}
-
-			// 【重要】修正ポイント
-			// どちらか一方でも画面外(InCamera()がtrue)なら、物理演算をスキップする
-			// ※ 元のコードは && (両方画面外なら) でしたが、|| (どちらかが画面外なら) にした方が軽くなります
-			if (enemyA->InCamera() || enemyB->InCamera()) {
-				continue;
-			}
-			// 【追加】簡易的な距離チェック
-			// AABB（箱）の判定をする前に、X座標だけで明らかに離れていたら計算しない
+			// 簡易的な距離チェック (X軸のみ)
 			float distX = std::abs(enemyA->GetWorldPosition().x - enemyB->GetWorldPosition().x);
-			// 敵のサイズ(仮に1.0f)の2倍以上離れていたら衝突の可能性なしとしてスキップ
 			if (distX > 2.0f) {
 				continue;
 			}
 
-			// AABB（当たり判定ボックス）を取得
+			// ここから下は元のロジックと同じ
 			AABB aabb1 = enemyA->GetAABB();
 			AABB aabb2 = enemyB->GetAABB();
 
-			// AABB同士が当たっているか判定
 			if (aabb1.min.x < aabb2.max.x && aabb1.max.x > aabb2.min.x && aabb1.min.y < aabb2.max.y && aabb1.max.y > aabb2.min.y && aabb1.min.z < aabb2.max.z && aabb1.max.z > aabb2.min.z) {
 
-				// 重なり量を計算
+				// ... (衝突時の処理：元のコードの中身をそのままここに貼る) ...
 				float overlapX = min(aabb1.max.x, aabb2.max.x) - max(aabb1.min.x, aabb2.min.x);
 				float overlapY = min(aabb1.max.y, aabb2.max.y) - max(aabb1.min.y, aabb2.min.y);
 
-				// 上下の位置関係を判定
 				Enemy* upperEnemy = (aabb1.min.y > aabb2.min.y) ? enemyA : enemyB;
 				Enemy* lowerEnemy = (upperEnemy == enemyA) ? enemyB : enemyA;
 
-				// --- 縦方向の衝突（踏みつけ判定） ---
-				// Yの重なりの方が小さい、かつ 上にいるキャラが落下中
 				if (overlapY < overlapX) {
 					if (upperEnemy->GetVelocity().y <= 0.0f) {
-						// 下のエネミーの頭頂部のY座標を計算
-						// (注: Enemy::kHeightなどはprivateなので、GetWorldPosition等から計算するか、Getterを追加推奨)
 						float lowerTopY = lowerEnemy->GetWorldPosition().y + (0.8f / 2.0f);
 						upperEnemy->OnLandOnEnemy(lowerTopY);
 					}
-				}
-				// --- 横方向の衝突（押し合い） ---
-				else {
+				} else {
 					Vector3 posA = enemyA->GetWorldPosition();
 					Vector3 posB = enemyB->GetWorldPosition();
-
-					// X軸の押し出し量を計算（重なっている分を半分ずつ押し戻す）
 					float pushBackX = overlapX / 2.0f;
-
-					// 位置関係によって左右に押し出す + 速度反転
 					if (posA.x < posB.x) {
-						// Aが左、Bが右
-						enemyA->AddPosition({-pushBackX, 0, 0}); // 左へ押し戻す
-						enemyB->AddPosition({pushBackX, 0, 0});  // 右へ押し戻す
-
-						// 互いに相手の方を向いていたら反転させる
+						enemyA->AddPosition({-pushBackX, 0, 0});
+						enemyB->AddPosition({pushBackX, 0, 0});
 						if (enemyA->GetVelocity().x > 0)
 							enemyA->OnCollisionWithEnemy();
 						if (enemyB->GetVelocity().x < 0)
 							enemyB->OnCollisionWithEnemy();
 					} else {
-						// Aが右、Bが左
-						enemyA->AddPosition({pushBackX, 0, 0});  // 右へ押し戻す
-						enemyB->AddPosition({-pushBackX, 0, 0}); // 左へ押し戻す
-
+						enemyA->AddPosition({pushBackX, 0, 0});
+						enemyB->AddPosition({-pushBackX, 0, 0});
 						if (enemyA->GetVelocity().x < 0)
 							enemyA->OnCollisionWithEnemy();
 						if (enemyB->GetVelocity().x > 0)

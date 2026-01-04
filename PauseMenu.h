@@ -33,5 +33,7 @@ private:
 	int cursor_ = 0;
 
 	// 背景を暗くするためのスプライト
-Sprite* overlay_ = nullptr;
+	Sprite* overlay_ = nullptr;
+	XINPUT_STATE state_;
+	XINPUT_STATE prevState_;
 };

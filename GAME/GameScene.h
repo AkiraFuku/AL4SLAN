@@ -48,7 +48,7 @@ private:
 	 CameraController* cameraControlle_;
 
 	 //エネミー
-	 std::list<Enemy*> enemies_;
+	 std::vector<Enemy*> enemies_;
 	 Model* enemy_model_=nullptr ;
 
 	 //デスパーティクル
@@ -75,7 +75,7 @@ private:
 	 // ヒットエフェクト
 	 
 	 Model* hitEffectModel_ = nullptr;
-	 std::list<HitEffect*> hitEffects_;
+	 std::vector<HitEffect*> hitEffects_;
 	 // ゴール
 	 Goal* goal_ = nullptr;
 	 // ゴールのモデル

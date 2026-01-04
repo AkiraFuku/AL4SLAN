@@ -10,11 +10,14 @@ void StageSelectScene::Initialize() {
 void StageSelectScene::Update() {
 	// StageManagerから最大ステージ数を取得
 	const int kMaxStage = (int)StageManager::GetInstance()->GetStageNum(); // intにキャスト
-
+	Input::GetInstance()->GetJoystickStatePrevious(0, prevState_);
+	Input::GetInstance()->GetJoystickState(0, state_);
 	// --- ステージ選択処理 ---
 	imgui_->Begin();
+#ifdef DEBUG
+
 	ImGui::Begin("Stage Select");
-	
+
 	// 【変更】0番なら「タイトルへ」、それ以外ならステージ番号を表示
 	if (selectStageNo_ == 0) {
 		ImGui::Text("Selection: > Return to Title <"); // タイトル戻る表示
@@ -26,6 +29,7 @@ void StageSelectScene::Update() {
 	ImGui::Text("Use LEFT/RIGHT to change.");
 	ImGui::Text("Press SPACE to decide.");
 	ImGui::End();
+#endif // DEBUG
 
 	switch (phase_) {
 	case StageSelectScene::Phase::kFadeIn:
@@ -38,7 +42,7 @@ void StageSelectScene::Update() {
 
 	case StageSelectScene::Phase::kMain:
 		// 右キー (ステージ番号を進める)
-		if (Input::GetInstance()->TriggerKey(DIK_RIGHT)) {
+		if (Input::GetInstance()->TriggerKey(DIK_RIGHT) || (state_.Gamepad.sThumbLX > 20000 && prevState_.Gamepad.sThumbLX <= 20000)) {
 			selectStageNo_++;
 			// 最大数を超えたら0（タイトル戻る）にする
 			if (selectStageNo_ > kMaxStage) {
@@ -47,7 +51,8 @@ void StageSelectScene::Update() {
 		}
 
 		// 左キー (ステージ番号を戻す)
-		if (Input::GetInstance()->TriggerKey(DIK_LEFT)) {
+		if (Input::GetInstance()->TriggerKey(DIK_LEFT) || 
+            (state_.Gamepad.sThumbLX < -20000 && prevState_.Gamepad.sThumbLX >= -20000)) {
 			selectStageNo_--;
 			// 0未満になったら最大ステージにする
 			if (selectStageNo_ < 0) {
@@ -56,7 +61,7 @@ void StageSelectScene::Update() {
 		}
 
 		// 決定処理
-		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
 			// ステージ番号がセットされるが、0の場合は後で判定する
 			SceneManager::GetInstance()->SetCurrentStage(selectStageNo_);
 			Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
@@ -67,7 +72,7 @@ void StageSelectScene::Update() {
 	case StageSelectScene::Phase::kFadeOut:
 		Fade::GetInstance()->Update();
 		if (Fade::GetInstance()->IsFinished()) {
-			
+
 			// 【修正】0番ならタイトル、それ以外ならゲームへ
 			// elseを使わないと両方実行されるバグを防ぎます
 			if (selectStageNo_ == 0) {

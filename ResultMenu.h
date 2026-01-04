@@ -26,4 +26,7 @@ private:
 	
 	// 背景用スプライト（ポーズと同様、画面を暗くするため）
 	KamataEngine::Sprite* overlay_ = nullptr;
+
+	XINPUT_STATE state_;
+    XINPUT_STATE prevState_;
 };
