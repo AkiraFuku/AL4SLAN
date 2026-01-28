@@ -14,7 +14,22 @@ void CameraController::Update(){
 	
 	desetination_ =targetWorldTransform.translation_+targetOffset_+target_->getVelocity()*kVelocityBias;
 	camera_->translation_ = Lerp(camera_->translation_, desetination_, 0.1f); // 緩やかに追従するように補間
+	if (shakeTimer_ > 0.0f) {
+        // 【変更点】乱数(rand)ではなく、sin波を使ってゆっくり揺らす
+        // 係数(20.0fなど)を小さくすると、もっとゆっくりになります
+        float frequency = 25.0f; // 揺れの速さ（周波数）
+        
+        // 時間経過で滑らかに変化する値を作成
+        float offsetX = std::sin(shakeTimer_ * frequency) * shakePower_;
+        float offsetY = std::cos(shakeTimer_ * frequency) * shakePower_;
+        
+        // カメラ座標に加算
+        camera_->translation_.x += offsetX;
+        camera_->translation_.y += offsetY;
 
+        // タイマーを減らす
+        shakeTimer_ -= 1.0f / 60.0f; // 120.0fだと減りが遅いので、60fps基準なら60.0fが自然です
+    }
 	camera_->translation_.x=max(camera_->translation_.x,
 		desetination_.x+targetMargin_.left);
 	camera_->translation_.x=min(camera_->translation_.x,
@@ -38,4 +53,9 @@ void CameraController::Reset() {
 	// 必要に応じて targetWorldTransform を使用して処理を追加  
 	camera_->translation_ = Add(targetWorldTransform.translation_, targetOffset_);  
 	
+}
+
+void CameraController::RequestShake(float duration, float power){
+    shakeTimer_ = duration;
+    shakePower_ = power;
 }

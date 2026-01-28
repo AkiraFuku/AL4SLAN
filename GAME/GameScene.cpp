@@ -145,11 +145,13 @@ void GameScene::CheckAllCollisions() {
 
 			player_->OnCollision(enemy);
 			enemy->OnCollision(player_);
+			ApplyHitStopAndShake(0.4f, 0.0f, 0.1f);
 		}
 		// 攻撃判定
 		if (player_->isAttack()) {
 			if (IsCollision(attackAABB, aabb2)) {
 				enemy->HitAttack(player_);
+				ApplyHitStopAndShake(0.25f, 0.5f, 0.25f);
 			}
 		}
 	}
@@ -167,7 +169,7 @@ void GameScene::CheckAllCollisions() {
 
 //  ゲームシーンの初期化
 void GameScene::Initialize() {
-	teXtureHandle_ = TextureManager::Load("img_thumb_08_01.png");
+	textureHandle_ = TextureManager::Load("img_thumb_08_01.png");
 	// モデルの生成
 	model_ = Model::CreateFromOBJ("player", true);
 	camera_.Initialize();
@@ -190,7 +192,7 @@ void GameScene::Initialize() {
 
 	// 自キャラの初期化
 	Vector3 playerPosition = PlayerStartPosition();
-	player_->Initialize(model_, AttackModel_, teXtureHandle_, &camera_, playerPosition);
+	player_->Initialize(model_, AttackModel_, textureHandle_, &camera_, playerPosition);
 	player_->SetMapchipField(mapchipField_);
 	// 修正: player_->SetMapchipField(mapchipField_); に変更
 	//	//ブロックモデル生成
@@ -383,7 +385,16 @@ void GameScene::Update() {
 		break;
 
 	case GameScene::Phase::kPlay:
-
+		if (hitStopTimer_ > 0.0f) {
+        hitStopTimer_ -= 1.0f / 60.0f;
+        
+        // 重要: 画面は止めるが、カメラのシェイクだけは更新したい
+        cameraControlle_->Update(); 
+        skydome_->Update(); // 背景等は動かしておくと「時が止まった」感が出る
+        
+        // プレイヤーや敵の更新を行わずに return する
+        return; 
+    }
 		// スカイドームの更新
 		skydome_->Update();
 		// カメラの更新
@@ -438,10 +449,10 @@ void GameScene::Update() {
 		// カメラの更新
 		cameraControlle_->Update();
 		// エネミー
-		for (Enemy* enemy : enemies_) {
+		/*for (Enemy* enemy : enemies_) {
 			enemy->Update();
 		}
-		EnemyCollision();
+		EnemyCollision();*/
 		// デスパーティクル
 		if (deathParticles_) {
 			deathParticles_->Update();
@@ -771,4 +782,10 @@ void GameScene::EnemyCollision() {
 			}
 		}
 	}
+}
+
+void GameScene::ApplyHitStopAndShake(float stopTime, float shakeTime, float shakePower) {
+
+	hitStopTimer_ = stopTime;                  // ゲーム進行を止める時間
+    cameraControlle_->RequestShake(shakeTime, shakePower); // カメラを揺らす
 }

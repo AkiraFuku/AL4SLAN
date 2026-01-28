@@ -27,7 +27,7 @@ private:
 
 
 	// texture
-	uint32_t teXtureHandle_ = 0;
+	uint32_t textureHandle_ = 0;
 	//
 	
 	// カメラ
@@ -61,7 +61,7 @@ private:
 		 kFadeIn, // フェードイン
 		 kStart,   // ゲーム開始
 		 kPlay, // プレイ中
-		 kPause,   // pouse
+		 kPause,   // ポーズ画面
 		 kDeath, // 死亡
 		 kClear,//クリア
 		 kFadeOut, // フェードアウト
@@ -69,7 +69,7 @@ private:
 	 Phase phase_ = Phase::kPlay;
 
 	 bool finished_ = false; // ゲーム終了フラグ	
-	 bool Gameend_ = false;  // ゲーム終了フラグ
+	 bool GameEnd_ = false;  // ゲーム終了フラグ
 	 bool clear_ = false;    // クリアフラグ
 
 	 // ヒットエフェクト
@@ -116,6 +116,8 @@ private:
     uint32_t texHandle2_ = 0;
     uint32_t texHandle1_ = 0;
     uint32_t texHandleGo_ = 0;
+
+	float hitStopTimer_ = 0.0f;
 public:
 	
 	~GameScene() override;
@@ -139,8 +141,12 @@ public:
 
 	// ゲーム終了
 	bool IsFinished() const { return finished_; }
-	bool IsGameEnd() const { return Gameend_; }
+	bool IsGameEnd() const { return GameEnd_; }
 	 void CreateHitEffect(const Vector3 & position);
 
 	 void EnemyCollision();
+
+	 // ヒットストップとシェイクを同時に呼ぶ便利関数 (追加)
+    void ApplyHitStopAndShake(float stopTime, float shakeTime, float shakePower);
+
 };
