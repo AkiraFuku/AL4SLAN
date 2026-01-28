@@ -1,10 +1,11 @@
 #pragma once
 #include "KamataEngine.h"
-#include "Fade.h"
+
 #include "Skydome.h"
 #include "Gaid.h"
+#include "IScene.h"
 using namespace KamataEngine;
-class TitleScene {
+class TitleScene: public IScene {
 public:
 	enum class Phase {
 
@@ -15,10 +16,10 @@ public:
 
 	};
 
-	~TitleScene();
-	void Initialize();
-	void Update();
-	void Draw();
+	~TitleScene() override;
+    void Initialize() override;
+    void Update() override;
+    void Draw() override;
 
 	bool IsFinished()  { return finished_; }
 
@@ -35,7 +36,7 @@ private:
 	
 
 	Model* playerModel_;
-	Fade* fade_=nullptr;
+	
 	Gaid* gaid_ = nullptr;
 	Phase phase_ = Phase::kFadeIn; // フェーズ
 	XINPUT_STATE state_;

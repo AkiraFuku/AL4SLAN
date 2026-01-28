@@ -2,20 +2,22 @@
 #include "KamataEngine.h"
 #include "Player.h"
 #include <vector>
-//#include "MassFunction.h"
 #include "Skydome.h"
 #include "MapchipField.h"
 #include "CameraController.h"
 #include "Enemy.h"
 #include "DeathParticles.h"
-#include "Fade.h"
 #include "HitEffect.h"
 #include "Goal.h"
 #include "Gaid.h"
+#include "IScene.h"
+#include "PauseMenu.h"
+#include "StageManager.h"
+#include "ResultMenu.h"
 using namespace KamataEngine ;
 
 
-class GameScene {
+class GameScene : public IScene{
 private:
 	//3Dモデル
 	Model* model_ = nullptr;
@@ -46,7 +48,7 @@ private:
 	 CameraController* cameraControlle_;
 
 	 //エネミー
-	 std::list<Enemy*> enemies_;
+	 std::vector<Enemy*> enemies_;
 	 Model* enemy_model_=nullptr ;
 
 	 //デスパーティクル
@@ -69,13 +71,11 @@ private:
 	 bool finished_ = false; // ゲーム終了フラグ	
 	 bool Gameend_ = false;  // ゲーム終了フラグ
 	 bool clear_ = false;    // クリアフラグ
-	 // フェード
-	 Fade* fade_ = nullptr;
 
 	 // ヒットエフェクト
 	 
 	 Model* hitEffectModel_ = nullptr;
-	 std::list<HitEffect*> hitEffects_;
+	 std::vector<HitEffect*> hitEffects_;
 	 // ゴール
 	 Goal* goal_ = nullptr;
 	 // ゴールのモデル
@@ -96,18 +96,35 @@ private:
 	 //uint32_t bgmHandle_ = 0;
 
 	 //uint32_t PlayHandle_ = 0;
-	 
 
+	 int stageNo_ =-1;
+	 
+	 PauseMenu* pauseMenu_ = nullptr; // 変数を追加
+	 ResultMenu* resultMenu_ = nullptr;
+
+	 int nextSceneRequest_=0;
+
+	 // === カウントダウン用変数 ===
+    // カウントダウンタイマー (秒数計測用)
+    float countdownTimer_ = 0.0f;
+
+    // スプライト
+    KamataEngine::Sprite* spriteCount_ = nullptr;
+   
+    // テクスチャハンドル
+    uint32_t texHandle3_ = 0;
+    uint32_t texHandle2_ = 0;
+    uint32_t texHandle1_ = 0;
+    uint32_t texHandleGo_ = 0;
 public:
 	
-	//// デストラクタ
-	~GameScene();
-	// 初期化
-	void Initialize();
-	// 更新
-	void Update();
-	// 描画
-	void Draw();
+	~GameScene() override;
+	GameScene(int stageNo);
+    void Initialize() override;
+    void Update() override;
+    void Draw() override;
+
+	void DrawBlock();
 	//
 	void GenerateBlock();
 
@@ -124,4 +141,6 @@ public:
 	bool IsFinished() const { return finished_; }
 	bool IsGameEnd() const { return Gameend_; }
 	 void CreateHitEffect(const Vector3 & position);
+
+	 void EnemyCollision();
 };

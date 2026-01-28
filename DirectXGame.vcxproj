@@ -63,7 +63,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_DEBUG;USE_IMGUI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)GAME;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -86,7 +86,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)GAME;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MinSpace</Optimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -106,22 +106,27 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CameraController.cpp" />
-    <ClCompile Include="DeathParticles.cpp" />
-    <ClCompile Include="Enemy.cpp" />
-    <ClCompile Include="Fade.cpp" />
-    <ClCompile Include="Gaid.cpp" />
-    <ClCompile Include="GameScene.cpp" />
-    <ClCompile Include="Goal.cpp" />
-    <ClCompile Include="HitEffect.cpp" />
+    <ClCompile Include="GAME\CameraController.cpp" />
+    <ClCompile Include="GAME\DeathParticles.cpp" />
+    <ClCompile Include="GAME\Enemy.cpp" />
+    <ClCompile Include="GAME\Fade.cpp" />
+    <ClCompile Include="GAME\Gaid.cpp" />
+    <ClCompile Include="GAME\GameScene.cpp" />
+    <ClCompile Include="GAME\Goal.cpp" />
+    <ClCompile Include="GAME\HitEffect.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MapchipField.cpp" />
-    <ClCompile Include="MassFunction.cpp" />
-    <ClCompile Include="Pause.cpp" />
-    <ClCompile Include="Player.cpp" />
-    <ClCompile Include="Skydome.cpp" />
-    <ClCompile Include="TitleScene.cpp" />
-    <ClCompile Include="worldT.cpp" />
+    <ClCompile Include="GAME\MapchipField.cpp" />
+    <ClCompile Include="GAME\MapCollider.cpp" />
+    <ClCompile Include="GAME\MassFunction.cpp" />
+    <ClCompile Include="GAME\Player.cpp" />
+    <ClCompile Include="GAME\SceneManager.cpp" />
+    <ClCompile Include="GAME\Skydome.cpp" />
+    <ClCompile Include="GAME\TitleScene.cpp" />
+    <ClCompile Include="GAME\worldT.cpp" />
+    <ClCompile Include="GAME\StageSelectScene.cpp" />
+    <ClCompile Include="PauseMenu.cpp" />
+    <ClCompile Include="ResultMenu.cpp" />
+    <ClCompile Include="StageManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\TerrainPS.hlsl">
@@ -194,27 +199,35 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <None Include="Resources\shaders\Terrain.hlsli" />
-    <None Include="Resources\Stage\blocks.csv" />
+    <None Include="Resources\Stage\field1.csv" />
+    <None Include="Resources\Stage\blocks2.csv" />
+    <None Include="Resources\Stage\stageDatas.csv" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\shaders\Sprite.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CameraController.h" />
-    <ClInclude Include="DeathParticles.h" />
-    <ClInclude Include="Enemy.h" />
-    <ClInclude Include="Fade.h" />
-    <ClInclude Include="Gaid.h" />
-    <ClInclude Include="GameScene.h" />
-    <ClInclude Include="Goal.h" />
-    <ClInclude Include="HitEffect.h" />
-    <ClInclude Include="MapchipField.h" />
-    <ClInclude Include="MassFunction.h" />
-    <ClInclude Include="Pause.h" />
-    <ClInclude Include="Player.h" />
-    <ClInclude Include="Skydome.h" />
-    <ClInclude Include="TitleScene.h" />
-    <ClInclude Include="worldT.h" />
+    <ClInclude Include="GAME\CameraController.h" />
+    <ClInclude Include="GAME\DeathParticles.h" />
+    <ClInclude Include="GAME\Enemy.h" />
+    <ClInclude Include="GAME\Fade.h" />
+    <ClInclude Include="GAME\Gaid.h" />
+    <ClInclude Include="GAME\GameScene.h" />
+    <ClInclude Include="GAME\Goal.h" />
+    <ClInclude Include="GAME\HitEffect.h" />
+    <ClInclude Include="GAME\IScene.h" />
+    <ClInclude Include="GAME\MapchipField.h" />
+    <ClInclude Include="GAME\MapCollider.h" />
+    <ClInclude Include="GAME\MassFunction.h" />
+    <ClInclude Include="GAME\Player.h" />
+    <ClInclude Include="GAME\SceneManager.h" />
+    <ClInclude Include="GAME\Skydome.h" />
+    <ClInclude Include="GAME\TitleScene.h" />
+    <ClInclude Include="GAME\worldT.h" />
+    <ClInclude Include="GAME\StageSelectScene.h" />
+    <ClInclude Include="PauseMenu.h" />
+    <ClInclude Include="ResultMenu.h" />
+    <ClInclude Include="StageManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -3,6 +3,7 @@
 #include "MassFunction.h"
 #include <vector>
 #include <math.h>
+#include <StageManager.h>
 
 enum class MapChipType {
 	kBlank,
@@ -12,8 +13,13 @@ enum class MapChipType {
 	kGoal,
 
 };
+struct MapChipDataUnit {
+
+	MapChipType type;
+	uint8_t subID;
+};
 struct MapChipData {
-	std::vector<std::vector<MapChipType>> data; ///< マップチップデータ
+	std::vector<std::vector<MapChipDataUnit>> data; ///< マップチップデータ
 	                       
 };
 
@@ -41,6 +47,7 @@ public:
 	void ResetMapChipData();
 	void LoadMapChipCsv(const std::string& filePath);
 	MapChipType GetMapChipTypeByIndex(uint32_t xIndex,uint32_t yIndex) ;
+	uint8_t GetMapChipSubIDByIndex(uint32_t xIndex,uint32_t yIndex);
 	Vector3 GetBlockPositionByIndex(uint32_t xIndex, uint32_t yIndex) ;
 	// ブロックの行数
 	uint32_t GetNumBlockVertical() { return kNumBlockVertical; }
@@ -53,5 +60,10 @@ public:
 	// マップチップのデータを取得
 	Rect GetRectByIndex(uint32_t xIndex, uint32_t yIndex);
 
+	enum MapChipCherIndex {
+		kChipType=0,
+		kChipSubID=1,
+
+	};
 };
 
