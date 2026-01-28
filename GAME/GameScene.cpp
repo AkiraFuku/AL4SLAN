@@ -145,13 +145,13 @@ void GameScene::CheckAllCollisions() {
 
 			player_->OnCollision(enemy);
 			enemy->OnCollision(player_);
-			ApplyHitStopAndShake(0.4f, 0.0f, 0.1f);
+			
 		}
 		// 攻撃判定
 		if (player_->isAttack()) {
 			if (IsCollision(attackAABB, aabb2)) {
 				enemy->HitAttack(player_);
-				ApplyHitStopAndShake(0.25f, 0.5f, 0.25f);
+				ApplyHitStopAndShake(0.25f, 0.7f, 0.25f);
 			}
 		}
 	}

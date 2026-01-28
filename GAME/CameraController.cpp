@@ -17,7 +17,7 @@ void CameraController::Update(){
 	if (shakeTimer_ > 0.0f) {
         // 【変更点】乱数(rand)ではなく、sin波を使ってゆっくり揺らす
         // 係数(20.0fなど)を小さくすると、もっとゆっくりになります
-        float frequency = 25.0f; // 揺れの速さ（周波数）
+        float frequency = 5.5f; // 揺れの速さ（周波数）
         
         // 時間経過で滑らかに変化する値を作成
         float offsetX = std::sin(shakeTimer_ * frequency) * shakePower_;

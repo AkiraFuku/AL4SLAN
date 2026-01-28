@@ -19,7 +19,7 @@ void DeathParticles::Update(){
 	}
 
 	//カウンターの時間経過
-	countor_+=1.0f/60.0f;
+	countor_+=1.0f/30.0f;
 	//時間判定
 	if (countor_>=kDuration_) {
 		countor_=kDuration_;
