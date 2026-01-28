@@ -66,6 +66,7 @@ public:
 	void OnCollisionWithEnemy();
 
     const Vector3& GetVelocity() const { return velocity_; }
+    const WorldTransform& GetWorldTransform() const { return worldTransform_; }
 
     // targetTopY: 下にいるエネミーの頭頂部のY座標
     void OnLandOnEnemy(float targetTopY);

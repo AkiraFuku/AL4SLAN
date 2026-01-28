@@ -114,6 +114,7 @@ private:
 	static inline const float kAcceleration = 0.01f; ///< 移動速度
 	static inline const float kAttenution = 0.05f;   ///< 減速
 	static inline const float kLimitRunSpeed = 0.3f; ///< 最大速度
+	static const int kInvincibleTime = 360;///<無敵時間
 	LRDirection lrDirection_ = LRDirection::kRight;  ///< キャラクターの向き
 	// 旋回開始時角度
 	float turnFirstRotationY_ = 0.0f;
@@ -196,4 +197,10 @@ private:
 	bool isLanding_ = false;       // 着地中フラグ
 	uint32_t landingParameter_ = 0; // 着地アニメーション経過時間
 	static inline const uint32_t kTimeLanding = 10; // アニメーションにかかる時間（フレーム数）
+
+
+	// 無敵時間のタイマー
+    int invincibleTimer_ = 0;
+
+	int knockbackTimer_ = 0;
 };

@@ -31,7 +31,8 @@ void Player::Initialize(Model* model, Model* modelAttack, uint32_t textureHandle
 	// カメラ
 	camera_ = camera;
 
-	// コントローラー
+	invincibleTimer_ = 0;
+    knockbackTimer_ = 0;
 
 	// sound
 	jumpSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/jump.wav");
@@ -42,6 +43,11 @@ void Player::Initialize(Model* model, Model* modelAttack, uint32_t textureHandle
 void Player::Update() {
 
 	Input::GetInstance()->GetJoystickState(0, state_);
+
+
+	if (invincibleTimer_ > 0) {
+        invincibleTimer_--;
+    }
 
 	if (behaviorRequest_ != Behavior::kUnknown) {
 		behavior_ = behaviorRequest_;
@@ -397,7 +403,13 @@ bool Player::isAttack() const {
 }
 
 void Player::Draw() {
-
+	// 無敵時間中は点滅させる処理
+    if (invincibleTimer_ > 0) {
+        // 10フレーム中、5フレームだけ描画する（チカチカする）
+        if (invincibleTimer_ % 10 < 5) {
+            return; // 描画関数を呼ばずに抜ける＝消える
+        }
+    }
 	model_->Draw(worldTransform_, *camera_);
 	if (behavior_ == Behavior::kAttack) {
 		switch (attackPhase_) {
@@ -423,6 +435,14 @@ void Player::SetMapchipField(MapChipField* mapChipField) {
 }
 
 void Player::inputMove() {
+
+	if (knockbackTimer_ > 0) {
+        knockbackTimer_--;
+        // ノックバック中は重力だけ適用して、左右入力は受け付けない
+        velocity_.y = std::max(velocity_.y - kGravityAcceleration / 60.0f, -kLimitFallSpeed);
+        return; 
+    }
+
 	const float deadZone = 8000; // デッドゾーン（無反応領域）
 	float lx = (float)state_.Gamepad.sThumbLX;
 	bool keyRight = Input::GetInstance()->PushKey(DIK_RIGHT);
@@ -733,12 +753,30 @@ AABB Player::GetAABB() {
 }
 
 void Player::OnCollision(const Enemy* enemy) {
-	if (isAttack()) {
+	if (isAttack()||invincibleTimer_ > 0) {
 		return;
 	}
 	(void)enemy;
+	invincibleTimer_ = 120;
+	knockbackTimer_ = 20;
+	Vector3 enemyPos=enemy->GetWorldTransform().translation_;
+	Vector3 playerPos = GetWorldPosition();
 
-	isDead_ = true;
+    // 2. ノックバック方向の計算 (敵から離れる方向)
+    float knockbackForceX = 0.2f; // 左右の弾き飛ばし強度
+    float knockbackForceY = 0.1f; // 上への跳ね返り強度
+
+    if (playerPos.x < enemyPos.x) {
+        // 敵が右にいるので左へ
+        velocity_.x = -knockbackForceX;
+    } else {
+        // 敵が左にいるので右へ
+        velocity_.x = knockbackForceX;
+    }
+
+    // 上方向にも少し跳ね上げる（地面にめり込まないようにするため）
+    velocity_.y = knockbackForceY;
+	//isDead_ = true;
 	Audio::GetInstance()->PlayWave(DeathSEHandle_, false);
 	// velocity_+=Vector3(0.0f,kJumpAcceleration/60.0f,0.0f);
 }
