@@ -412,18 +412,10 @@ void Player::Draw() {
     }
 	model_->Draw(worldTransform_, *camera_);
 	if (behavior_ == Behavior::kAttack) {
-		switch (attackPhase_) {
-		case AttackPhase::kCharge:
-		default:
-			// 予備動作中は攻撃モデルを描画しない
-			break;
-		case AttackPhase::kAttack:
-		case AttackPhase::kAfter:
+	
 
 			modelAttack_->Draw(worldTransformAttack_, *camera_);
 
-			break;
-		}
 	}
 }
 void Player::SetMapchipField(MapChipField* mapChipField) {
