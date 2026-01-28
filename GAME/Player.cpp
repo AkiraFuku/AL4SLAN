@@ -102,7 +102,7 @@ void Player::BehaviorRootUpdate() {
 	// 壁に当たった場合の処理
 	HitWall(collisionMapInfo);
 	// 着地
-	UpdatOnGround(collisionMapInfo);
+	UpdateOnGround(collisionMapInfo);
 
 	// 旋回
 	if (turnTimer_ > 0.0f) {
@@ -142,6 +142,30 @@ void Player::BehaviorRootUpdate() {
 		} else {
 			worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
 		}
+	}
+
+	if (isLanding_) {
+		landingParameter_++;
+
+		float t = static_cast<float>(landingParameter_) / static_cast<float>(kTimeLanding);
+		
+		// 縦に潰れて(0.6倍)、横に広がる(1.4倍)ところから、通常(1.0倍)に戻していく
+		// EaseOut(開始値, 終了値, t)
+		worldTransform_.scale_.y = EaseOut(0.6f, 1.0f, t); // 高さ：潰れた状態 -> 元に戻る
+		worldTransform_.scale_.z = EaseOut(1.4f, 1.0f, t); // 幅　：広がった状態 -> 元に戻る
+		worldTransform_.scale_.x = 1.0f; // x軸（厚み）は今回は変えない（必要ならzと同じにする）
+
+		// アニメーション終了
+		if (landingParameter_ >= kTimeLanding) {
+			isLanding_ = false;
+			worldTransform_.scale_ = {1.0f, 1.0f, 1.0f}; // 念のためサイズをリセット
+		}
+	} else {
+        // 着地中でも攻撃中でもダッシュ中でもなければサイズを通常に保つ
+        // （これを書かないと、ダッシュ後にサイズがおかしくなる場合があるため安全策）
+        if(behavior_ == Behavior::kRoot){
+		    worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
+        }
 	}
 }
 
@@ -203,7 +227,7 @@ void Player::BehaviorAttackUpdate() {
 	ResultCollisionMapInfo(collisionMapInfo);
 	hitCeiling(collisionMapInfo);
 	HitWall(collisionMapInfo);
-	UpdatOnGround(collisionMapInfo);
+	UpdateOnGround(collisionMapInfo);
 
 	// 攻撃用ワールドトランスフォームをプレイヤーのしんこう方向前方に設定
 	// 攻撃用ワールドトランスフォームをプレイヤーの進行方向前方に設定
@@ -544,12 +568,13 @@ void Player::hitCeiling(const CollisionMapInfo& info) {
 	}
 }
 
-void Player::UpdatOnGround(const CollisionMapInfo& info) {
+void Player::UpdateOnGround(const CollisionMapInfo& info) {
 
 	if (onGround_) {
 		// info; // この行は削除してもOK
 		if (velocity_.y > 0.0f) {
 			onGround_ = false;
+			isLanding_ = false;
 		} else {
 			// 落下判定
 			std::array<Vector3, kNumCorner> positionsNew;
@@ -581,12 +606,18 @@ void Player::UpdatOnGround(const CollisionMapInfo& info) {
 			if (!hit) {
 				DebugText::GetInstance()->ConsolePrintf("jump");
 				onGround_ = false;
+				isLanding_ = false; // 落下したら着地モーションキャンセル
 			}
 		}
 
 	} else {
 		// 地面に接触している場合
 		if (info.isFloor) {
+			if (!onGround_) {
+				// 空中から地面に着いた瞬間
+				isLanding_ = true;
+				landingParameter_ = 0;
+			}
 			onGround_ = true;
 			// 着地時の速度を0にする
 			velocity_.y = 0.0f;

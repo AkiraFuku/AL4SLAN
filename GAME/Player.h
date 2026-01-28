@@ -74,7 +74,7 @@ public:
 	Vector3 CornerPosition(const Vector3& center, Corner corner);
 	void ResultCollisionMapInfo(const CollisionMapInfo& info);
 	void hitCeiling(const CollisionMapInfo& info);
-	void UpdatOnGround(const CollisionMapInfo& info);
+	void UpdateOnGround(const CollisionMapInfo& info);
 	void HitWall(const CollisionMapInfo& info);
 
 	Vector3 GetWorldPosition();
@@ -191,5 +191,9 @@ private:
 	// 壁に触れている時の落下速度
 
 	static inline const float kWallSlideSpeed = 0.03f;
-	// 攻撃当たり判定のヒットボックス
+
+// 着地アニメーション用
+	bool isLanding_ = false;       // 着地中フラグ
+	uint32_t landingParameter_ = 0; // 着地アニメーション経過時間
+	static inline const uint32_t kTimeLanding = 10; // アニメーションにかかる時間（フレーム数）
 };
