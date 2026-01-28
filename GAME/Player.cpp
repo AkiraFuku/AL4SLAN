@@ -117,7 +117,7 @@ void Player::BehaviorRootUpdate() {
 		worldTransform_.rotation_.y = EaseInOut(destinationRotationY, turnFirstRotationY_, turnTimer_ / kTimeTurn);
 	}
 	// 攻撃に切り替え
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_X &&!( prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_X))) {
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_X && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_X))) {
 
 		behaviorRequest_ = Behavior::kAttack;
 		// 攻撃やジャンプなどのアクション入力が入った場合は旋回を即完了させる
@@ -207,14 +207,65 @@ void Player::BehaviorAttackUpdate() {
 
 	// 攻撃用ワールドトランスフォームをプレイヤーのしんこう方向前方に設定
 	// 攻撃用ワールドトランスフォームをプレイヤーの進行方向前方に設定
-	const float attackOffset = (kWidth + kAttackWidth) / 2.0f;
+	/*const float attackOffset = (kWidth + kAttackWidth) / 2.0f;
 
 	if (lrDirection_ == LRDirection::kRight) {
-		worldTransformAttack_.translation_ = worldTransform_.translation_ + Vector3{attackOffset, 0.0f, 0.0f};
+	    worldTransformAttack_.translation_ = worldTransform_.translation_ + Vector3{attackOffset, 0.0f, 0.0f};
 	} else if (lrDirection_ == LRDirection::kLeft) {
-		worldTransformAttack_.translation_ = worldTransform_.translation_ + Vector3{-attackOffset, 0.0f, 0.0f};
+	    worldTransformAttack_.translation_ = worldTransform_.translation_ + Vector3{-attackOffset, 0.0f, 0.0f};
 	}
+	worldTransformAttack_.rotation_ = worldTransform_.rotation_;*/
+
+	// 攻撃用ワールドトランスフォームの計算
+	// 攻撃オフセット値（横方向と縦方向）
+	const float attackOffsetX = (kWidth + kAttackWidth) / 2.0f;
+	const float attackOffsetY = (kHeight + kAttackHeight) / 2.0f;
+
+	// 入力を取得
+	// スティックのデッドゾーン
+	const int16_t deadZone = 8000;
+	bool isUpInput = Input::GetInstance()->PushKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) || state_.Gamepad.sThumbLY > deadZone;
+
+	bool isDownInput = Input::GetInstance()->PushKey(DIK_DOWN) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN) || state_.Gamepad.sThumbLY < -deadZone;
+
+	// プレイヤーの現在位置
+	Vector3 playerPos = worldTransform_.translation_;
+
+	// 基本の回転はプレイヤーに合わせる
 	worldTransformAttack_.rotation_ = worldTransform_.rotation_;
+
+	if (isUpInput) {
+		// 上入力がある場合：上に配置
+		worldTransformAttack_.translation_ = playerPos + Vector3{0.0f, attackOffsetY, 0.0f};
+		// worldTransformAttack_.rotation_ = worldTransform_.rotation_;
+		//  (オプション) モデルを上に向ける回転が必要な場合はここでZ軸などを回転させる
+		if (lrDirection_ == LRDirection::kRight) {
+				worldTransformAttack_.rotation_.z = std::numbers::pi_v<float> / 2.0f;
+		} else {
+			worldTransformAttack_.rotation_.z = -std::numbers::pi_v<float> / 2.0f;
+		}
+	
+
+	} else if (isDownInput) {
+		// 下入力がある場合：下に配置
+		worldTransformAttack_.translation_ = playerPos + Vector3{0.0f, -attackOffsetY, 0.0f};
+		// worldTransformAttack_.rotation_ = worldTransform_.rotation_;
+		//  (オプション) モデルを下に向ける回転
+		if (lrDirection_ == LRDirection::kRight) {
+				worldTransformAttack_.rotation_.z = -std::numbers::pi_v<float> / 2.0f;
+		} else {
+			worldTransformAttack_.rotation_.z = std::numbers::pi_v<float> / 2.0f;
+		}
+
+	} else {
+		// 上下入力がない場合：キャラクターの向き（左右）に配置
+		if (lrDirection_ == LRDirection::kRight) {
+			worldTransformAttack_.translation_ = playerPos + Vector3{attackOffsetX, 0.0f, 0.0f};
+		} else {
+			worldTransformAttack_.translation_ = playerPos + Vector3{-attackOffsetX, 0.0f, 0.0f};
+		}
+	}
+
 	worldTransformAttack_.scale_ = {1.0f, 1.0f, 1.0f};
 }
 void Player::BehaviorDashUpdate() {
@@ -592,7 +643,7 @@ void Player::HitWall(const CollisionMapInfo& info) {
 		MapChipType mapChipType;
 
 		// 左下
-	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom] + Vector3(-kWallSearchDistance, 0, 0));
+		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom] + Vector3(-kWallSearchDistance, 0, 0));
 		mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 		if (mapChipType == MapChipType::kBlock)
 			hit = true;
