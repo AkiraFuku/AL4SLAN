@@ -206,4 +206,8 @@ private:
 	bool isJumping_ = false;
 int jumpParameter_ = 0;
 const int kTimeJumpSquash = 10; // 縮んでいる時間（フレーム）
+
+bool isWallHit_ = false;      // 壁衝突フラグ
+int wallHitParameter_ = 0;    // アニメーション用タイマー
+static const int kTimeWallHit = 10; // アニメーションにかかる時間（フレーム）
 };

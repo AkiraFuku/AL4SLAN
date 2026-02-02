@@ -126,8 +126,21 @@ void Player::BehaviorRootUpdate() {
 
 		directionCtrl_.ImmediateTurn(); // 即座に向く
 	}
+if (isWallHit_) {
+        wallHitParameter_++;
+        float t = static_cast<float>(wallHitParameter_) / static_cast<float>(kTimeWallHit);
 
-	if (isLanding_) {
+        // 横(Z)に潰れて(0.7倍)、縦(Y)に伸びる(1.2倍)状態から、1.0倍に戻していく
+        // ※左右どちらの壁に当たってもいいようにZを制御
+        worldTransform_.scale_.z = EaseOut(0.7f, 1.0f, t); 
+        worldTransform_.scale_.y = EaseOut(1.2f, 1.0f, t);
+
+        if (wallHitParameter_ >= kTimeWallHit) {
+            isWallHit_ = false;
+            worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
+        }
+    } 
+    else if (isLanding_) {
 		landingParameter_++;
 
 		float t = static_cast<float>(landingParameter_) / static_cast<float>(kTimeLanding);
@@ -642,6 +655,10 @@ void Player::HitWall(const CollisionMapInfo& info) {
 	// 1. 移動による物理衝突があった場合（最優先）
 	if (info.isWall) {
 		velocity_.x *= (1.0f - kAttenuationWall);
+		if (!tachWall_) {
+            isWallHit_ = true;
+            wallHitParameter_ = 0;
+        }
 		tachWall_ = true;
 		return; // 確実に壁に触れているのでここで終了
 	}
