@@ -169,7 +169,7 @@ void StageSelectScene::Update() {
 		// 演出：選択中のものは不透明(1.0)、それ以外は半透明(0.5)かつ少し小さくする
 		if (i == selectStageNo_) {
 			uiSprites_[i]->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
-			uiSprites_[i]->SetSize({ 200.0f, 200.0f }); // 画像本来のサイズに合わせて調整
+			uiSprites_[i]->SetSize({ 300.0f, 200.0f }); // 画像本来のサイズに合わせて調整
 		} else {
 			uiSprites_[i]->SetColor({ 0.5f, 0.5f, 0.5f, 1.0f }); // グレーアウト
 			uiSprites_[i]->SetSize({ 150.0f, 150.0f }); // 小さく

@@ -23,13 +23,13 @@ public:
 	};
 	
 	
-
+	virtual ~Enemy() = default;
 	
 	void Initialize(Model* model, Camera* camera, Vector3& position);
 	/// <summary>
 	/// 更新
 	/// </summary>
-	void Update();
+	virtual void Update();
 	/// <summary>
 	/// 描画
 	/// </summary>
@@ -62,14 +62,15 @@ public:
 
 	//めり込まない
 	void AddPosition(const Vector3& offset);
-private:
-	Direction directionCtrl_;
+
+	
+protected:
+
 void ResultCollisionMapInfo(const CollisionMapInfo& info);
-private:
 	WorldTransform worldTransform_; ///< ワールドトランスフォーム
 	Model* model_ = nullptr;
 	Camera* camera_ = nullptr;
-
+Direction directionCtrl_;
 	std::unique_ptr<MapCollider> mapCollider_;
 	MapChipField* mapChipField_ = nullptr;
 	static inline const float kWalkSpeed = 0.02f;

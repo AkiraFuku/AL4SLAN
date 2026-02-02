@@ -67,10 +67,10 @@ void Player::Update() {
 		behaviorRequest_ = Behavior::kUnknown;
 	}
 	// 旋回更新処理
-    directionCtrl_.Update();
-    
-    // 回転の反映
-    worldTransform_.rotation_.y = directionCtrl_.GetYRotation();
+	directionCtrl_.Update();
+
+	// 回転の反映
+	worldTransform_.rotation_.y = directionCtrl_.GetYRotation();
 	switch (behavior_) {
 
 	case Player::Behavior::kRoot:
@@ -113,18 +113,17 @@ void Player::BehaviorRootUpdate() {
 	// 着地
 	UpdateOnGround(collisionMapInfo);
 
-	
 	// 攻撃に切り替え
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_X && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_X))) {
 
 		behaviorRequest_ = Behavior::kAttack;
-	
+
 		directionCtrl_.ImmediateTurn(); // 即座に向く
 	}
 	if (Input::GetInstance()->TriggerKey(DIK_X) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER && prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)) {
 
 		behaviorRequest_ = Behavior::kDash;
-	
+
 		directionCtrl_.ImmediateTurn(); // 即座に向く
 	}
 
@@ -143,6 +142,27 @@ void Player::BehaviorRootUpdate() {
 		if (landingParameter_ >= kTimeLanding) {
 			isLanding_ = false;
 			worldTransform_.scale_ = {1.0f, 1.0f, 1.0f}; // 念のためサイズをリセット
+		}
+	} else if (isJumping_) {
+		jumpParameter_++;
+		float t = static_cast<float>(jumpParameter_) / static_cast<float>(kTimeJumpSquash);
+
+		if (t <= 0.5f) {
+			// 前半：踏み込み（さらに低く、横に広く）
+			float internalT = t * 2.0f; // 0.0 -> 1.0
+			worldTransform_.scale_.y = EaseOut(1.0f, 0.5f, internalT);
+			worldTransform_.scale_.z = EaseOut(1.0f, 1.5f, internalT);
+		} else {
+			// 後半：飛び上がり（縦に長く、横に細く）
+			float internalT = (t - 0.5f) * 2.0f; // 0.0 -> 1.0
+			worldTransform_.scale_.y = EaseOut(0.5f, 1.3f, internalT);
+			worldTransform_.scale_.z = EaseOut(1.5f, 0.7f, internalT);
+		}
+
+		// アニメーション終了（空中でも一定時間で元に戻す）
+		if (jumpParameter_ >= kTimeJumpSquash) {
+			isJumping_ = false;
+			worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
 		}
 	} else {
 		// 着地中でも攻撃中でもダッシュ中でもなければサイズを通常に保つ
@@ -210,8 +230,6 @@ void Player::BehaviorAttackUpdate() {
 	HitWall(collisionMapInfo);
 	UpdateOnGround(collisionMapInfo);
 
-	
-
 	// 攻撃用ワールドトランスフォームの計算
 	// 攻撃オフセット値（横方向と縦方向）
 	const float attackOffsetX = (kWidth + kAttackWidth) / 2.0f;
@@ -223,7 +241,8 @@ void Player::BehaviorAttackUpdate() {
 	bool isUpInput = Input::GetInstance()->PushKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) || state_.Gamepad.sThumbLY > deadZone;
 
 	bool isDownInput = Input::GetInstance()->PushKey(DIK_DOWN) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN) || state_.Gamepad.sThumbLY < -deadZone;
-	bool isLRInput = Input::GetInstance()->PushKey(DIK_A)|| Input::GetInstance()->PushKey(DIK_D) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) || state_.Gamepad.sThumbLX < -deadZone|| state_.Gamepad.sThumbLX > deadZone;
+	bool isLRInput = Input::GetInstance()->PushKey(DIK_A) || Input::GetInstance()->PushKey(DIK_D) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) ||
+	                 (state_.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) || state_.Gamepad.sThumbLX < -deadZone || state_.Gamepad.sThumbLX > deadZone;
 
 	// プレイヤーの現在位置
 	Vector3 playerPos = worldTransform_.translation_;
@@ -231,7 +250,7 @@ void Player::BehaviorAttackUpdate() {
 	// 基本の回転はプレイヤーに合わせる
 	worldTransformAttack_.rotation_ = worldTransform_.rotation_;
 	if (isLRInput) {
-			// 上下入力がない場合：キャラクターの向き（左右）に配置
+		// 上下入力がない場合：キャラクターの向き（左右）に配置
 		if (GetDirection() == LRDirection::kRight) {
 			worldTransformAttack_.translation_ = playerPos + Vector3{attackOffsetX, 0.0f, 0.0f};
 		} else {
@@ -318,7 +337,7 @@ void Player::BehaviorDashUpdate() {
 			dashPhase_ = DashPhase::kUnknown; // 初期化
 			dashParameter_ = 0;
 			// ダッシュの慣性を引き継ぐ
-			//if (GetDirection() == LRDirection::kRight) {
+			// if (GetDirection() == LRDirection::kRight) {
 			//	velocity_.x = +kLimitRunSpeed * 0.4f; // 通常移動の上限速度の80%でスタート
 			//} else {
 			//	velocity_.x = -kLimitRunSpeed * 0.4f;
@@ -341,11 +360,11 @@ void Player::BehaviorDashUpdate() {
 			dashPhase_ = DashPhase::kUnknown; // 初期化
 			dashParameter_ = 0;
 			//// ダッシュの慣性を引き継ぐ
-			//if (GetDirection() == LRDirection::kRight) {
+			// if (GetDirection() == LRDirection::kRight) {
 			//	velocity_.x = +kLimitRunSpeed * 0.8f; // 通常移動の上限速度の80%でスタート
-			//} else {
+			// } else {
 			//	velocity_.x = -kLimitRunSpeed * 0.8f;
-			//}
+			// }
 		}
 		break;
 	}
@@ -439,9 +458,9 @@ void Player::inputMove() {
 			if (velocity_.x < 0.0f) {
 				velocity_.x *= (1.0f - kAttenution);
 				//// 旋回時の角度
-				//turnFirstRotationY_ = worldTransform_.rotation_.y;
+				// turnFirstRotationY_ = worldTransform_.rotation_.y;
 				//// 旋回タイマー初期化
-				//turnTimer_ = kTimeTurn;
+				// turnTimer_ = kTimeTurn;
 			}
 			acceleration.x += kAcceleration;
 			if (!isAttack() && GetDirection() != LRDirection::kRight) {
@@ -455,11 +474,11 @@ void Player::inputMove() {
 			}
 			acceleration.x -= kAcceleration;
 			if (!isAttack() && GetDirection() != LRDirection::kLeft) {
-				//lrDirection_ = LRDirection::kLeft;
+				// lrDirection_ = LRDirection::kLeft;
 				//// 旋回時の角度
-				//turnFirstRotationY_ = worldTransform_.rotation_.y;
+				// turnFirstRotationY_ = worldTransform_.rotation_.y;
 				//// 旋回タイマー初期化
-				//turnTimer_ = kTimeTurn;
+				// turnTimer_ = kTimeTurn;
 				directionCtrl_.SetDirection(LRDirection::kLeft);
 			}
 		} else if (stick) {
@@ -474,7 +493,7 @@ void Player::inputMove() {
 				turnTimer_ = kTimeTurn;*/
 			} else if (lx < 0 && GetDirection() != LRDirection::kLeft) {
 				if (!isAttack()) {
-				directionCtrl_.SetDirection(LRDirection::kLeft);
+					directionCtrl_.SetDirection(LRDirection::kLeft);
 				}
 				/*turnFirstRotationY_ = worldTransform_.rotation_.y;
 				turnTimer_ = kTimeTurn;*/
@@ -502,6 +521,12 @@ void Player::inputMove() {
 		// 床と壁の両方に触れている場合、ここで引っかかり、下の壁ジャンプは無視されます。
 		if (onGround_) {
 			velocity_.y += kJumpAcceleration / 60.0f; // Addではなく直接加算かY成分の上書きを推奨
+
+			// アニメーション用フラグをセット
+			isJumping_ = true;
+			jumpParameter_ = 0;
+			isLanding_ = false; // 着地演出と被らないようにリセット
+
 			if (!Audio::GetInstance()->IsPlaying(jumpSEHandle_)) {
 				Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
 			}
@@ -523,7 +548,7 @@ void Player::inputMove() {
 		}
 		// 優先順位3: それ以外（空中にいて壁にも触れていない）なら「空中ジャンプ」
 		else if (jumpCount_ < kLimitJumpCount) {
-			velocity_.y += (kJumpAcceleration)/ 60.0f;
+			velocity_.y += (kJumpAcceleration) / 60.0f;
 			jumpCount_++; // なってなければジャンプSE再生
 			if (!Audio::GetInstance()->IsPlaying(jumpSEHandle_)) {
 				Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
@@ -722,8 +747,6 @@ void Player::OnCollision(const Enemy* enemy) {
 	Vector3 enemyPos = enemy->GetWorldTransform().translation_;
 	Vector3 playerPos = GetWorldPosition();
 	if (isAttack() || invincibleTimer_ > 0) {
-
-		
 
 		return;
 	}

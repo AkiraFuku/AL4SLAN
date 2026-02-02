@@ -202,4 +202,8 @@ private:
 
 	int knockbackTimer_ = 0;
 	const float dashSpeed = 0.25f;
+
+	bool isJumping_ = false;
+int jumpParameter_ = 0;
+const int kTimeJumpSquash = 10; // 縮んでいる時間（フレーム）
 };

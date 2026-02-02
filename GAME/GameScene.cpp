@@ -49,7 +49,6 @@ GameScene::~GameScene() {
 	delete pauseMenu_;
 	delete resultMenu_;
 	delete spriteCount_;
-    
 }
 // ゲームシーンのブロック生成
 void GameScene::GenerateBlock() {
@@ -145,7 +144,6 @@ void GameScene::CheckAllCollisions() {
 
 			player_->OnCollision(enemy);
 			enemy->OnCollision(player_);
-			
 		}
 		// 攻撃判定
 		if (player_->isAttack()) {
@@ -174,7 +172,6 @@ void GameScene::Initialize() {
 	model_ = Model::CreateFromOBJ("player", true);
 	camera_.Initialize();
 	mapchipField_ = new MapChipField();
-
 
 	// データ取得
 	int stageIndex = stageNo_ - 1;
@@ -253,28 +250,28 @@ void GameScene::Initialize() {
 	pauseMenu_->Initialize();
 	resultMenu_ = new ResultMenu();
 	// BGM再生
-	texHandle3_  = TextureManager::Load("3.png");
-    texHandle2_  = TextureManager::Load("2.png");
-    texHandle1_  = TextureManager::Load("1.png");
-    texHandleGo_ = TextureManager::Load("Go.png");
+	texHandle3_ = TextureManager::Load("3.png");
+	texHandle2_ = TextureManager::Load("2.png");
+	texHandle1_ = TextureManager::Load("1.png");
+	texHandleGo_ = TextureManager::Load("Go.png");
 
-	spriteCount_  = Sprite::Create(texHandle3_,  { 0, 0 });
-	
-		Vector2 centerPos = { WinApp::kWindowWidth / 2.0f, WinApp::kWindowHeight / 2.0f };
-		spriteCount_->SetPosition(centerPos);
-		spriteCount_->SetAnchorPoint({ 0.5f, 0.5f });
+	spriteCount_ = Sprite::Create(texHandle3_, {0, 0});
+
+	Vector2 centerPos = {WinApp::kWindowWidth / 2.0f, WinApp::kWindowHeight / 2.0f};
+	spriteCount_->SetPosition(centerPos);
+	spriteCount_->SetAnchorPoint({0.5f, 0.5f});
 }
 void GameScene::ChangePhase() {
 	switch (phase_) {
 
 	case Phase::kStart:
-		//if (Input::GetInstance()->TriggerKey(DIK_SPACE) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
+		// if (Input::GetInstance()->TriggerKey(DIK_SPACE) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
 		//	phase_ = Phase::kPlay; // ポーズ解除でプレイに戻る
-		//}
+		// }
 
 		break;
 	case Phase::kPlay:
-	// 死亡判定：HPが尽きる(IsDead) または Y座標が -10.0f を下回る(落下)
+		// 死亡判定：HPが尽きる(IsDead) または Y座標が -10.0f を下回る(落下)
 		// マップの一番下が Y=0.0f なので、-10.0f あれば十分に画面外です
 		if (player_->IsDead() || player_->GetWorldTransform().translation_.y < -2.5f) {
 
@@ -282,12 +279,12 @@ void GameScene::ChangePhase() {
 			resultMenu_->Initialize(false); // 失敗で初期化
 
 			// デスパーティクルの生成（死亡した瞬間だけ実行するように if文の中に入れます）
-			 Vector3 deathParticlesPosition = player_->GetWorldTransform().translation_;
+			Vector3 deathParticlesPosition = player_->GetWorldTransform().translation_;
 			if (deathParticlesPosition.y < -2.5f) {
-				deathParticlesPosition.y = 0.0f; 
+				deathParticlesPosition.y = 0.0f;
 			}
 			// 既存のパーティクルがあれば削除（安全策）
-			if(deathParticles_){
+			if (deathParticles_) {
 				delete deathParticles_;
 				deathParticles_ = nullptr;
 			}
@@ -295,21 +292,22 @@ void GameScene::ChangePhase() {
 			deathParticles_ = new DeathParticles;
 			deathParticles_->Initialze(deathParticlesModel_, &camera_, deathParticlesPosition);
 
-		} 
-		else if (goal_->isGoal()) {
+		} else if (goal_->isGoal()) {
 			phase_ = Phase::kClear;
 			resultMenu_->Initialize(true);
 		}
 		break;
 
 	case Phase::kDeath:
-	
 
 		break;
 
 	case Phase::kClear:
 		// クリア処理
 		// ここでは何もしないが、必要に応じてクリア処理を追加する
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE) || ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
+		}
+
 		break;
 	}
 }
@@ -320,20 +318,19 @@ void GameScene::Update() {
 	PauseResult res = pauseMenu_->Update();
 
 	if (res == PauseResult::kGoTitle) {
-        nextSceneRequest_ = 1; // 1: タイトルへ
-        phase_ = Phase::kFadeOut;
-        Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
-    } 
-    else if (res == PauseResult::kSelect) {
-        nextSceneRequest_ = 2; // 2: セレクトへ (新規割り当て)
-        phase_ = Phase::kFadeOut;
-        Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
-    }
+		nextSceneRequest_ = 1; // 1: タイトルへ
+		phase_ = Phase::kFadeOut;
+		Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
+	} else if (res == PauseResult::kSelect) {
+		nextSceneRequest_ = 2; // 2: セレクトへ (新規割り当て)
+		phase_ = Phase::kFadeOut;
+		Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
+	}
 
-    // ポーズ中、またはフェードアウト開始直後はゲーム更新を止める
-    if (pauseMenu_->IsPaused() || (phase_ == Phase::kFadeOut && res != PauseResult::kNone)) {
-        return;
-    }
+	// ポーズ中、またはフェードアウト開始直後はゲーム更新を止める
+	if (pauseMenu_->IsPaused() || (phase_ == Phase::kFadeOut && res != PauseResult::kNone)) {
+		return;
+	}
 	Input::GetInstance()->GetJoystickState(0, state_);
 	Input::GetInstance()->GetJoystickStatePrevious(0, prevState_);
 	hitEffects_.erase(
@@ -388,26 +385,26 @@ void GameScene::Update() {
 		cameraControlle_->Update();
 
 		// タイマーを進める (1/60秒ずつ加算)
-        countdownTimer_ += 1.0f / 60.0f;
+		countdownTimer_ += 1.0f / 60.0f;
 
-        // 4秒経過したらゲームプレイへ移行 (3 -> 2 -> 1 -> GO -> Play)
-        if (countdownTimer_ >= 4.0f) {
-            phase_ = GameScene::Phase::kPlay;
-        }
+		// 4秒経過したらゲームプレイへ移行 (3 -> 2 -> 1 -> GO -> Play)
+		if (countdownTimer_ >= 4.0f) {
+			phase_ = GameScene::Phase::kPlay;
+		}
 
 		break;
 
 	case GameScene::Phase::kPlay:
 		if (hitStopTimer_ > 0.0f) {
-        hitStopTimer_ -= 1.0f / 60.0f;
-        
-        // 重要: 画面は止めるが、カメラのシェイクだけは更新したい
-        cameraControlle_->Update(); 
-        skydome_->Update(); // 背景等は動かしておくと「時が止まった」感が出る
-        
-        // プレイヤーや敵の更新を行わずに return する
-        return; 
-    }
+			hitStopTimer_ -= 1.0f / 60.0f;
+
+			// 重要: 画面は止めるが、カメラのシェイクだけは更新したい
+			cameraControlle_->Update();
+			skydome_->Update(); // 背景等は動かしておくと「時が止まった」感が出る
+
+			// プレイヤーや敵の更新を行わずに return する
+			return;
+		}
 		// スカイドームの更新
 		skydome_->Update();
 		// カメラの更新
@@ -450,12 +447,12 @@ void GameScene::Update() {
 				nextSceneRequest_ = 1; // タイトルへ行くフラグ
 				phase_ = GameScene::Phase::kFadeOut;
 				Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
-			}else if (result == ResultMenu::ResultSelection::kSelect) {
-                // 【追加】セレクトへ
-                nextSceneRequest_ = 2; // 2: セレクト
-                phase_ = GameScene::Phase::kFadeOut;
-                Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
-            }
+			} else if (result == ResultMenu::ResultSelection::kSelect) {
+				// 【追加】セレクトへ
+				nextSceneRequest_ = 2; // 2: セレクト
+				phase_ = GameScene::Phase::kFadeOut;
+				Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
+			}
 		}
 		// スカイドームの更新
 		skydome_->Update();
@@ -463,7 +460,7 @@ void GameScene::Update() {
 		cameraControlle_->Update();
 		// エネミー
 		/*for (Enemy* enemy : enemies_) {
-			enemy->Update();
+		    enemy->Update();
 		}
 		EnemyCollision();*/
 		// デスパーティクル
@@ -498,12 +495,12 @@ void GameScene::Update() {
 				nextSceneRequest_ = 1; // タイトルへ
 				phase_ = GameScene::Phase::kFadeOut;
 				Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
-			}else if (result == ResultMenu::ResultSelection::kSelect) {
-                // 【追加】セレクトへ
-                nextSceneRequest_ = 2; // 2: セレクト
-                phase_ = GameScene::Phase::kFadeOut;
-                Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
-            }
+			} else if (result == ResultMenu::ResultSelection::kSelect) {
+				// 【追加】セレクトへ
+				nextSceneRequest_ = 2; // 2: セレクト
+				phase_ = GameScene::Phase::kFadeOut;
+				Fade::GetInstance()->Start(Fade::Status::FadeOut, 1.0f);
+			}
 		}
 
 		skydome_->Update();
@@ -521,16 +518,15 @@ void GameScene::Update() {
 		if (Fade::GetInstance()->IsFinished()) {
 			// 【追加】タイトルへのリクエストがあればそちらを優先
 			// nextSceneRequest_ の値によって遷移先を分岐
-            if (nextSceneRequest_ == 1) {
-                // 1: タイトルへ
-                SceneManager::GetInstance()->ChangeScene(SceneType::kTitle);
-                return;
-            }
-            else if (nextSceneRequest_ == 2) {
-                // 2: セレクト画面へ (追加)
-                SceneManager::GetInstance()->ChangeScene(SceneType::kSelect);
-                return;
-            }
+			if (nextSceneRequest_ == 1) {
+				// 1: タイトルへ
+				SceneManager::GetInstance()->ChangeScene(SceneType::kTitle);
+				return;
+			} else if (nextSceneRequest_ == 2) {
+				// 2: セレクト画面へ (追加)
+				SceneManager::GetInstance()->ChangeScene(SceneType::kSelect);
+				return;
+			}
 			if (clear_) {
 				// もし最終ステージならタイトルへ、そうでなければ次のステージへ
 				// ここでは仮に全3ステージとします
@@ -573,10 +569,10 @@ void GameScene::Draw() {
 	switch (phase_) {
 	case GameScene::Phase::kClear:
 
-		//crearModel_->Draw(worldTransformClear_, camera_);
+		// crearModel_->Draw(worldTransformClear_, camera_);
 		break;
 	case GameScene::Phase::kDeath:
-		//RetryModel_->Draw(worldTransformRetry_, camera_);
+		// RetryModel_->Draw(worldTransformRetry_, camera_);
 		break;
 	}
 	// カメラの描画
@@ -602,45 +598,52 @@ void GameScene::Draw() {
 	for (HitEffect* hitEffect : hitEffects_) {
 		hitEffect->Draw();
 	}
-
-	// ゴールの描画
-	if (goal_) {
-		goal_->Draw();
+	if (phase_ != GameScene::Phase::kClear) {
+		// ゴールの描画
+		if (goal_) {
+			goal_->Draw();
+		}
 	}
+
 	Model::PostDraw();
 
 	// 【追加】クリアか死亡フェーズならリザルトメニューを描画
 	if (phase_ == Phase::kClear || phase_ == Phase::kDeath) {
 		// パーティクル演出が終わってから表示したい場合は条件を追加してください
 		if (deathParticles_ && deathParticles_->IsFinished() || phase_ == Phase::kClear) {
-			resultMenu_->Draw();
+			if (resultMenu_) {
+				resultMenu_->Draw();
+			}
 		}
 	}
 	Sprite::PreDraw(dxCommon->GetCommandList());
 
 	if (phase_ == Phase::kStart) {
-        
-        // 0秒〜1秒未満： "3"
-        if (countdownTimer_ < 1.0f) {
-            if (spriteCount_) spriteCount_->SetTextureHandle(texHandle3_);
-        }
-        // 1秒〜2秒未満： "2"
-        else if (countdownTimer_ < 2.0f) {
-              if (spriteCount_) spriteCount_->SetTextureHandle(texHandle2_);
-        }
-        // 2秒〜3秒未満： "1"
-        else if (countdownTimer_ < 3.0f) {
-          if (spriteCount_) spriteCount_->SetTextureHandle(texHandle1_);
-        }
-        // 3秒〜4秒未満： "GO!"
-        else if (countdownTimer_ < 4.0f) {
-           if (spriteCount_) spriteCount_->SetTextureHandle(texHandleGo_);
-        }
-		if (spriteCount_) spriteCount_->Draw();
-		
-    }
 
-	
+		// 0秒〜1秒未満： "3"
+		if (countdownTimer_ < 1.0f) {
+			if (spriteCount_)
+				spriteCount_->SetTextureHandle(texHandle3_);
+		}
+		// 1秒〜2秒未満： "2"
+		else if (countdownTimer_ < 2.0f) {
+			if (spriteCount_)
+				spriteCount_->SetTextureHandle(texHandle2_);
+		}
+		// 2秒〜3秒未満： "1"
+		else if (countdownTimer_ < 3.0f) {
+			if (spriteCount_)
+				spriteCount_->SetTextureHandle(texHandle1_);
+		}
+		// 3秒〜4秒未満： "GO!"
+		else if (countdownTimer_ < 4.0f) {
+			if (spriteCount_)
+				spriteCount_->SetTextureHandle(texHandleGo_);
+		}
+		if (spriteCount_)
+			spriteCount_->Draw();
+	}
+
 	Fade::GetInstance()->Draw();
 
 	pauseMenu_->Draw();
@@ -799,6 +802,6 @@ void GameScene::EnemyCollision() {
 
 void GameScene::ApplyHitStopAndShake(float stopTime, float shakeTime, float shakePower) {
 
-	hitStopTimer_ = stopTime;                  // ゲーム進行を止める時間
-    cameraControlle_->RequestShake(shakeTime, shakePower); // カメラを揺らす
+	hitStopTimer_ = stopTime;                              // ゲーム進行を止める時間
+	cameraControlle_->RequestShake(shakeTime, shakePower); // カメラを揺らす
 }
