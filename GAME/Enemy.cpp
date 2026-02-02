@@ -41,7 +41,7 @@ void Enemy::Update() {
 	if (behaviorRequest_ != Behavior::kUnknown) {
 		// 振るまいを変更する
 		behavior_ = behaviorRequest_;
-	
+
 		// 各振るまいごとの初期化を実行
 		switch (behavior_) {
 		case Behavior::kDead:
@@ -59,7 +59,13 @@ void Enemy::Update() {
 	case Enemy::Behavior::kWalk:
 	default: {
 
-			directionCtrl_.Update();
+		if (worldTransform_.translation_.y < -2.5f) {
+			behaviorRequest_ = Behavior::kDead;
+			isDead_ = true;
+			break;
+		}
+
+		directionCtrl_.Update();
 		velocity_.y += kGravity;
 
 		// 必要に応じて落下速度制限を入れる場合
@@ -74,12 +80,12 @@ void Enemy::Update() {
 			mapCollider_->CheckCollision(worldTransform_.translation_, kWidth - kBlank, kHeight - kBlank, collisionMapInfo);
 		}
 		// ★ 速度に応じて向きセット
-        if (velocity_.x > 0.0f) {
-            directionCtrl_.SetDirection(LRDirection::kRight);
-        } else if (velocity_.x < 0.0f) {
-            directionCtrl_.SetDirection(LRDirection::kLeft);
-        }
-		 worldTransform_.rotation_.y = directionCtrl_.GetYRotation();
+		if (velocity_.x > 0.0f) {
+			directionCtrl_.SetDirection(LRDirection::kRight);
+		} else if (velocity_.x < 0.0f) {
+			directionCtrl_.SetDirection(LRDirection::kLeft);
+		}
+		worldTransform_.rotation_.y = directionCtrl_.GetYRotation();
 		// 判定結果を反映
 		ResultCollisionMapInfo(collisionMapInfo);
 		if (collisionMapInfo.isFloor) {
@@ -96,7 +102,7 @@ void Enemy::Update() {
 		float degree = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
 		worldTransform_.rotation_.x = Radian(degree);
 		WorldTransformUpdate(&worldTransform_);
-	
+
 		break;
 	}
 	case Enemy::Behavior::kDead: {
@@ -116,6 +122,10 @@ void Enemy::Update() {
 	}
 };
 void Enemy::Draw() {
+
+	if (isDead_) {
+		return;
+	}
 	float minX_world = camera_->translation_.x - kViewRangeX;
 	float maxX_world = camera_->translation_.x + kViewRangeX;
 	float minY_world = camera_->translation_.y - kViewRangeY;
@@ -124,8 +134,26 @@ void Enemy::Draw() {
 	if (worldTransform_.translation_.x + kWidth / 2.0f >= minX_world && // エネミーの右端が画面の左端より右にある
 	    worldTransform_.translation_.x - kWidth / 2.0f <= maxX_world && // エネミーの左端が画面の右端より左にある
 	    worldTransform_.translation_.y + kHeight / 2.0f >= minY_world && worldTransform_.translation_.y - kHeight / 2.0f <= maxY_world) {
+
+		switch (behavior_) {
+		case Enemy::Behavior::kWalk:
+			model_->Draw(worldTransform_, *camera_);
+			break;
+		case Enemy::Behavior::kDead:
+
+			// 無敵時間中は点滅させる処理
+			if (counter_ > 0) {
+				// 0.2秒周期で、前半0.1秒だけ消える
+				if (std::fmod(counter_, 0.2f) < 0.1f) {
+					return;
+				}
+			}
+
+			model_->Draw(worldTransform_, *camera_);
+			break;
+		}
+
 		// 描画実行
-		model_->Draw(worldTransform_, *camera_);
 	}
 };
 Vector3 Enemy::GetWorldPosition() {
@@ -202,11 +230,11 @@ void Enemy::OnCollisionWithEnemy() {
 	// 速度を反転させる
 	velocity_.x *= -1.0f;
 	// 反転した瞬間に向き変更リクエスト（Updateで速度を見て反映されるが、ここでも可）
-    if (velocity_.x > 0.0f) {
-        directionCtrl_.SetDirection(LRDirection::kRight);
-    } else {
-        directionCtrl_.SetDirection(LRDirection::kLeft);
-    }
+	if (velocity_.x > 0.0f) {
+		directionCtrl_.SetDirection(LRDirection::kRight);
+	} else {
+		directionCtrl_.SetDirection(LRDirection::kLeft);
+	}
 	// 補足: 連続して判定が起きないように、少しだけ位置をずらす処理を入れるとより安定します
 	// 例: velocity_.x がプラスなら少し右へ、マイナスなら少し左へ強制移動など
 	// 今回はシンプルに反転のみとします

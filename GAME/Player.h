@@ -115,14 +115,7 @@ private:
 	static inline const float kAttenution = 0.05f;   ///< 減速
 	static inline const float kLimitRunSpeed = 0.3f; ///< 最大速度
 	static const int kInvincibleTime = 360;///<無敵時間
-	//LRDirection lrDirection_ = LRDirection::kRight;  ///< キャラクターの向き
-	////// 旋回開始時角度
-	//float turnFirstRotationY_ = 0.0f;
-	////// 旋回タイマー
-	//float turnTimer_ = 0.0f;
-	////// 旋回時間<秒>
-	//static inline const float kTimeTurn = 0.3f;
-	// 代わりに追加
+	
     Direction directionCtrl_;
 
     // directionCtrl_経由で向きを取得するヘルパーがあると便利

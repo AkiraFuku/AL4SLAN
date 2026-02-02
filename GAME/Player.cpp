@@ -113,45 +113,18 @@ void Player::BehaviorRootUpdate() {
 	// 着地
 	UpdateOnGround(collisionMapInfo);
 
-	// 旋回
-	//if (turnTimer_ > 0.0f) {
-	//	// 旋回時間を減少
-	//	turnTimer_ = std::max(turnTimer_ - (1.0f / 60.0f), 0.0f);
-	//	// 旋回角度
-
-	//	float destinationRotationYTable[] = {std::numbers::pi_v<float> / 2.0f, std::numbers::pi_v<float> * 3.0f / 2.0f};
-
-	//	float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
-
-	//	worldTransform_.rotation_.y = EaseInOut(destinationRotationY, turnFirstRotationY_, turnTimer_ / kTimeTurn);
-	//}
+	
 	// 攻撃に切り替え
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_X && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_X))) {
 
 		behaviorRequest_ = Behavior::kAttack;
-		//// 攻撃やジャンプなどのアクション入力が入った場合は旋回を即完了させる
-		//turnTimer_ = 0.0f;
-
-		//// lrDirection_の方向に即座に回転を合わせる
-		//if (lrDirection_ == LRDirection::kRight) {
-		//	worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
-		//} else {
-		//	worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
-		//}
+	
 		directionCtrl_.ImmediateTurn(); // 即座に向く
 	}
 	if (Input::GetInstance()->TriggerKey(DIK_X) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER && prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)) {
 
 		behaviorRequest_ = Behavior::kDash;
-		//// 攻撃やジャンプなどのアクション入力が入った場合は旋回を即完了させる
-		//turnTimer_ = 0.0f;
-
-		//// lrDirection_の方向に即座に回転を合わせる
-		//if (lrDirection_ == LRDirection::kRight) {
-		//	worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
-		//} else {
-		//	worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
-		//}
+	
 		directionCtrl_.ImmediateTurn(); // 即座に向く
 	}
 
@@ -218,9 +191,6 @@ void Player::BehaviorAttackUpdate() {
 
 	case Player::AttackPhase::kAfter: {
 		attackSEPlayed_ = false;
-		// float t = static_cast<float>(attackParameter_) / kAfterTime; // 1秒間の攻撃後
-		// worldTransform_.scale_.z = EaseOut(1.3f, 1.0f, t);
-		// worldTransform_.scale_.y = EaseOut(0.7f, 1.0f, t);
 		if (attackParameter_ >= kAfterTime) {
 			// 攻撃完了。元のRoot状態に戻す
 			behaviorRequest_ = Behavior::kRoot;
