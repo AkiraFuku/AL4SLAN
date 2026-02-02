@@ -21,15 +21,19 @@ void Enemy::Initialize(Model* model, Camera* camera, Vector3& position) {
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
 	// 角度調整
-	worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
+	// エネミーの初期向き（例: 左向きスタート）
+	directionCtrl_.Initialize(LRDirection::kLeft);
+
+	// 既存の rotation_.y 初期化コードは削除または上書きされます
+	worldTransform_.rotation_.y = directionCtrl_.GetYRotation();
 	velocity_ = {-kWalkSpeed, 0.0f, 0.0f};
 	walkTimer_ = 0.0f;
 	WorldTransformUpdate(&worldTransform_);
 }
 void Enemy::Update() {
 	if (InCamera()) {
-        return; 
-    }
+		return;
+	}
 	if (collisionCooldown_ > 0.0f) {
 		collisionCooldown_ -= 1.0f / 60.0f;
 	}
@@ -37,7 +41,7 @@ void Enemy::Update() {
 	if (behaviorRequest_ != Behavior::kUnknown) {
 		// 振るまいを変更する
 		behavior_ = behaviorRequest_;
-
+	
 		// 各振るまいごとの初期化を実行
 		switch (behavior_) {
 		case Behavior::kDead:
@@ -54,6 +58,8 @@ void Enemy::Update() {
 
 	case Enemy::Behavior::kWalk:
 	default: {
+
+			directionCtrl_.Update();
 		velocity_.y += kGravity;
 
 		// 必要に応じて落下速度制限を入れる場合
@@ -63,11 +69,17 @@ void Enemy::Update() {
 		collisionMapInfo.move = velocity_;
 
 		// マップ衝突判定
-		
+
 		if (mapCollider_) {
 			mapCollider_->CheckCollision(worldTransform_.translation_, kWidth - kBlank, kHeight - kBlank, collisionMapInfo);
 		}
-
+		// ★ 速度に応じて向きセット
+        if (velocity_.x > 0.0f) {
+            directionCtrl_.SetDirection(LRDirection::kRight);
+        } else if (velocity_.x < 0.0f) {
+            directionCtrl_.SetDirection(LRDirection::kLeft);
+        }
+		 worldTransform_.rotation_.y = directionCtrl_.GetYRotation();
 		// 判定結果を反映
 		ResultCollisionMapInfo(collisionMapInfo);
 		if (collisionMapInfo.isFloor) {
@@ -84,6 +96,7 @@ void Enemy::Update() {
 		float degree = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
 		worldTransform_.rotation_.x = Radian(degree);
 		WorldTransformUpdate(&worldTransform_);
+	
 		break;
 	}
 	case Enemy::Behavior::kDead: {
@@ -180,7 +193,6 @@ void Enemy::SetMapChipField(MapChipField* mapChipField) {
 	}
 }
 
-
 void Enemy::ResultCollisionMapInfo(const CollisionMapInfo& info) { worldTransform_.translation_ += info.move; }
 
 void Enemy::OnCollisionWithEnemy() {
@@ -189,7 +201,12 @@ void Enemy::OnCollisionWithEnemy() {
 	}
 	// 速度を反転させる
 	velocity_.x *= -1.0f;
-
+	// 反転した瞬間に向き変更リクエスト（Updateで速度を見て反映されるが、ここでも可）
+    if (velocity_.x > 0.0f) {
+        directionCtrl_.SetDirection(LRDirection::kRight);
+    } else {
+        directionCtrl_.SetDirection(LRDirection::kLeft);
+    }
 	// 補足: 連続して判定が起きないように、少しだけ位置をずらす処理を入れるとより安定します
 	// 例: velocity_.x がプラスなら少し右へ、マイナスなら少し左へ強制移動など
 	// 今回はシンプルに反転のみとします

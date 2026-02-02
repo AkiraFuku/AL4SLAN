@@ -553,7 +553,7 @@ void Player::inputMove() {
 		}
 		// 優先順位3: それ以外（空中にいて壁にも触れていない）なら「空中ジャンプ」
 		else if (jumpCount_ < kLimitJumpCount) {
-			velocity_.y += (kJumpAcceleration+0.6f )/ 60.0f;
+			velocity_.y += (kJumpAcceleration*1.5f)/ 60.0f;
 			jumpCount_++; // なってなければジャンプSE再生
 			if (!Audio::GetInstance()->IsPlaying(jumpSEHandle_)) {
 				Audio::GetInstance()->PlayWave(jumpSEHandle_, false);

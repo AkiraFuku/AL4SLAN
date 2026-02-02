@@ -24,14 +24,7 @@ public:
 	
 	
 
-	//// 角の定義（Playerと同じ）
-	//enum Corner {
-	//	kRightBottom, ///< 右下
-	//	kLeftBottom,  ///< 左下
-	//	kRightTop,    ///< 右上
-	//	kLeftTop,     ///< 左上
-	//	kNumCorner    ///< コーナーの数
-	//};
+	
 	void Initialize(Model* model, Camera* camera, Vector3& position);
 	/// <summary>
 	/// 更新
@@ -70,7 +63,7 @@ public:
 	//めり込まない
 	void AddPosition(const Vector3& offset);
 private:
-	
+	Direction directionCtrl_;
 void ResultCollisionMapInfo(const CollisionMapInfo& info);
 private:
 	WorldTransform worldTransform_; ///< ワールドトランスフォーム
