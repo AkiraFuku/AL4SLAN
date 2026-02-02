@@ -276,14 +276,16 @@ void GameScene::ChangePhase() {
 	case Phase::kPlay:
 	// 死亡判定：HPが尽きる(IsDead) または Y座標が -10.0f を下回る(落下)
 		// マップの一番下が Y=0.0f なので、-10.0f あれば十分に画面外です
-		if (player_->IsDead() || player_->GetWorldTransform().translation_.y < -10.0f) {
+		if (player_->IsDead() || player_->GetWorldTransform().translation_.y < -2.5f) {
 
 			phase_ = Phase::kDeath;
 			resultMenu_->Initialize(false); // 失敗で初期化
 
 			// デスパーティクルの生成（死亡した瞬間だけ実行するように if文の中に入れます）
-			const Vector3 deathParticlesPosition = player_->GetWorldTransform().translation_;
-			
+			 Vector3 deathParticlesPosition = player_->GetWorldTransform().translation_;
+			if (deathParticlesPosition.y < -2.5f) {
+				deathParticlesPosition.y = 0.0f; 
+			}
 			// 既存のパーティクルがあれば削除（安全策）
 			if(deathParticles_){
 				delete deathParticles_;

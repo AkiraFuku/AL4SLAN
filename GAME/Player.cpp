@@ -32,7 +32,7 @@ void Player::Initialize(Model* model, Model* modelAttack, uint32_t textureHandle
 	camera_ = camera;
 
 	invincibleTimer_ = 0;
-    knockbackTimer_ = 0;
+	knockbackTimer_ = 0;
 
 	// sound
 	jumpSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/jump.wav");
@@ -44,10 +44,9 @@ void Player::Update() {
 
 	Input::GetInstance()->GetJoystickState(0, state_);
 
-
 	if (invincibleTimer_ > 0) {
-        invincibleTimer_--;
-    }
+		invincibleTimer_--;
+	}
 
 	if (behaviorRequest_ != Behavior::kUnknown) {
 		behavior_ = behaviorRequest_;
@@ -154,12 +153,12 @@ void Player::BehaviorRootUpdate() {
 		landingParameter_++;
 
 		float t = static_cast<float>(landingParameter_) / static_cast<float>(kTimeLanding);
-		
+
 		// 縦に潰れて(0.6倍)、横に広がる(1.4倍)ところから、通常(1.0倍)に戻していく
 		// EaseOut(開始値, 終了値, t)
 		worldTransform_.scale_.y = EaseOut(0.6f, 1.0f, t); // 高さ：潰れた状態 -> 元に戻る
 		worldTransform_.scale_.z = EaseOut(1.4f, 1.0f, t); // 幅　：広がった状態 -> 元に戻る
-		worldTransform_.scale_.x = 1.0f; // x軸（厚み）は今回は変えない（必要ならzと同じにする）
+		worldTransform_.scale_.x = 1.0f;                   // x軸（厚み）は今回は変えない（必要ならzと同じにする）
 
 		// アニメーション終了
 		if (landingParameter_ >= kTimeLanding) {
@@ -167,11 +166,11 @@ void Player::BehaviorRootUpdate() {
 			worldTransform_.scale_ = {1.0f, 1.0f, 1.0f}; // 念のためサイズをリセット
 		}
 	} else {
-        // 着地中でも攻撃中でもダッシュ中でもなければサイズを通常に保つ
-        // （これを書かないと、ダッシュ後にサイズがおかしくなる場合があるため安全策）
-        if(behavior_ == Behavior::kRoot){
-		    worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
-        }
+		// 着地中でも攻撃中でもダッシュ中でもなければサイズを通常に保つ
+		// （これを書かないと、ダッシュ後にサイズがおかしくなる場合があるため安全策）
+		if (behavior_ == Behavior::kRoot) {
+			worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
+		}
 	}
 }
 
@@ -270,11 +269,10 @@ void Player::BehaviorAttackUpdate() {
 		// worldTransformAttack_.rotation_ = worldTransform_.rotation_;
 		//  (オプション) モデルを上に向ける回転が必要な場合はここでZ軸などを回転させる
 		if (lrDirection_ == LRDirection::kRight) {
-				worldTransformAttack_.rotation_.z = std::numbers::pi_v<float> / 2.0f;
+			worldTransformAttack_.rotation_.z = std::numbers::pi_v<float> / 2.0f;
 		} else {
 			worldTransformAttack_.rotation_.z = -std::numbers::pi_v<float> / 2.0f;
 		}
-	
 
 	} else if (isDownInput) {
 		// 下入力がある場合：下に配置
@@ -282,7 +280,7 @@ void Player::BehaviorAttackUpdate() {
 		// worldTransformAttack_.rotation_ = worldTransform_.rotation_;
 		//  (オプション) モデルを下に向ける回転
 		if (lrDirection_ == LRDirection::kRight) {
-				worldTransformAttack_.rotation_.z = -std::numbers::pi_v<float> / 2.0f;
+			worldTransformAttack_.rotation_.z = -std::numbers::pi_v<float> / 2.0f;
 		} else {
 			worldTransformAttack_.rotation_.z = std::numbers::pi_v<float> / 2.0f;
 		}
@@ -404,18 +402,16 @@ bool Player::isAttack() const {
 
 void Player::Draw() {
 	// 無敵時間中は点滅させる処理
-    if (invincibleTimer_ > 0) {
-        // 10フレーム中、5フレームだけ描画する（チカチカする）
-        if (invincibleTimer_ % 10 < 5) {
-            return; // 描画関数を呼ばずに抜ける＝消える
-        }
-    }
+	if (invincibleTimer_ > 0) {
+		// 10フレーム中、5フレームだけ描画する（チカチカする）
+		if (invincibleTimer_ % 10 < 5) {
+			return; // 描画関数を呼ばずに抜ける＝消える
+		}
+	}
 	model_->Draw(worldTransform_, *camera_);
 	if (behavior_ == Behavior::kAttack) {
-	
 
-			modelAttack_->Draw(worldTransformAttack_, *camera_);
-
+		modelAttack_->Draw(worldTransformAttack_, *camera_);
 	}
 }
 void Player::SetMapchipField(MapChipField* mapChipField) {
@@ -429,11 +425,11 @@ void Player::SetMapchipField(MapChipField* mapChipField) {
 void Player::inputMove() {
 
 	if (knockbackTimer_ > 0) {
-        knockbackTimer_--;
-        // ノックバック中は重力だけ適用して、左右入力は受け付けない
-        velocity_.y = std::max(velocity_.y - kGravityAcceleration / 60.0f, -kLimitFallSpeed);
-        return; 
-    }
+		knockbackTimer_--;
+		// ノックバック中は重力だけ適用して、左右入力は受け付けない
+		velocity_.y = std::max(velocity_.y - kGravityAcceleration / 60.0f, -kLimitFallSpeed);
+		return;
+	}
 
 	const float deadZone = 8000; // デッドゾーン（無反応領域）
 	float lx = (float)state_.Gamepad.sThumbLX;
@@ -550,7 +546,7 @@ void Player::inputMove() {
 		}
 		// 優先順位3: それ以外（空中にいて壁にも触れていない）なら「空中ジャンプ」
 		else if (jumpCount_ < kLimitJumpCount) {
-			velocity_.y += kJumpAcceleration / 60.0f;
+			velocity_.y += (kJumpAcceleration+0.6f )/ 60.0f;
 			jumpCount_++; // なってなければジャンプSE再生
 			if (!Audio::GetInstance()->IsPlaying(jumpSEHandle_)) {
 				Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
@@ -745,30 +741,34 @@ AABB Player::GetAABB() {
 }
 
 void Player::OnCollision(const Enemy* enemy) {
-	if (isAttack()||invincibleTimer_ > 0) {
+
+	Vector3 enemyPos = enemy->GetWorldTransform().translation_;
+	Vector3 playerPos = GetWorldPosition();
+	if (isAttack() || invincibleTimer_ > 0) {
+
+		
+
 		return;
 	}
 	(void)enemy;
 	invincibleTimer_ = 120;
 	knockbackTimer_ = 20;
-	Vector3 enemyPos=enemy->GetWorldTransform().translation_;
-	Vector3 playerPos = GetWorldPosition();
 
-    // 2. ノックバック方向の計算 (敵から離れる方向)
-    float knockbackForceX = 0.2f; // 左右の弾き飛ばし強度
-    float knockbackForceY = 0.1f; // 上への跳ね返り強度
+	// 2. ノックバック方向の計算 (敵から離れる方向)
+	float knockbackForceX = 0.2f; // 左右の弾き飛ばし強度
+	float knockbackForceY = 0.1f; // 上への跳ね返り強度
 
-    if (playerPos.x < enemyPos.x) {
-        // 敵が右にいるので左へ
-        velocity_.x = -knockbackForceX;
-    } else {
-        // 敵が左にいるので右へ
-        velocity_.x = knockbackForceX;
-    }
+	if (playerPos.x < enemyPos.x) {
+		// 敵が右にいるので左へ
+		velocity_.x = -knockbackForceX;
+	} else {
+		// 敵が左にいるので右へ
+		velocity_.x = knockbackForceX;
+	}
 
-    // 上方向にも少し跳ね上げる（地面にめり込まないようにするため）
-    velocity_.y = knockbackForceY;
-	//isDead_ = true;
+	// 上方向にも少し跳ね上げる（地面にめり込まないようにするため）
+	velocity_.y = knockbackForceY;
+	// isDead_ = true;
 	Audio::GetInstance()->PlayWave(DeathSEHandle_, false);
 	// velocity_+=Vector3(0.0f,kJumpAcceleration/60.0f,0.0f);
 }

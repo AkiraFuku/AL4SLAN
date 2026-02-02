@@ -74,14 +74,8 @@ public:
 	//めり込まない
 	void AddPosition(const Vector3& offset);
 private:
-	// ★追加: 衝突判定関連のメンバ関数
-   /* void MapCollisionCheck(CollisionMapInfo& info);
-    void CheckMapCollisionUp(CollisionMapInfo& info);
-    void CheckMapCollisionDown(CollisionMapInfo& info);
-    void CheckMapCollisionRight(CollisionMapInfo& info);
-    void CheckMapCollisionLeft(CollisionMapInfo& info);
-  */  void ResultCollisionMapInfo(const CollisionMapInfo& info);
-  //  Vector3 CornerPosition(const Vector3& center, Corner corner);
+	
+void ResultCollisionMapInfo(const CollisionMapInfo& info);
 private:
 	WorldTransform worldTransform_; ///< ワールドトランスフォーム
 	Model* model_ = nullptr;
