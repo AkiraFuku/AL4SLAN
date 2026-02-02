@@ -3,7 +3,7 @@
 #include "KamataEngine.h"
 #include "MapCollider.h"
 #include "MassFunction.h"
-
+#include "Direction.h"
 using namespace KamataEngine;
 class MapChipField;
 class Enemy;
@@ -13,10 +13,10 @@ class Enemy;
 /// </summary>
 class Player {
 public:
-	enum class LRDirection {
+	/*enum class LRDirection {
 		kRight,
 		kLeft,
-	};
+	};*/
 	enum class Behavior {
 		kUnknown, ///< 未定義
 		kRoot,    ///< 通常行動
@@ -115,13 +115,18 @@ private:
 	static inline const float kAttenution = 0.05f;   ///< 減速
 	static inline const float kLimitRunSpeed = 0.3f; ///< 最大速度
 	static const int kInvincibleTime = 360;///<無敵時間
-	LRDirection lrDirection_ = LRDirection::kRight;  ///< キャラクターの向き
-	// 旋回開始時角度
-	float turnFirstRotationY_ = 0.0f;
-	// 旋回タイマー
-	float turnTimer_ = 0.0f;
-	// 旋回時間<秒>
-	static inline const float kTimeTurn = 0.3f;
+	//LRDirection lrDirection_ = LRDirection::kRight;  ///< キャラクターの向き
+	////// 旋回開始時角度
+	//float turnFirstRotationY_ = 0.0f;
+	////// 旋回タイマー
+	//float turnTimer_ = 0.0f;
+	////// 旋回時間<秒>
+	//static inline const float kTimeTurn = 0.3f;
+	// 代わりに追加
+    Direction directionCtrl_;
+
+    // directionCtrl_経由で向きを取得するヘルパーがあると便利
+   LRDirection GetDirection() const { return directionCtrl_.GetDirection(); }
 	// 接地フラグ
 	bool onGround_ = true;
 	// 壁接触フラグ

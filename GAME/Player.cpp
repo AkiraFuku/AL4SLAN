@@ -13,7 +13,7 @@ void Player::Initialize(Model* model, Model* modelAttack, uint32_t textureHandle
 	model_ = model;
 	// 攻撃モデル
 	modelAttack_ = modelAttack;
-
+	directionCtrl_.Initialize(LRDirection::kRight);
 	// テクスチャハンドル
 	textureHandle_ = textureHandle;
 	// ワールドトランスフォームの初期化
@@ -66,7 +66,11 @@ void Player::Update() {
 		// 挙動リクエストを初期化
 		behaviorRequest_ = Behavior::kUnknown;
 	}
-
+	// 旋回更新処理
+    directionCtrl_.Update();
+    
+    // 回転の反映
+    worldTransform_.rotation_.y = directionCtrl_.GetYRotation();
 	switch (behavior_) {
 
 	case Player::Behavior::kRoot:
@@ -110,43 +114,45 @@ void Player::BehaviorRootUpdate() {
 	UpdateOnGround(collisionMapInfo);
 
 	// 旋回
-	if (turnTimer_ > 0.0f) {
-		// 旋回時間を減少
-		turnTimer_ = std::max(turnTimer_ - (1.0f / 60.0f), 0.0f);
-		// 旋回角度
+	//if (turnTimer_ > 0.0f) {
+	//	// 旋回時間を減少
+	//	turnTimer_ = std::max(turnTimer_ - (1.0f / 60.0f), 0.0f);
+	//	// 旋回角度
 
-		float destinationRotationYTable[] = {std::numbers::pi_v<float> / 2.0f, std::numbers::pi_v<float> * 3.0f / 2.0f};
+	//	float destinationRotationYTable[] = {std::numbers::pi_v<float> / 2.0f, std::numbers::pi_v<float> * 3.0f / 2.0f};
 
-		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
+	//	float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
 
-		worldTransform_.rotation_.y = EaseInOut(destinationRotationY, turnFirstRotationY_, turnTimer_ / kTimeTurn);
-	}
+	//	worldTransform_.rotation_.y = EaseInOut(destinationRotationY, turnFirstRotationY_, turnTimer_ / kTimeTurn);
+	//}
 	// 攻撃に切り替え
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_X && !(prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_X))) {
 
 		behaviorRequest_ = Behavior::kAttack;
-		// 攻撃やジャンプなどのアクション入力が入った場合は旋回を即完了させる
-		turnTimer_ = 0.0f;
+		//// 攻撃やジャンプなどのアクション入力が入った場合は旋回を即完了させる
+		//turnTimer_ = 0.0f;
 
-		// lrDirection_の方向に即座に回転を合わせる
-		if (lrDirection_ == LRDirection::kRight) {
-			worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
-		} else {
-			worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
-		}
+		//// lrDirection_の方向に即座に回転を合わせる
+		//if (lrDirection_ == LRDirection::kRight) {
+		//	worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
+		//} else {
+		//	worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
+		//}
+		directionCtrl_.ImmediateTurn(); // 即座に向く
 	}
 	if (Input::GetInstance()->TriggerKey(DIK_X) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER && prevState_.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)) {
 
 		behaviorRequest_ = Behavior::kDash;
-		// 攻撃やジャンプなどのアクション入力が入った場合は旋回を即完了させる
-		turnTimer_ = 0.0f;
+		//// 攻撃やジャンプなどのアクション入力が入った場合は旋回を即完了させる
+		//turnTimer_ = 0.0f;
 
-		// lrDirection_の方向に即座に回転を合わせる
-		if (lrDirection_ == LRDirection::kRight) {
-			worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
-		} else {
-			worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
-		}
+		//// lrDirection_の方向に即座に回転を合わせる
+		//if (lrDirection_ == LRDirection::kRight) {
+		//	worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
+		//} else {
+		//	worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
+		//}
+		directionCtrl_.ImmediateTurn(); // 即座に向く
 	}
 
 	if (isLanding_) {
@@ -268,7 +274,7 @@ void Player::BehaviorAttackUpdate() {
 		worldTransformAttack_.translation_ = playerPos + Vector3{0.0f, attackOffsetY, 0.0f};
 		// worldTransformAttack_.rotation_ = worldTransform_.rotation_;
 		//  (オプション) モデルを上に向ける回転が必要な場合はここでZ軸などを回転させる
-		if (lrDirection_ == LRDirection::kRight) {
+		if (GetDirection() == LRDirection::kRight) {
 			worldTransformAttack_.rotation_.z = std::numbers::pi_v<float> / 2.0f;
 		} else {
 			worldTransformAttack_.rotation_.z = -std::numbers::pi_v<float> / 2.0f;
@@ -279,7 +285,7 @@ void Player::BehaviorAttackUpdate() {
 		worldTransformAttack_.translation_ = playerPos + Vector3{0.0f, -attackOffsetY, 0.0f};
 		// worldTransformAttack_.rotation_ = worldTransform_.rotation_;
 		//  (オプション) モデルを下に向ける回転
-		if (lrDirection_ == LRDirection::kRight) {
+		if (GetDirection() == LRDirection::kRight) {
 			worldTransformAttack_.rotation_.z = -std::numbers::pi_v<float> / 2.0f;
 		} else {
 			worldTransformAttack_.rotation_.z = std::numbers::pi_v<float> / 2.0f;
@@ -287,7 +293,7 @@ void Player::BehaviorAttackUpdate() {
 
 	} else {
 		// 上下入力がない場合：キャラクターの向き（左右）に配置
-		if (lrDirection_ == LRDirection::kRight) {
+		if (GetDirection() == LRDirection::kRight) {
 			worldTransformAttack_.translation_ = playerPos + Vector3{attackOffsetX, 0.0f, 0.0f};
 		} else {
 			worldTransformAttack_.translation_ = playerPos + Vector3{-attackOffsetX, 0.0f, 0.0f};
@@ -318,10 +324,10 @@ void Player::BehaviorDashUpdate() {
 	}
 	case Player::DashPhase::kDash: {
 
-		if (lrDirection_ == LRDirection::kRight) {
+		if (GetDirection() == LRDirection::kRight) {
 
 			velocity_ = dashVelocity; // ダッシュ中は速度を一定に保つ
-		} else if (lrDirection_ == LRDirection::kLeft) {
+		} else if (GetDirection() == LRDirection::kLeft) {
 			velocity_ = dashVelocity * -1.0f;
 		}
 		float t = static_cast<float>(dashParameter_) / kDashAttackTime; // 1秒間の攻撃
@@ -342,7 +348,7 @@ void Player::BehaviorDashUpdate() {
 			dashPhase_ = DashPhase::kUnknown; // 初期化
 			dashParameter_ = 0;
 			// ダッシュの慣性を引き継ぐ
-			if (lrDirection_ == LRDirection::kRight) {
+			if (GetDirection() == LRDirection::kRight) {
 				velocity_.x = +kLimitRunSpeed * 0.8f; // 通常移動の上限速度の80%でスタート
 			} else {
 				velocity_.x = -kLimitRunSpeed * 0.8f;
@@ -365,7 +371,7 @@ void Player::BehaviorDashUpdate() {
 			dashPhase_ = DashPhase::kUnknown; // 初期化
 			dashParameter_ = 0;
 			// ダッシュの慣性を引き継ぐ
-			if (lrDirection_ == LRDirection::kRight) {
+			if (GetDirection() == LRDirection::kRight) {
 				velocity_.x = +kLimitRunSpeed * 0.8f; // 通常移動の上限速度の80%でスタート
 			} else {
 				velocity_.x = -kLimitRunSpeed * 0.8f;
@@ -462,15 +468,15 @@ void Player::inputMove() {
 			// 右キーが押されている
 			if (velocity_.x < 0.0f) {
 				velocity_.x *= (1.0f - kAttenution);
-				// 旋回時の角度
-				turnFirstRotationY_ = worldTransform_.rotation_.y;
-				// 旋回タイマー初期化
-				turnTimer_ = kTimeTurn;
+				//// 旋回時の角度
+				//turnFirstRotationY_ = worldTransform_.rotation_.y;
+				//// 旋回タイマー初期化
+				//turnTimer_ = kTimeTurn;
 			}
 			acceleration.x += kAcceleration;
-			if (!isAttack() && lrDirection_ != LRDirection::kRight) {
+			if (!isAttack() && GetDirection() != LRDirection::kRight) {
 				// 攻撃している時は向きを変えない
-				lrDirection_ = LRDirection::kRight;
+				directionCtrl_.SetDirection(LRDirection::kRight);
 			}
 		} else if (keyLeft) {
 			// 左キーが押されている
@@ -478,29 +484,30 @@ void Player::inputMove() {
 				velocity_.x *= (1.0f - kAttenution);
 			}
 			acceleration.x -= kAcceleration;
-			if (!isAttack() && lrDirection_ != LRDirection::kLeft) {
-				lrDirection_ = LRDirection::kLeft;
-				// 旋回時の角度
-				turnFirstRotationY_ = worldTransform_.rotation_.y;
-				// 旋回タイマー初期化
-				turnTimer_ = kTimeTurn;
+			if (!isAttack() && GetDirection() != LRDirection::kLeft) {
+				//lrDirection_ = LRDirection::kLeft;
+				//// 旋回時の角度
+				//turnFirstRotationY_ = worldTransform_.rotation_.y;
+				//// 旋回タイマー初期化
+				//turnTimer_ = kTimeTurn;
+				directionCtrl_.SetDirection(LRDirection::kLeft);
 			}
 		} else if (stick) {
 			acceleration.x += (lx / 32767.0f) * kAcceleration;
 
-			if (lx > 0 && lrDirection_ != LRDirection::kRight) {
+			if (lx > 0 && GetDirection() != LRDirection::kRight) {
 				if (!isAttack()) {
-					lrDirection_ = LRDirection::kRight;
+					directionCtrl_.SetDirection(LRDirection::kRight);
 				}
 
-				turnFirstRotationY_ = worldTransform_.rotation_.y;
-				turnTimer_ = kTimeTurn;
-			} else if (lx < 0 && lrDirection_ != LRDirection::kLeft) {
+				/*turnFirstRotationY_ = worldTransform_.rotation_.y;
+				turnTimer_ = kTimeTurn;*/
+			} else if (lx < 0 && GetDirection() != LRDirection::kLeft) {
 				if (!isAttack()) {
-					lrDirection_ = LRDirection::kLeft;
+				directionCtrl_.SetDirection(LRDirection::kLeft);
 				}
-				turnFirstRotationY_ = worldTransform_.rotation_.y;
-				turnTimer_ = kTimeTurn;
+				/*turnFirstRotationY_ = worldTransform_.rotation_.y;
+				turnTimer_ = kTimeTurn;*/
 			}
 		}
 
@@ -533,7 +540,7 @@ void Player::inputMove() {
 		// 優先順位2: 地面にいなくて、壁に触れているなら「壁ジャンプ」
 		else if (tachWall_) {
 			// 反対方向に弾くような壁ジャンプ
-			if (lrDirection_ == LRDirection::kRight) {
+			if (GetDirection() == LRDirection::kRight) {
 				velocity_ = {-kJumpAcceleration / 120.0f, kJumpAcceleration / 60.0f, 0};
 			} else {
 				velocity_ = {+kJumpAcceleration / 120.0f, kJumpAcceleration / 60.0f, 0};
@@ -658,7 +665,7 @@ void Player::HitWall(const CollisionMapInfo& info) {
 
 	// 左右どちらを調べるか？（入力方向や向きで判断、あるいは両方）
 	// ここではシンプルに「現在の向き(lrDirection_)」の方向を調べます
-	if (lrDirection_ == LRDirection::kRight) {
+	if (GetDirection() == LRDirection::kRight) {
 		// 右側の壁をチェック（右下と右上）
 		MapChipField::IndexSet indexSet;
 		MapChipType mapChipType;
@@ -676,7 +683,7 @@ void Player::HitWall(const CollisionMapInfo& info) {
 			if (mapChipType == MapChipType::kBlock)
 				hit = true;
 		}
-	} else if (lrDirection_ == LRDirection::kLeft) {
+	} else if (GetDirection() == LRDirection::kLeft) {
 		// 左側の壁をチェック（左下と左上）
 		MapChipField::IndexSet indexSet;
 		MapChipType mapChipType;

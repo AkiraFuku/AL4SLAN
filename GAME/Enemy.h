@@ -5,16 +5,12 @@
 #include <algorithm>
 #include <numbers>
 #include "MapCollider.h"
-
+#include "Direction.h"
 using namespace KamataEngine;
 
 class Player;
 class MapChipField;
 class GameScene;
-enum class LRDirection {
-	kRight,
-	kLeft,
-};
 
 class Enemy {
 public:

@@ -106,6 +106,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Direction.cpp" />
     <ClCompile Include="GAME\CameraController.cpp" />
     <ClCompile Include="GAME\DeathParticles.cpp" />
     <ClCompile Include="GAME\Enemy.cpp" />
@@ -206,6 +207,7 @@
     <None Include="Resources\shaders\Sprite.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Direction.h" />
     <ClInclude Include="GAME\CameraController.h" />
     <ClInclude Include="GAME\DeathParticles.h" />
     <ClInclude Include="GAME\Enemy.h" />
