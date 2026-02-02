@@ -83,7 +83,16 @@ void GameScene::GenerateEnemy() {
 	for (uint32_t i = 0; i < numBlockVertical; i++) {
 		for (uint32_t j = 0; j < numBlockHorizontal; j++) {
 			if (mapchipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kEnemy) {
-				Enemy* newEnemy = new SmartEnemy();
+				Enemy* newEnemy ;
+				switch (mapchipField_->GetMapChipSubIDByIndex(j,i)) {
+				case 0:
+				default:
+					newEnemy = new Enemy();
+					break;
+				case 1:
+					newEnemy = new SmartEnemy();
+					break;
+				}
 				Vector3 enemyPosition = mapchipField_->GetmapChipPositionIndex(j, i);
 				newEnemy->Initialize(enemy_model_, &camera_, enemyPosition);
 				newEnemy->setGameScene(this);
