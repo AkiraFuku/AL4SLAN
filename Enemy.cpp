@@ -295,9 +295,7 @@ void Enemy::CheckMapCollisionRight(CollisionMapInfo& info) {
 
 		// めり込み排除する方向へ移動
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(+kWidth / 2.0f, 0.0f, 0.0f));
-		//MapChipField::IndexSet indexSetnow;
-		//indexSetnow = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + Vector3(+kWidth / 2.0f, 0.0f, 0.0f));
-		//if (indexSetnow.xIndex != indexSet.xIndex) {
+	
 		// めり込み先のマップチップの矩形を取得
 		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
 		// 下方向の移動量を計算
@@ -340,9 +338,7 @@ void Enemy::CheckMapCollisionLeft(CollisionMapInfo& info) {
 	if (hit) {
 		// めり込み排除する方向へ移動
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(-kWidth / 2.0f, 0.0f, 0.0f));
-	/*	MapChipField::IndexSet indexSetnow;
-		indexSetnow = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + Vector3(-kWidth / 2.0f, 0.0f, 0.0f));
-		if (indexSetnow.xIndex != indexSet.xIndex) {*/
+	
 		// めり込み先のマップチップの矩形を取得
 		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
 		// 下方向の移動量を計算

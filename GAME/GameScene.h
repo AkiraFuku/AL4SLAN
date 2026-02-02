@@ -14,6 +14,7 @@
 #include "PauseMenu.h"
 #include "StageManager.h"
 #include "ResultMenu.h"
+#include "SmartEnemy.h"
 using namespace KamataEngine ;
 
 

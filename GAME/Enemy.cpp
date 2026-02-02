@@ -120,7 +120,7 @@ void Enemy::Update() {
 		break;
 	}
 	}
-};
+}
 void Enemy::Draw() {
 
 	if (isDead_) {
