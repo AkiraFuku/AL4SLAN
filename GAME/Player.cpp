@@ -210,16 +210,7 @@ void Player::BehaviorAttackUpdate() {
 	HitWall(collisionMapInfo);
 	UpdateOnGround(collisionMapInfo);
 
-	// 攻撃用ワールドトランスフォームをプレイヤーのしんこう方向前方に設定
-	// 攻撃用ワールドトランスフォームをプレイヤーの進行方向前方に設定
-	/*const float attackOffset = (kWidth + kAttackWidth) / 2.0f;
-
-	if (lrDirection_ == LRDirection::kRight) {
-	    worldTransformAttack_.translation_ = worldTransform_.translation_ + Vector3{attackOffset, 0.0f, 0.0f};
-	} else if (lrDirection_ == LRDirection::kLeft) {
-	    worldTransformAttack_.translation_ = worldTransform_.translation_ + Vector3{-attackOffset, 0.0f, 0.0f};
-	}
-	worldTransformAttack_.rotation_ = worldTransform_.rotation_;*/
+	
 
 	// 攻撃用ワールドトランスフォームの計算
 	// 攻撃オフセット値（横方向と縦方向）
@@ -232,14 +223,23 @@ void Player::BehaviorAttackUpdate() {
 	bool isUpInput = Input::GetInstance()->PushKey(DIK_UP) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) || state_.Gamepad.sThumbLY > deadZone;
 
 	bool isDownInput = Input::GetInstance()->PushKey(DIK_DOWN) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN) || state_.Gamepad.sThumbLY < -deadZone;
+	bool isLRInput = Input::GetInstance()->PushKey(DIK_A)|| Input::GetInstance()->PushKey(DIK_D) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) || (state_.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) || state_.Gamepad.sThumbLX < -deadZone|| state_.Gamepad.sThumbLX > deadZone;
 
 	// プレイヤーの現在位置
 	Vector3 playerPos = worldTransform_.translation_;
 
 	// 基本の回転はプレイヤーに合わせる
 	worldTransformAttack_.rotation_ = worldTransform_.rotation_;
+	if (isLRInput) {
+			// 上下入力がない場合：キャラクターの向き（左右）に配置
+		if (GetDirection() == LRDirection::kRight) {
+			worldTransformAttack_.translation_ = playerPos + Vector3{attackOffsetX, 0.0f, 0.0f};
+		} else {
+			worldTransformAttack_.translation_ = playerPos + Vector3{-attackOffsetX, 0.0f, 0.0f};
+		}
+	}
 
-	if (isUpInput) {
+	else if (isUpInput) {
 		// 上入力がある場合：上に配置
 		worldTransformAttack_.translation_ = playerPos + Vector3{0.0f, attackOffsetY, 0.0f};
 		// worldTransformAttack_.rotation_ = worldTransform_.rotation_;
@@ -273,7 +273,7 @@ void Player::BehaviorAttackUpdate() {
 	worldTransformAttack_.scale_ = {1.0f, 1.0f, 1.0f};
 }
 void Player::BehaviorDashUpdate() {
-	const Vector3 dashVelocity = {0.4f, 0.0f, 0.0f};
+	const Vector3 dashVelocity = {dashSpeed, 0.0f, 0.0f};
 	// velocity_ = {0.0f, 0.0f, 0.0f}; // 攻撃時は移動しない
 	// Vector3 velocity = {};
 	dashParameter_++;
@@ -318,11 +318,11 @@ void Player::BehaviorDashUpdate() {
 			dashPhase_ = DashPhase::kUnknown; // 初期化
 			dashParameter_ = 0;
 			// ダッシュの慣性を引き継ぐ
-			if (GetDirection() == LRDirection::kRight) {
-				velocity_.x = +kLimitRunSpeed * 0.8f; // 通常移動の上限速度の80%でスタート
-			} else {
-				velocity_.x = -kLimitRunSpeed * 0.8f;
-			}
+			//if (GetDirection() == LRDirection::kRight) {
+			//	velocity_.x = +kLimitRunSpeed * 0.4f; // 通常移動の上限速度の80%でスタート
+			//} else {
+			//	velocity_.x = -kLimitRunSpeed * 0.4f;
+			//}
 		}
 		// 攻撃SE再生
 
@@ -340,12 +340,12 @@ void Player::BehaviorDashUpdate() {
 			behaviorRequest_ = Behavior::kRoot;
 			dashPhase_ = DashPhase::kUnknown; // 初期化
 			dashParameter_ = 0;
-			// ダッシュの慣性を引き継ぐ
-			if (GetDirection() == LRDirection::kRight) {
-				velocity_.x = +kLimitRunSpeed * 0.8f; // 通常移動の上限速度の80%でスタート
-			} else {
-				velocity_.x = -kLimitRunSpeed * 0.8f;
-			}
+			//// ダッシュの慣性を引き継ぐ
+			//if (GetDirection() == LRDirection::kRight) {
+			//	velocity_.x = +kLimitRunSpeed * 0.8f; // 通常移動の上限速度の80%でスタート
+			//} else {
+			//	velocity_.x = -kLimitRunSpeed * 0.8f;
+			//}
 		}
 		break;
 	}
@@ -523,7 +523,7 @@ void Player::inputMove() {
 		}
 		// 優先順位3: それ以外（空中にいて壁にも触れていない）なら「空中ジャンプ」
 		else if (jumpCount_ < kLimitJumpCount) {
-			velocity_.y += (kJumpAcceleration*1.5f)/ 60.0f;
+			velocity_.y += (kJumpAcceleration)/ 60.0f;
 			jumpCount_++; // なってなければジャンプSE再生
 			if (!Audio::GetInstance()->IsPlaying(jumpSEHandle_)) {
 				Audio::GetInstance()->PlayWave(jumpSEHandle_, false);

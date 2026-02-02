@@ -130,7 +130,7 @@ private:
 	// 落下速度制限
 	static inline const float kLimitFallSpeed = 0.5f;
 	// 跳躍加速度
-	static inline const float kJumpAcceleration = 12.0f;
+	static inline const float kJumpAcceleration = 12.0f*1.5f;
 	static inline const int kMaxJumpCount = 2;
 	std::unique_ptr<MapCollider> mapCollider_;
 
@@ -185,7 +185,7 @@ private:
 	// ジャンプ回数制限
 	static inline const uint32_t kLimitJumpCount = 2;
 
-	static inline const float kAttenuationGround = 0.2f; ///< 地面にいるときの減速
+	static inline const float kAttenuationGround = 0.75f; ///< 地面にいるときの減速
 
 	// 壁に触れている時の落下速度
 
@@ -201,4 +201,5 @@ private:
     int invincibleTimer_ = 0;
 
 	int knockbackTimer_ = 0;
+	const float dashSpeed = 0.25f;
 };
