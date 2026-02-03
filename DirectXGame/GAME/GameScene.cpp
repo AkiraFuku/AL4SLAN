@@ -345,13 +345,7 @@ void GameScene::ChangePhase() {
 
 // ゲームシーンの更新
 void GameScene::Update() {
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE) && Audio::GetInstance()->IsPlaying(playBGMHandle_)) {
-
-		// 音声を停止する
-
-		Audio::GetInstance()->StopWave(playBGMHandle_);
-		playBGMHandle_ = 0;
-	}
+	
 	PauseResult res = pauseMenu_->Update();
 
 	if (res == PauseResult::kGoTitle) {
