@@ -109,6 +109,9 @@ private:
     // カウントダウンタイマー (秒数計測用)
     float countdownTimer_ = 0.0f;
 
+
+	uint32_t DeathSEHandle_=0;
+
     // スプライト
     KamataEngine::Sprite* spriteCount_ = nullptr;
    

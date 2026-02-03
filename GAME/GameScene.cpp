@@ -269,6 +269,9 @@ void GameScene::Initialize() {
 	Vector2 centerPos = {WinApp::kWindowWidth / 2.0f, WinApp::kWindowHeight / 2.0f};
 	spriteCount_->SetPosition(centerPos);
 	spriteCount_->SetAnchorPoint({0.5f, 0.5f});
+
+	DeathSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/dead.wav");
+
 }
 void GameScene::ChangePhase() {
 	switch (phase_) {
@@ -286,7 +289,7 @@ void GameScene::ChangePhase() {
 
 			phase_ = Phase::kDeath;
 			resultMenu_->Initialize(false); // 失敗で初期化
-
+			Audio::GetInstance()->PlayWave(DeathSEHandle_, false);
 			// デスパーティクルの生成（死亡した瞬間だけ実行するように if文の中に入れます）
 			Vector3 deathParticlesPosition = player_->GetWorldTransform().translation_;
 			if (deathParticlesPosition.y < -2.5f) {
@@ -304,10 +307,14 @@ void GameScene::ChangePhase() {
 		} else if (goal_->isGoal()) {
 			phase_ = Phase::kClear;
 			resultMenu_->Initialize(true);
+			cameraControlle_->TriggerClearFocus();
+			//cameraControlle_->SetClearOffset();
 		}
 		break;
 
 	case Phase::kDeath:
+
+		
 
 		break;
 
@@ -488,6 +495,7 @@ void GameScene::Update() {
 	case GameScene::Phase::kClear:
 		// クリア処理
 		// ここでは何もしないが、必要に応じてクリア処理を追加する
+		cameraControlle_->Update();
 		worldTransformClear_.translation_ = {camera_.translation_.x, camera_.translation_.y, -2.5f};
 		WorldTransformUpdate(&worldTransformClear_);
 		{
@@ -513,7 +521,7 @@ void GameScene::Update() {
 		}
 
 		skydome_->Update();
-		cameraControlle_->Update();
+		
 		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}

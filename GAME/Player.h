@@ -178,7 +178,7 @@ private:
 
 	uint32_t attackSEHandle_=0;
 
-	uint32_t DeathSEHandle_=0;
+	
 
 	// ジャンプ回数
 	uint32_t jumpCount_ = 0;

@@ -92,11 +92,7 @@ void TitleScene::Update() {
 		break;
 	
 		
-	}
-	// fade_->Update();
-	/*if (Input::GetInstance()->PushKey(DIK_SPACE)) {
-	    finished_ = true;
-	}*/
+	};
 	counter_ += 1.0f / 60.0f;
 	counter_ = std::fmod(counter_, kTimeTitleMove);
 
@@ -104,8 +100,12 @@ void TitleScene::Update() {
 
 	worldTransformTitle_.translation_.y = std::sin(angle) + 10.0f;
 
+	worldTransformPlayer_.rotation_.y +=( 0.65f * std::numbers::pi_v<float>)/60.0f;
+
 	camera_.TransferMatrix();
 
+	Vector3 skydomeRotate = {skydome_->GetRotation().x,skydome_->GetRotation().y-(0.65f * std::numbers::pi_v<float>)/60.0f,skydome_->GetRotation().z};
+	skydome_->SetRotation(skydomeRotate);
 	// スカイドームの更新
 	skydome_->Update();
 

@@ -3,6 +3,8 @@
 #include "Player.h"  
 #include "MassFunction.h"  
 
+#include <iostream>
+
 using namespace KamataEngine;  
 using namespace std;
 void CameraController::Initialize(Camera *camera){  
@@ -11,6 +13,20 @@ void CameraController::Initialize(Camera *camera){
 
 void CameraController::Update(){  
 	const WorldTransform& targetWorldTransform = target_->GetWorldTransform();  
+
+	if (isClearPhase_) {
+		// --- クリアフェーズ：プレイヤーを中央に捉えてズーム ---
+        
+        // 1. 目標地点は「プレイヤーの座標 + クリア用オフセット」
+        // 先読み（velocity）は入れないことで中央に固定する
+        desetination_ = targetWorldTransform.translation_ + clearOffset_;
+
+        // 2. 線形補間(Lerp)で滑らかに移動させる
+        // 0.1f は追従速度。お好みで調整してください
+        camera_->translation_ = Lerp( camera_->translation_, desetination_, 0.1f);
+	} else {
+	
+
 	
 	desetination_ =targetWorldTransform.translation_+targetOffset_+target_->getVelocity()*kVelocityBias;
 	camera_->translation_ = Lerp(camera_->translation_, desetination_, 0.1f); // 緩やかに追従するように補間
@@ -30,6 +46,9 @@ void CameraController::Update(){
         // タイマーを減らす
         shakeTimer_ -= 1.0f / 60.0f; // 120.0fだと減りが遅いので、60fps基準なら60.0fが自然です
     }
+
+	//Move move={{desetination_.x+targetMargin_.left,desetination_.y+targetMargin_.bottom},{desetination_.x+targetMargin_.right,desetination_.y+targetMargin_.top}};
+
 	camera_->translation_.x=max(camera_->translation_.x,
 		desetination_.x+targetMargin_.left);
 	camera_->translation_.x=min(camera_->translation_.x,
@@ -39,12 +58,15 @@ void CameraController::Update(){
 	camera_->translation_.y=min(camera_->translation_.y,
 		desetination_.y+targetMargin_.top);
 
-
+//	camera_->translation_.x =clamp(camera_->translation_.x,moveArea_.right, moveArea_.left);
+//	camera_->translation_.y =clamp(camera_->translation_.y,moveArea_.bottom, moveArea_.top);
 	// 修正: std::max と std::min を使用するために std:: を明示的に指定  
 	camera_->translation_.x = max(camera_->translation_.x, moveArea_.left); // x座標を0以上に制限  
 	camera_->translation_.x = min(camera_->translation_.x, moveArea_.right); // x座標をmoveAreaの右端以下に制限  
 	camera_->translation_.y = min(camera_->translation_.y, moveArea_.bottom); // y座標を0以上に制限  
 	camera_->translation_.y = max(camera_->translation_.y, moveArea_.top); // y座標をmoveAreaの下端以下に制限  
+	}
+
 	camera_->UpdateMatrix();  
 }  
 

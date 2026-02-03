@@ -37,10 +37,15 @@ void Player::Initialize(Model* model, Model* modelAttack, uint32_t textureHandle
 	// sound
 	jumpSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/jump.wav");
 	attackSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/attack.wav");
-	DeathSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/dead.wav");
+	
 }
 
 void Player::Update() {
+
+	//if (isDead_) {
+	//Audio::GetInstance()->PlayWave(DeathSEHandle_, false);
+
+	//}
 
 	Input::GetInstance()->GetJoystickState(0, state_);
 
@@ -786,6 +791,6 @@ void Player::OnCollision(const Enemy* enemy) {
 	// 上方向にも少し跳ね上げる（地面にめり込まないようにするため）
 	velocity_.y = knockbackForceY;
 	// isDead_ = true;
-	Audio::GetInstance()->PlayWave(DeathSEHandle_, false);
+	
 	// velocity_+=Vector3(0.0f,kJumpAcceleration/60.0f,0.0f);
 }
