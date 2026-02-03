@@ -46,5 +46,6 @@ private:
 	Skydome* skydome_ = nullptr;
 
 	
-	
+	uint32_t bgmHandle_ = 0;
+	uint32_t playHandle_ = 0;
 };

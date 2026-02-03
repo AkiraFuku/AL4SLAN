@@ -83,8 +83,8 @@ void GameScene::GenerateEnemy() {
 	for (uint32_t i = 0; i < numBlockVertical; i++) {
 		for (uint32_t j = 0; j < numBlockHorizontal; j++) {
 			if (mapchipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kEnemy) {
-				Enemy* newEnemy ;
-				switch (mapchipField_->GetMapChipSubIDByIndex(j,i)) {
+				Enemy* newEnemy;
+				switch (mapchipField_->GetMapChipSubIDByIndex(j, i)) {
 				case 0:
 				default:
 					newEnemy = new Enemy();
@@ -271,7 +271,11 @@ void GameScene::Initialize() {
 	spriteCount_->SetAnchorPoint({0.5f, 0.5f});
 
 	DeathSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/dead.wav");
-
+	bgmHandle_ = Audio::GetInstance()->LoadWave("mokugyo.wav");
+	playHandle_ = bgmHandle_;
+	Audio::GetInstance()->SetVolume(playHandle_, 0.0f);
+	Audio::GetInstance()->PlayWave(playHandle_,true);
+	Audio::GetInstance()->StopWave(playHandle_);
 }
 void GameScene::ChangePhase() {
 	switch (phase_) {
@@ -300,21 +304,25 @@ void GameScene::ChangePhase() {
 				delete deathParticles_;
 				deathParticles_ = nullptr;
 			}
-
+			// if (Audio::GetInstance()->IsPlaying(playHandle_)) {
+			Audio::GetInstance()->PauseWave(playHandle_);
+			//}
 			deathParticles_ = new DeathParticles;
 			deathParticles_->Initialze(deathParticlesModel_, &camera_, deathParticlesPosition);
 
 		} else if (goal_->isGoal()) {
 			phase_ = Phase::kClear;
 			resultMenu_->Initialize(true);
+			clearAnimationTimer_ = 0.0f;
 			cameraControlle_->TriggerClearFocus();
-			//cameraControlle_->SetClearOffset();
+			// if (Audio::GetInstance()->IsPlaying(playHandle_)) {
+			Audio::GetInstance()->PauseWave(playHandle_);
+			//}
+			// cameraControlle_->SetClearOffset();
 		}
 		break;
 
 	case Phase::kDeath:
-
-		
 
 		break;
 
@@ -521,7 +529,7 @@ void GameScene::Update() {
 		}
 
 		skydome_->Update();
-		
+
 		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
@@ -530,6 +538,12 @@ void GameScene::Update() {
 		break;
 
 	case GameScene::Phase::kFadeOut:
+		if (Audio::GetInstance()->IsPlaying(playHandle_)) {
+
+			// 音声を停止する
+
+			Audio::GetInstance()->StopWave(playHandle_);
+		}
 		// フェードの更新
 		Fade::GetInstance()->Update();
 		if (Fade::GetInstance()->IsFinished()) {
@@ -564,7 +578,7 @@ void GameScene::Update() {
 				SceneManager::GetInstance()->ChangeScene(SceneType::kGame);
 			}
 		}
-
+		
 		skydome_->Update();
 		cameraControlle_->Update();
 		for (Enemy* enemy : enemies_) {
