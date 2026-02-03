@@ -270,13 +270,13 @@ void GameScene::Initialize() {
 	spriteCount_->SetPosition(centerPos);
 	spriteCount_->SetAnchorPoint({0.5f, 0.5f});
 
-	//DeathSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/dead.wav");
+	DeathSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/dead.wav");
 	bgmHandle_ = Audio::GetInstance()->LoadWave("mokugyo.wav");
-	playHandle_ = bgmHandle_;
-	Audio::GetInstance()->SetVolume(playHandle_, 0.9f);
-	Audio::GetInstance()->PlayWave(playHandle_,true);
+	playBGMHandle_ =Audio::GetInstance()->PlayWave(bgmHandle_, true); ;
+	Audio::GetInstance()->SetVolume(playBGMHandle_, 0.9f);
+	
 	// 停止する場合は再生ハンドルを渡す
-	//Audio::GetInstance()->StopWave(playHandle_);
+	// Audio::GetInstance()->StopWave(playHandle_);
 }
 void GameScene::ChangePhase() {
 	switch (phase_) {
@@ -294,7 +294,7 @@ void GameScene::ChangePhase() {
 
 			phase_ = Phase::kDeath;
 			resultMenu_->Initialize(false); // 失敗で初期化
-		//	Audio::GetInstance()->PlayWave(DeathSEHandle_, false);
+			                                //	Audio::GetInstance()->PlayWave(DeathSEHandle_, false);
 			// デスパーティクルの生成（死亡した瞬間だけ実行するように if文の中に入れます）
 			Vector3 deathParticlesPosition = player_->GetWorldTransform().translation_;
 			if (deathParticlesPosition.y < -2.5f) {
@@ -305,9 +305,9 @@ void GameScene::ChangePhase() {
 				delete deathParticles_;
 				deathParticles_ = nullptr;
 			}
-			 if (Audio::GetInstance()->IsPlaying(playHandle_)) {
-			Audio::GetInstance()->StopWave(playHandle_);
-			Audio::GetInstance()->SetVolume(playHandle_, 0.0f);
+			if (Audio::GetInstance()->IsPlaying(playBGMHandle_)) {
+				Audio::GetInstance()->StopWave(playBGMHandle_);
+				Audio::GetInstance()->SetVolume(playBGMHandle_, 0.0f);
 			}
 			deathParticles_ = new DeathParticles;
 			deathParticles_->Initialze(deathParticlesModel_, &camera_, deathParticlesPosition);
@@ -317,9 +317,9 @@ void GameScene::ChangePhase() {
 			resultMenu_->Initialize(true);
 			clearAnimationTimer_ = 0.0f;
 			cameraControlle_->TriggerClearFocus();
-			 if (Audio::GetInstance()->IsPlaying(playHandle_)) {
-			Audio::GetInstance()->StopWave(playHandle_);
-			Audio::GetInstance()->SetVolume(playHandle_, 0.0f);
+			if (Audio::GetInstance()->IsPlaying(playBGMHandle_)) {
+				Audio::GetInstance()->StopWave(playBGMHandle_);
+				Audio::GetInstance()->SetVolume(playBGMHandle_, 0.0f);
 			}
 			// cameraControlle_->SetClearOffset();
 		}
@@ -341,14 +341,13 @@ void GameScene::ChangePhase() {
 
 // ゲームシーンの更新
 void GameScene::Update() {
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE) && Audio::GetInstance()->IsPlaying(playHandle_)) {
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE) && Audio::GetInstance()->IsPlaying(playBGMHandle_)) {
 
-    // 音声を停止する
+		// 音声を停止する
 
-    Audio::GetInstance()->StopWave(playHandle_);
-	playHandle_ = 0;
-
-}
+		Audio::GetInstance()->StopWave(playBGMHandle_);
+		playBGMHandle_ = 0;
+	}
 	PauseResult res = pauseMenu_->Update();
 
 	if (res == PauseResult::kGoTitle) {
@@ -516,7 +515,10 @@ void GameScene::Update() {
 		cameraControlle_->Update();
 		worldTransformClear_.translation_ = {camera_.translation_.x, camera_.translation_.y, -2.5f};
 		WorldTransformUpdate(&worldTransformClear_);
-		{
+		// クリア演出タイマーを進める
+		if (clearAnimationTimer_ < kClearAnimationDuration) {
+			clearAnimationTimer_ += 1.0f / 60.0f;
+		} else {
 			ResultMenu::ResultSelection result = resultMenu_->Update();
 
 			if (result == ResultMenu::ResultSelection::kNext) {
@@ -548,12 +550,12 @@ void GameScene::Update() {
 		break;
 
 	case GameScene::Phase::kFadeOut:
-		if (Audio::GetInstance()->IsPlaying(playHandle_)) {
+		if (Audio::GetInstance()->IsPlaying(playBGMHandle_)) {
 
 			// 音声を停止する
 
-			Audio::GetInstance()->StopWave(playHandle_);
-			playHandle_ = 0;
+			Audio::GetInstance()->StopWave(playBGMHandle_);
+			playBGMHandle_ = 0;
 		}
 		// フェードの更新
 		Fade::GetInstance()->Update();
@@ -589,7 +591,7 @@ void GameScene::Update() {
 				SceneManager::GetInstance()->ChangeScene(SceneType::kGame);
 			}
 		}
-		
+
 		skydome_->Update();
 		cameraControlle_->Update();
 		for (Enemy* enemy : enemies_) {
