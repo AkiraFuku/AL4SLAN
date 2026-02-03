@@ -35,8 +35,8 @@ void Player::Initialize(Model* model, Model* modelAttack, uint32_t textureHandle
 	knockbackTimer_ = 0;
 
 	// sound
-	jumpSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/jump.wav");
-	attackSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/attack.wav");
+/*	jumpSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/jump.wav");
+	*/attackSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/attack.wav");
 	
 }
 
@@ -219,10 +219,10 @@ void Player::BehaviorAttackUpdate() {
 		}
 
 		// 攻撃SE再生
-		if (!Audio::GetInstance()->IsPlaying(attackSEHandle_) && !attackSEPlayed_) {
-			Audio::GetInstance()->PlayWave(attackSEHandle_, false);
-			attackSEPlayed_ = true; // SE再生中フラグを立てる
-		}
+		//if (!Audio::GetInstance()->IsPlaying(attackSEHandle_) && !attackSEPlayed_) {
+		//	Audio::GetInstance()->PlayWave(attackSEHandle_, false);
+		//	attackSEPlayed_ = true; // SE再生中フラグを立てる
+		//}
 
 		break;
 	}
@@ -545,9 +545,9 @@ void Player::inputMove() {
 			jumpParameter_ = 0;
 			isLanding_ = false; // 着地演出と被らないようにリセット
 
-			if (!Audio::GetInstance()->IsPlaying(jumpSEHandle_)) {
+			/*if (!Audio::GetInstance()->IsPlaying(jumpSEHandle_)) {
 				Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
-			}
+			}*/
 			// 通常ジャンプ時のX速度は維持（必要ならここで調整）
 		}
 		// 優先順位2: 地面にいなくて、壁に触れているなら「壁ジャンプ」
@@ -560,9 +560,9 @@ void Player::inputMove() {
 			}
 			// 壁ジャンプ時はジャンプ回数をリセット
 			jumpCount_ = 0;
-			if (!Audio::GetInstance()->IsPlaying(jumpSEHandle_)) {
+			/*if (!Audio::GetInstance()->IsPlaying(jumpSEHandle_)) {
 				Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
-			}
+			}*/
 		}
 		// 優先順位3: それ以外（空中にいて壁にも触れていない）なら「空中ジャンプ」
 		else if (jumpCount_ < kLimitJumpCount) {

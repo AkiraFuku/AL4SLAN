@@ -270,7 +270,7 @@ void GameScene::Initialize() {
 	spriteCount_->SetPosition(centerPos);
 	spriteCount_->SetAnchorPoint({0.5f, 0.5f});
 
-	DeathSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/dead.wav");
+	//DeathSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/dead.wav");
 	bgmHandle_ = Audio::GetInstance()->LoadWave("mokugyo.wav");
 	playHandle_ = bgmHandle_;
 	Audio::GetInstance()->SetVolume(playHandle_, 0.9f);
@@ -294,7 +294,7 @@ void GameScene::ChangePhase() {
 
 			phase_ = Phase::kDeath;
 			resultMenu_->Initialize(false); // 失敗で初期化
-			Audio::GetInstance()->PlayWave(DeathSEHandle_, false);
+		//	Audio::GetInstance()->PlayWave(DeathSEHandle_, false);
 			// デスパーティクルの生成（死亡した瞬間だけ実行するように if文の中に入れます）
 			Vector3 deathParticlesPosition = player_->GetWorldTransform().translation_;
 			if (deathParticlesPosition.y < -2.5f) {
@@ -307,6 +307,7 @@ void GameScene::ChangePhase() {
 			}
 			 if (Audio::GetInstance()->IsPlaying(playHandle_)) {
 			Audio::GetInstance()->StopWave(playHandle_);
+			Audio::GetInstance()->SetVolume(playHandle_, 0.0f);
 			}
 			deathParticles_ = new DeathParticles;
 			deathParticles_->Initialze(deathParticlesModel_, &camera_, deathParticlesPosition);
@@ -318,6 +319,7 @@ void GameScene::ChangePhase() {
 			cameraControlle_->TriggerClearFocus();
 			 if (Audio::GetInstance()->IsPlaying(playHandle_)) {
 			Audio::GetInstance()->StopWave(playHandle_);
+			Audio::GetInstance()->SetVolume(playHandle_, 0.0f);
 			}
 			// cameraControlle_->SetClearOffset();
 		}
@@ -551,6 +553,7 @@ void GameScene::Update() {
 			// 音声を停止する
 
 			Audio::GetInstance()->StopWave(playHandle_);
+			playHandle_ = 0;
 		}
 		// フェードの更新
 		Fade::GetInstance()->Update();
