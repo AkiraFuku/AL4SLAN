@@ -9,9 +9,15 @@ void Goal::Initialize(Model* model, Camera* camera, Vector3& position) {
 	worldTransform_.translation_ = position;
 }
 void Goal::Update() {
-	if (Input::GetInstance()->PushKey(DIK_G)) {
+#ifdef DEBUG
+if (Input::GetInstance()->PushKey(DIK_G)) {
 		isGoal_ = true; // デバッグ用にゴールフラグを立てる
 	}
+#endif // DEBUG
+
+	if (isAnimating_) {
+       worldTransform_.translation_.y = Lerp(worldTransform_.translation_.y, targetY_, 0.1f);
+    }
 
 	WorldTransformUpdate(&worldTransform_);
 }
@@ -33,4 +39,14 @@ void Goal::OnCollision(const Player* player) {
 	
 	
 
+}
+
+void Goal::StartClearAnimation(float playerY) {
+
+	
+    if (!isAnimating_) {
+        isAnimating_ = true;
+        // プレイヤーの頭上を指定距離分プラスした場所を目標にする
+        targetY_ = playerY + kHeightAbovePlayer;
+    }
 }

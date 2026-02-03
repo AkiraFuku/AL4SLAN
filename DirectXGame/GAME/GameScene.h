@@ -108,10 +108,11 @@ private:
 	float countdownTimer_ = 0.0f;
 
 	float clearAnimationTimer_ = 0.0f;
-	const float kClearAnimationDuration = 2.0f;
+	const float kClearAnimationDuration = 3.0f;
 	uint32_t DeathSEHandle_ = 0;
 	uint32_t bgmHandle_ = 0;
 	uint32_t playBGMHandle_ = 0;
+	uint32_t playSEHandle_ = 0;
 
 	// スプライト
 	KamataEngine::Sprite* spriteCount_ = nullptr;

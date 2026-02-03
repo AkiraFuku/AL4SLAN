@@ -104,6 +104,11 @@ public:
 
 	// 行動状態の設定
 	bool isAttack() const;
+	//void StartClearAnimation(const Vector3& cameraPos);
+	// ゴール後の自動移動を開始
+    void StartGrabAnimation(const Vector3& targetPos, const Vector3& cameraPos);
+
+	bool isMoving(){return isMovingToTarget_ ;}
 
 private:
 	WorldTransform worldTransform_;                  ///< ワールドトランスフォーム
@@ -175,9 +180,12 @@ private:
 	XINPUT_STATE prevState_ = {};
 
 	uint32_t jumpSEHandle_=0;
+	uint32_t jumpSEPlayHandle_=0;
 
 	uint32_t attackSEHandle_=0;
+	uint32_t attackSEPlayHandle_=0;
 
+	
 	
 
 	// ジャンプ回数
@@ -210,4 +218,16 @@ const int kTimeJumpSquash = 10; // 縮んでいる時間（フレーム）
 bool isWallHit_ = false;      // 壁衝突フラグ
 int wallHitParameter_ = 0;    // アニメーション用タイマー
 static const int kTimeWallHit = 10; // アニメーションにかかる時間（フレーム）
+
+bool isClearAnimation_ = false;
+   
+    
+    // 補間用の係数
+    static inline const float kRotationSpeed = 0.1f;
+
+	
+    bool isMovingToTarget_ = false; // 位置調整中かどうかのフラグ
+    Vector3 autoMoveTarget_ = {0.0f, 0.0f, 0.0f};
+    Vector3 cameraPosForLookAt_ = {0.0f, 0.0f, 0.0f};
+    Vector3 targetRotation_ = {0.0f, 0.0f, 0.0f};
 };

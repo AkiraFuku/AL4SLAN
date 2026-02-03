@@ -61,11 +61,8 @@ void StageSelectScene::Initialize() {
 	spriteCursor_->SetAnchorPoint({ 0.5f, 0.5f });
 	spriteCursor_->SetRotation(std::numbers::pi_v<float>/2.0f);
 
-	// 6. ヘッダー画像の生成（"SELECT STAGE" などのタイトル文字）
-	// 画像がない場合はコメントアウトしてください
-	// uint32_t texHeader = TextureManager::Load("Header.png");
-	// spriteHeader_ = Sprite::Create(texHeader, { WinApp::kWindowWidth / 2.0f, 100.0f });
-	// spriteHeader_->SetAnchorPoint({ 0.5f, 0.5f });
+	bgmHandle_ = Audio::GetInstance()->LoadWave("Sound/BGM/GameSceneBGM.wav");
+	playHandle_ = Audio::GetInstance()->PlayWave(bgmHandle_, true);
 }
 
 void StageSelectScene::Update() {
@@ -134,8 +131,16 @@ void StageSelectScene::Update() {
 
 	case StageSelectScene::Phase::kFadeOut:
 		Fade::GetInstance()->Update();
+		if (bgmVolume_ > 0.0f) {
+        bgmVolume_ -= kFadeOutSpeed;
+        if (bgmVolume_ < 0.0f) bgmVolume_ = 0.0f;
+        
+        // 音量を反映 (Audioクラスの仕様に合わせてメソッド名は調整してください)
+        Audio::GetInstance()->SetVolume(playHandle_, bgmVolume_);
+    }
 		if (Fade::GetInstance()->IsFinished()) {
-
+			Audio::GetInstance()->StopWave(playHandle_);
+			// フェードアウトが終わったら、次のシーンへ
 			// 【修正】0番ならタイトル、それ以外ならゲームへ
 			// elseを使わないと両方実行されるバグを防ぎます
 			if (selectStageNo_ == 0) {

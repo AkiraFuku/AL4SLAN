@@ -35,15 +35,40 @@ void Player::Initialize(Model* model, Model* modelAttack, uint32_t textureHandle
 	knockbackTimer_ = 0;
 
 	// sound
-/*	jumpSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/jump.wav");
-	*/attackSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/attack.wav");
-	
+	jumpSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/jump.wav");
+	attackSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/attack.wav");
+
+
 }
 
 void Player::Update() {
 
-	//if (isDead_) {
-	//Audio::GetInstance()->PlayWave(DeathSEHandle_, false);
+	if (isClearAnimation_) {
+        if (isMovingToTarget_) {
+            // 1. 位置調整（目的地へじわっと移動）
+            worldTransform_.translation_ = Lerp(worldTransform_.translation_, autoMoveTarget_, 0.1f);
+
+            // 目的地に十分近づいたら回転フェーズへ
+            float distance = Length(Subtract(autoMoveTarget_, worldTransform_.translation_));
+            if (distance < 0.1f) {
+                isMovingToTarget_ = false;
+                
+                // カメラの方を向く角度を計算
+                Vector3 toCamera = Subtract(cameraPosForLookAt_, worldTransform_.translation_);
+                targetRotation_.y = std::atan2(toCamera.x, toCamera.z);
+                targetRotation_.z = 0.3f; // 左に傾ける
+            }
+        } else {
+            // 2. 回転アニメーション
+            worldTransform_.rotation_.y = Lerp(worldTransform_.rotation_.y, targetRotation_.y, 0.1f);
+            worldTransform_.rotation_.z = Lerp(worldTransform_.rotation_.z, targetRotation_.z, 0.1f);
+        }
+        
+     WorldTransformUpdate(&worldTransform_);
+        return;
+    }
+	// if (isDead_) {
+	// Audio::GetInstance()->PlayWave(DeathSEHandle_, false);
 
 	//}
 
@@ -131,21 +156,20 @@ void Player::BehaviorRootUpdate() {
 
 		directionCtrl_.ImmediateTurn(); // 即座に向く
 	}
-if (isWallHit_) {
-        wallHitParameter_++;
-        float t = static_cast<float>(wallHitParameter_) / static_cast<float>(kTimeWallHit);
+	if (isWallHit_) {
+		wallHitParameter_++;
+		float t = static_cast<float>(wallHitParameter_) / static_cast<float>(kTimeWallHit);
 
-        // 横(Z)に潰れて(0.7倍)、縦(Y)に伸びる(1.2倍)状態から、1.0倍に戻していく
-        // ※左右どちらの壁に当たってもいいようにZを制御
-        worldTransform_.scale_.z = EaseOut(0.7f, 1.0f, t); 
-        worldTransform_.scale_.y = EaseOut(1.2f, 1.0f, t);
+		// 横(Z)に潰れて(0.7倍)、縦(Y)に伸びる(1.2倍)状態から、1.0倍に戻していく
+		// ※左右どちらの壁に当たってもいいようにZを制御
+		worldTransform_.scale_.z = EaseOut(0.7f, 1.0f, t);
+		worldTransform_.scale_.y = EaseOut(1.2f, 1.0f, t);
 
-        if (wallHitParameter_ >= kTimeWallHit) {
-            isWallHit_ = false;
-            worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
-        }
-    } 
-    else if (isLanding_) {
+		if (wallHitParameter_ >= kTimeWallHit) {
+			isWallHit_ = false;
+			worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
+		}
+	} else if (isLanding_) {
 		landingParameter_++;
 
 		float t = static_cast<float>(landingParameter_) / static_cast<float>(kTimeLanding);
@@ -219,10 +243,10 @@ void Player::BehaviorAttackUpdate() {
 		}
 
 		// 攻撃SE再生
-		//if (!Audio::GetInstance()->IsPlaying(attackSEHandle_) && !attackSEPlayed_) {
-		//	Audio::GetInstance()->PlayWave(attackSEHandle_, false);
-		//	attackSEPlayed_ = true; // SE再生中フラグを立てる
-		//}
+		if (!Audio::GetInstance()->IsPlaying(attackSEPlayHandle_) && !attackSEPlayed_) {
+			attackSEPlayHandle_=Audio::GetInstance()->PlayWave(attackSEHandle_, false);
+			attackSEPlayed_ = true; // SE再生中フラグを立てる
+		}
 
 		break;
 	}
@@ -413,6 +437,33 @@ bool Player::isAttack() const {
 	return false;
 }
 
+//void Player::StartClearAnimation(const Vector3& cameraPos) {
+//
+//	isClearAnimation_ = true;
+//
+//    // 1. カメラの方を向くY軸角度を計算
+//    // プレイヤーからカメラへのベクトル
+//    Vector3 toCamera = {
+//        cameraPos.x - worldTransform_.translation_.x,
+//        0.0f, // 高さ方向は無視して水平に振り向く場合
+//        cameraPos.z - worldTransform_.translation_.z
+//    };
+//    
+//    // atan2を使って角度(ラジアン)を求める
+//    targetRotation_.y = std::atan2(toCamera.x, toCamera.z);
+//
+//    // 2. カメラから見て左に傾ける (Z軸回転)
+//    // 度数法でいう15度〜20度くらいをラジアンに変換 (約0.3f)
+//    targetRotation_.z = 0.3f;
+//}
+
+void Player::StartGrabAnimation(const Vector3& targetPos, const Vector3& cameraPos) {
+	isClearAnimation_ = true;
+    isMovingToTarget_ = true;
+    autoMoveTarget_ = targetPos;
+    cameraPosForLookAt_ = cameraPos;
+}
+
 void Player::Draw() {
 	// 無敵時間中は点滅させる処理
 	if (invincibleTimer_ > 0) {
@@ -546,7 +597,7 @@ void Player::inputMove() {
 			isLanding_ = false; // 着地演出と被らないようにリセット
 
 			/*if (!Audio::GetInstance()->IsPlaying(jumpSEHandle_)) {
-				Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
+			    Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
 			}*/
 			// 通常ジャンプ時のX速度は維持（必要ならここで調整）
 		}
@@ -561,15 +612,15 @@ void Player::inputMove() {
 			// 壁ジャンプ時はジャンプ回数をリセット
 			jumpCount_ = 0;
 			/*if (!Audio::GetInstance()->IsPlaying(jumpSEHandle_)) {
-				Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
+			    Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
 			}*/
 		}
 		// 優先順位3: それ以外（空中にいて壁にも触れていない）なら「空中ジャンプ」
 		else if (jumpCount_ < kLimitJumpCount) {
 			velocity_.y += (kJumpAcceleration) / 60.0f;
 			jumpCount_++; // なってなければジャンプSE再生
-			if (!Audio::GetInstance()->IsPlaying(jumpSEHandle_)) {
-				Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
+			if (!Audio::GetInstance()->IsPlaying(jumpSEPlayHandle_)) {
+				jumpSEPlayHandle_=Audio::GetInstance()->PlayWave(jumpSEHandle_, false);
 			}
 		}
 	}
@@ -661,9 +712,9 @@ void Player::HitWall(const CollisionMapInfo& info) {
 	if (info.isWall) {
 		velocity_.x *= (1.0f - kAttenuationWall);
 		if (!tachWall_) {
-            isWallHit_ = true;
-            wallHitParameter_ = 0;
-        }
+			isWallHit_ = true;
+			wallHitParameter_ = 0;
+		}
 		tachWall_ = true;
 		return; // 確実に壁に触れているのでここで終了
 	}
@@ -791,6 +842,6 @@ void Player::OnCollision(const Enemy* enemy) {
 	// 上方向にも少し跳ね上げる（地面にめり込まないようにするため）
 	velocity_.y = knockbackForceY;
 	// isDead_ = true;
-	
+
 	// velocity_+=Vector3(0.0f,kJumpAcceleration/60.0f,0.0f);
 }

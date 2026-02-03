@@ -48,4 +48,6 @@ private:
 	
 	uint32_t bgmHandle_ = 0;
 	uint32_t playHandle_ = 0;
+	float bgmVolume_ = 1.0f; // 現在の音量 (1.0 = MAX)
+    const float kFadeOutSpeed = 1.0f / 60.0f; // 1秒(60フレーム)でフェードアウトする場合
 };

@@ -271,10 +271,11 @@ void GameScene::Initialize() {
 	spriteCount_->SetAnchorPoint({0.5f, 0.5f});
 
 	DeathSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/dead.wav");
-	bgmHandle_ = Audio::GetInstance()->LoadWave("mokugyo.wav");
-	playBGMHandle_ =Audio::GetInstance()->PlayWave(bgmHandle_, true); ;
-	Audio::GetInstance()->SetVolume(playBGMHandle_, 0.9f);
-	
+	bgmHandle_ = Audio::GetInstance()->LoadWave("Sound/BGM/Tracking.wav");
+	playBGMHandle_ = Audio::GetInstance()->PlayWave(bgmHandle_, true);
+	;
+	Audio::GetInstance()->SetVolume(playBGMHandle_, 0.25f);
+
 	// 停止する場合は再生ハンドルを渡す
 	// Audio::GetInstance()->StopWave(playHandle_);
 }
@@ -294,7 +295,7 @@ void GameScene::ChangePhase() {
 
 			phase_ = Phase::kDeath;
 			resultMenu_->Initialize(false); // 失敗で初期化
-			                                //	Audio::GetInstance()->PlayWave(DeathSEHandle_, false);
+			playSEHandle_ = Audio::GetInstance()->PlayWave(DeathSEHandle_, false);
 			// デスパーティクルの生成（死亡した瞬間だけ実行するように if文の中に入れます）
 			Vector3 deathParticlesPosition = player_->GetWorldTransform().translation_;
 			if (deathParticlesPosition.y < -2.5f) {
@@ -316,6 +317,9 @@ void GameScene::ChangePhase() {
 			phase_ = Phase::kClear;
 			resultMenu_->Initialize(true);
 			clearAnimationTimer_ = 0.0f;
+			Vector3 goalPos = goal_->GetWorldTransform().translation_;
+			player_->StartGrabAnimation(goalPos,camera_.translation_);
+			
 			cameraControlle_->TriggerClearFocus();
 			if (Audio::GetInstance()->IsPlaying(playBGMHandle_)) {
 				Audio::GetInstance()->StopWave(playBGMHandle_);
@@ -512,6 +516,10 @@ void GameScene::Update() {
 	case GameScene::Phase::kClear:
 		// クリア処理
 		// ここでは何もしないが、必要に応じてクリア処理を追加する
+		if (!player_->isMoving()) { 
+        goal_->StartClearAnimation(player_->GetWorldTransform().translation_.y);
+    }
+		player_->Update();
 		cameraControlle_->Update();
 		worldTransformClear_.translation_ = {camera_.translation_.x, camera_.translation_.y, -2.5f};
 		WorldTransformUpdate(&worldTransformClear_);
@@ -546,7 +554,9 @@ void GameScene::Update() {
 			hitEffect->Update();
 		}
 		// ブロックの更新
-
+			if (goal_) {
+			goal_->Update();
+		}
 		break;
 
 	case GameScene::Phase::kFadeOut:
@@ -642,21 +652,27 @@ void GameScene::Draw() {
 	for (HitEffect* hitEffect : hitEffects_) {
 		hitEffect->Draw();
 	}
-	if (phase_ != GameScene::Phase::kClear) {
+	//if (phase_ != GameScene::Phase::kClear) {
 		// ゴールの描画
 		if (goal_) {
 			goal_->Draw();
 		}
-	}
+	//}
 
 	Model::PostDraw();
 
 	// 【追加】クリアか死亡フェーズならリザルトメニューを描画
 	if (phase_ == Phase::kClear || phase_ == Phase::kDeath) {
-		// パーティクル演出が終わってから表示したい場合は条件を追加してください
-		if (deathParticles_ && deathParticles_->IsFinished() || phase_ == Phase::kClear) {
-			if (resultMenu_) {
+		if (phase_ == Phase::kDeath) {
+			if (deathParticles_ && deathParticles_->IsFinished()) {
 				resultMenu_->Draw();
+			}
+		} else if (phase_ == Phase::kClear) {
+			// クリア演出タイマーが終了したときだけメニューを描画
+			if (clearAnimationTimer_ >= kClearAnimationDuration) {
+				if (resultMenu_) {
+					resultMenu_->Draw();
+				}
 			}
 		}
 	}
