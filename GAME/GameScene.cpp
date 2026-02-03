@@ -273,9 +273,10 @@ void GameScene::Initialize() {
 	DeathSEHandle_ = Audio::GetInstance()->LoadWave("Sound/SE/dead.wav");
 	bgmHandle_ = Audio::GetInstance()->LoadWave("mokugyo.wav");
 	playHandle_ = bgmHandle_;
-	Audio::GetInstance()->SetVolume(playHandle_, 0.0f);
+	Audio::GetInstance()->SetVolume(playHandle_, 0.9f);
 	Audio::GetInstance()->PlayWave(playHandle_,true);
-	Audio::GetInstance()->StopWave(playHandle_);
+	// 停止する場合は再生ハンドルを渡す
+	//Audio::GetInstance()->StopWave(playHandle_);
 }
 void GameScene::ChangePhase() {
 	switch (phase_) {
@@ -304,9 +305,9 @@ void GameScene::ChangePhase() {
 				delete deathParticles_;
 				deathParticles_ = nullptr;
 			}
-			// if (Audio::GetInstance()->IsPlaying(playHandle_)) {
-			Audio::GetInstance()->PauseWave(playHandle_);
-			//}
+			 if (Audio::GetInstance()->IsPlaying(playHandle_)) {
+			Audio::GetInstance()->StopWave(playHandle_);
+			}
 			deathParticles_ = new DeathParticles;
 			deathParticles_->Initialze(deathParticlesModel_, &camera_, deathParticlesPosition);
 
@@ -315,9 +316,9 @@ void GameScene::ChangePhase() {
 			resultMenu_->Initialize(true);
 			clearAnimationTimer_ = 0.0f;
 			cameraControlle_->TriggerClearFocus();
-			// if (Audio::GetInstance()->IsPlaying(playHandle_)) {
-			Audio::GetInstance()->PauseWave(playHandle_);
-			//}
+			 if (Audio::GetInstance()->IsPlaying(playHandle_)) {
+			Audio::GetInstance()->StopWave(playHandle_);
+			}
 			// cameraControlle_->SetClearOffset();
 		}
 		break;
